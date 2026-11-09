@@ -31,18 +31,22 @@
   --spring:cubic-bezier(.2,1.12,.32,1);
 }
 *{box-sizing:border-box;margin:0;padding:0;-webkit-tap-highlight-color:transparent}
+html{-webkit-text-size-adjust:100%;text-size-adjust:100%}
 html,body{height:100%}
 body{background:var(--bg);color:var(--ink);font-family:var(--f-text);-webkit-font-smoothing:antialiased;overflow:hidden}
 button{font:inherit;color:inherit;background:none;border:0;cursor:pointer}
 input,select{font:inherit;color:inherit}
 
 #app{position:relative;width:100%;height:var(--tg-viewport-stable-height,100dvh);overflow:hidden;background:var(--bg)}
+@supports not (height:100dvh){ #app{height:var(--tg-viewport-stable-height,100vh)} } /* старые iOS и Android */
 @media (min-width:600px){
   body{display:grid;place-items:center;background:#E7EBF1}
   #app{width:390px;height:min(844px,calc(100dvh - 48px));border-radius:36px;box-shadow:0 30px 80px rgba(7,27,72,.18)}
+  body.tg{display:block;background:var(--bg)}
+  body.tg #app{width:100%;max-width:560px;margin:0 auto;height:var(--tg-viewport-stable-height,100vh);border-radius:0;box-shadow:none}
 }
 
-.screen{position:absolute;inset:0;display:flex;flex-direction:column;background:var(--bg);opacity:0;transform:translateX(42px);transition:opacity .35s ease,transform .6s var(--spring)}
+.screen{position:absolute;top:0;right:0;bottom:0;left:0;display:flex;flex-direction:column;background:var(--bg);opacity:0;transform:translateX(42px);transition:opacity .35s ease,transform .6s var(--spring)}
 .screen.in{opacity:1;transform:none}
 .screen.back{transform:translateX(-42px)}
 .screen.back.in{transform:none}
@@ -89,7 +93,8 @@ input,select{font:inherit;color:inherit}
 .btn.white{background:#fff;color:var(--ink)}
 .btn.secondary{border:1px solid var(--line)}
 .btn.text{height:48px;color:var(--ink-2);font-weight:500}
-.btn.split{justify-content:space-between;padding:0 26px}
+.btn.split{justify-content:space-between;padding:0 26px;gap:12px}
+.btn.split > span{white-space:nowrap}
 .btn.split .pr{font-weight:600;opacity:.9}
 
 /* Анкета */
@@ -121,7 +126,7 @@ input,select{font:inherit;color:inherit}
 .splash{background:#0B1F45 url(assets/goat.jpg) 60% center/cover no-repeat;color:#fff;transition:none}
 .splash::before{content:"";position:absolute;left:0;right:0;top:0;height:48%;background:linear-gradient(180deg,rgba(7,27,72,.6) 0%,rgba(7,27,72,0) 100%)}
 .splash .ttl{position:relative;padding:calc(var(--safe-t) + 74px) var(--g) 0;opacity:0;transform:translateY(10px);transition:opacity .8s ease .2s,transform .8s var(--ease) .2s}
-.splash .ttl h1{font:600 46px/1.04 var(--f-display);letter-spacing:-.025em}
+.splash .ttl h1{font:600 clamp(36px,12.2vw,46px)/1.04 var(--f-display);letter-spacing:-.025em}
 .splash.in .ttl{opacity:1;transform:none}
 
 /* Язык (версия 14): вопрос на двух языках и две крупные кнопки */
@@ -137,6 +142,36 @@ input,select{font:inherit;color:inherit}
 .lbtn .d{display:block;font:400 14px/1.4 var(--f-text);color:var(--ink-2);margin-top:4px}
 
 /* Проверка */
+/* Адаптивность: узкие (iPhone SE 1, маленькие Android) и низкие экраны */
+@media (max-width:359px){
+  :root{--g:20px}
+  .btn{font-size:14px}
+  .btn.split{padding:0 18px}
+  .h1{font-size:25px}
+  .lq{font-size:30px}
+  .plan{padding:0 20px}
+  .plan .n{font-size:16px}
+  .glass .n{font-size:26px}
+  .htl{font-size:28px}
+}
+@media (max-height:680px){
+  .field{margin-top:28px}
+  .navy{padding:20px var(--g) 22px}
+  .navy .v{font-size:36px}
+  .glass{min-height:96px;padding-top:16px;padding-bottom:16px}
+  .home .choices{padding-bottom:calc(18px + var(--safe-b))}
+  .lchoices{margin-top:28px}
+  .lwrap{padding-top:calc(var(--safe-t) + 28px)}
+  .okmark{width:92px;height:92px}
+  .tiles .tile{height:100px}
+  .bar{height:56px}
+  .list .item{min-height:50px}
+  .confirm .list{margin-top:18px !important}
+  .confirm .form{padding-bottom:18px !important}
+  .confirm .form .h1{font-size:25px}
+  .bottom{padding-top:10px;padding-bottom:calc(12px + var(--safe-b))}
+  .btn.text{height:40px}
+}
 .navy{background:var(--ink);color:#fff;padding:28px var(--g) 30px}
 .navy .k{font:400 15px/1.4 var(--f-text);color:rgba(255,255,255,.7)}
 .navy .v{font:600 44px/1 var(--f-display);letter-spacing:-.02em;margin-top:12px}
@@ -170,7 +205,7 @@ input,select{font:inherit;color:inherit}
 .success{background:var(--ink);color:#fff}
 .okw{flex:1;display:flex;flex-direction:column;align-items:center;justify-content:center;text-align:center;padding:0 32px}
 .okmark{width:112px;height:112px;position:relative}
-.okmark::before{content:"";position:absolute;inset:0;border-radius:50%;background:rgba(255,255,255,.12);animation:okpulse 1.6s var(--ease) .9s both}
+.okmark::before{content:"";position:absolute;top:0;right:0;bottom:0;left:0;border-radius:50%;background:rgba(255,255,255,.12);animation:okpulse 1.6s var(--ease) .9s both}
 .okmark svg{position:relative;width:100%;height:100%;fill:none;stroke:#fff;stroke-width:3.5;stroke-linecap:round;stroke-linejoin:round}
 .okmark .c{stroke-dasharray:277;stroke-dashoffset:277;animation:draw .7s var(--ease) .15s forwards}
 .okmark .k{stroke-dasharray:60;stroke-dashoffset:60;animation:draw .45s var(--ease) .75s forwards}
@@ -186,7 +221,7 @@ input,select{font:inherit;color:inherit}
 .home .top{position:relative;display:flex;justify-content:flex-end;padding:calc(var(--safe-t) + 10px) var(--g) 0;height:58px;flex-shrink:0}
 .home .ttl{position:relative;padding:16px var(--g) 0}
 .home .ttl .who{font:500 14px/1 var(--f-display);color:rgba(255,255,255,.8);margin-bottom:14px}
-.home .ttl h1{font:600 46px/1.04 var(--f-display);letter-spacing:-.025em}
+.home .ttl h1{font:600 clamp(36px,12.2vw,46px)/1.04 var(--f-display);letter-spacing:-.025em}
 .home .choices{position:relative;margin-top:auto;padding:0 var(--g) calc(28px + var(--safe-b));display:flex;flex-direction:column;gap:12px}
 .glass{width:100%;min-height:116px;border-radius:22px;border:1px solid rgba(255,255,255,.55);background:rgba(74,6,18,.30);-webkit-backdrop-filter:blur(16px) saturate(120%);backdrop-filter:blur(16px) saturate(120%);display:flex;align-items:center;justify-content:space-between;gap:16px;padding:22px 22px 22px 24px;text-align:left;color:#fff;transition:transform .15s ease,background .2s}
 .glass:active{transform:scale(.985);background:rgba(74,6,18,.42)}
@@ -215,7 +250,7 @@ input,select{font:inherit;color:inherit}
 .ytabs button.on{color:#fff}
 .ytabs button.on::after{animation:tabin .45s var(--spring);content:"";position:absolute;left:30%;right:30%;bottom:0;height:3px;border-radius:2px 2px 0 0;background:#fff}
 .strip{display:grid;grid-template-columns:repeat(12,minmax(0,1fr));margin:14px -4px 0;height:46px}
-.strip button{position:relative;font:500 11px/1 var(--f-display);color:rgba(255,255,255,.72);letter-spacing:.01em}
+.strip button{position:relative;font:500 clamp(9px,2.9vw,11px)/1 var(--f-display);color:rgba(255,255,255,.72);letter-spacing:0;white-space:nowrap}
 .strip button.lk{color:rgba(255,255,255,.34)}
 .strip button.on{color:#fff;font-weight:700}
 .strip button.on::after{animation:tabin .45s var(--spring);content:"";position:absolute;left:22%;right:22%;bottom:0;height:3px;border-radius:2px 2px 0 0;background:#fff}
@@ -287,7 +322,7 @@ input,select{font:inherit;color:inherit}
 .proto{display:block;margin:56px auto 0;min-height:44px;padding:0 16px;font:500 13px/1 var(--f-display);color:var(--ink-3)}
 
 /* Шторки */
-.ov{position:absolute;inset:0;background:rgba(7,27,72,.42);opacity:0;transition:opacity .28s ease;z-index:20}
+.ov{position:absolute;top:0;right:0;bottom:0;left:0;background:rgba(7,27,72,.42);opacity:0;transition:opacity .28s ease;z-index:20}
 .ov.in{opacity:1}
 .sheet{position:absolute;left:0;right:0;bottom:0;background:#fff;border-radius:24px 24px 0 0;z-index:21;transform:translateY(100%);transition:transform .38s var(--ease);max-height:88%;display:flex;flex-direction:column}
 .sheet.in{transform:none}
@@ -319,6 +354,7 @@ const tg = window.Telegram && window.Telegram.WebApp;
 const RM = (window.matchMedia && matchMedia('(prefers-reduced-motion: reduce)').matches) || location.search.includes('still'); /* still: для скриншотов */
 /* Telegram Mini App: готовность, на весь экран, без закрытия приложения свайпом вниз при прокрутке прогноза */
 if (tg && tg.initData) {
+  document.body.classList.add('tg');
   tg.ready(); tg.expand();
   if (tg.disableVerticalSwipes) tg.disableVerticalSwipes();
   if (tg.isVersionAtLeast && tg.isVersionAtLeast('6.1')) { tg.setBackgroundColor('#FFFFFF'); }
@@ -596,15 +632,8 @@ function go(name, push = true){
 function initRead(el){
   const sc = el.querySelector('.scroll'), head = el.querySelector('.head');
   if (!sc || !head || !el.querySelector('.content')) return;
-  /* Свёрнутый блок показывает только целые абзацы (не меньше одного), без обрезанных фраз */
-  el.querySelectorAll('.fold').forEach(f => {
-    const tw = f.querySelector('.tw'), items = [...tw.querySelectorAll('.txt > p, .txt > ul > li')], LIM = 175;
-    let h = 0;
-    for (const it of items){ const b = it.offsetTop + it.offsetHeight; if (b <= LIM || h === 0) h = b; else break; }
-    if (h >= tw.scrollHeight - 4){ f.classList.add('short'); tw.style.maxHeight = 'none'; return; }
-    tw.dataset.ch = h;
-    if (!f.classList.contains('open')){ tw.style.transition = 'none'; tw.style.maxHeight = h + 'px'; void tw.offsetHeight; tw.style.transition = ''; }
-  });
+  fitFolds(el);
+  if (document.fonts && document.fonts.status !== 'loaded') document.fonts.ready.then(() => fitFolds(el));
   if (!head.querySelector('.rprog')) head.insertAdjacentHTML('beforeend', '<div class="rprog"><i></i></div>');
   const bar = head.querySelector('.rprog i');
   const upd = () => { const max = sc.scrollHeight - sc.clientHeight; bar.style.transform = `scaleX(${max > 0 ? Math.min(1, sc.scrollTop / max) : 0})`; if (!RM) el.querySelector('.head').style.setProperty('--c', Math.min(1, sc.scrollTop / 140).toFixed(3)); };
@@ -616,6 +645,18 @@ function initRead(el){
   let n = 0;
   secs.forEach(s => { s.classList.add('rv'); const r = s.getBoundingClientRect(), rr = sc.getBoundingClientRect(); s.style.setProperty('--rd', (r.top < rr.bottom ? (n++) * 110 + 120 : 0) + 'ms'); io.observe(s); });
 }
+/* Свёрнутый блок показывает только целые абзацы (не меньше одного), без обрезанных фраз */
+function fitFolds(el){
+  el.querySelectorAll('.fold').forEach(f => {
+      if (f.classList.contains('open')) return; f.classList.remove('short'); const tw = f.querySelector('.tw'), items = [...tw.querySelectorAll('.txt > p, .txt > ul > li')], LIM = 175;
+      let h = 0;
+      for (const it of items){ const b = it.offsetTop + it.offsetHeight; if (b <= LIM || h === 0) h = b; else break; }
+      if (h >= tw.scrollHeight - 4){ f.classList.add('short'); tw.style.maxHeight = 'none'; return; }
+      tw.dataset.ch = h;
+      if (!f.classList.contains('open')){ tw.style.transition = 'none'; tw.style.maxHeight = h + 'px'; void tw.offsetHeight; tw.style.transition = ''; }
+    });
+}
+window.addEventListener('resize', () => { const el = app.querySelector('.screen:last-of-type'); if (el) fitFolds(el); });
 function toggleSec(btn){
   const f = btn.closest('.fold'); if (!f || f.classList.contains('short')) return;
   const tw = f.querySelector('.tw'), more = f.querySelector('.more'), opening = !f.classList.contains('open');
@@ -1010,6 +1051,7 @@ if (Q.has('demo')){
   if (v === 'tariffs') go('tariffs');
   if (v === 'success'){ S.lastPlan = Q.get('plan') || 'months'; S.forIdx = 0; go('success', false); }
   if (v === 'lang'){ S.hist = []; S.cur = null; go('lang', false); }
+  if (v === 'dob'){ S.mode = 'self'; S.draft = {name:'Марія', gender:'f', d:25, m:7, y:1992}; go('dob'); }
   if (v === 'gender'){ S.mode = 'self'; S.draft = {name:'Марія', gender: Q.get('g') || '', d:'', m:'', y:''}; go('gender'); }
   if (v === 'splash'){ S.hist = []; S.cur = null; S.profiles = []; go('splash', false); }
   if (v === 'confirm'){ S.mode = 'self'; S.draft = {name: S.profiles[0].name, gender:'f', d:2, m:2, y:2009}; go('confirm'); }
