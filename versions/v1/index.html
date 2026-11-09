@@ -1,0 +1,679 @@
+<!doctype html>
+<html lang="ru">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover, maximum-scale=1">
+<title>Прогностика 2027</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600&family=Montserrat:wght@300;400;500;600&display=swap" rel="stylesheet">
+<script src="https://telegram.org/js/telegram-web-app.js"></script>
+<style>
+:root{
+  --ink:#071B48;
+  --ink-2:rgba(7,27,72,.62);
+  --ink-3:rgba(7,27,72,.42);
+  --accent:#800020;
+  --bg:#FFFFFF;
+  --line:#A5B2C5;
+  --line-soft:rgba(165,178,197,.45);
+  --fill:#F3F5F9;
+  --sky:#0E3D74;
+  --burg:radial-gradient(ellipse at 80% 100%,#A51B38 0%,#800020 48%,#570019 100%);
+  --f-display:'Montserrat',system-ui,sans-serif;
+  --f-text:'Inter',system-ui,sans-serif;
+  --g:24px;
+  --safe-t:env(safe-area-inset-top,0px);
+  --safe-b:env(safe-area-inset-bottom,0px);
+  --ease:cubic-bezier(.32,.72,0,1);
+}
+*{box-sizing:border-box;margin:0;padding:0;-webkit-tap-highlight-color:transparent}
+html,body{height:100%}
+body{background:var(--bg);color:var(--ink);font-family:var(--f-text);-webkit-font-smoothing:antialiased;overflow:hidden}
+button{font:inherit;color:inherit;background:none;border:0;cursor:pointer}
+input,select{font:inherit;color:inherit}
+
+#app{position:relative;width:100%;height:var(--tg-viewport-stable-height,100dvh);overflow:hidden;background:var(--bg)}
+@media (min-width:600px){
+  body{display:grid;place-items:center;background:#E7EBF1}
+  #app{width:390px;height:min(844px,calc(100dvh - 48px));border-radius:36px;box-shadow:0 30px 80px rgba(7,27,72,.18)}
+}
+
+/* Screens */
+.screen{position:absolute;inset:0;display:flex;flex-direction:column;background:var(--bg);opacity:0;transition:opacity .32s ease}
+.screen.in{opacity:1}
+.scroll{flex:1;overflow-y:auto;-webkit-overflow-scrolling:touch}
+
+/* Top bar on white screens */
+.bar{height:64px;margin-top:var(--safe-t);padding:0 var(--g);display:flex;align-items:center;justify-content:space-between;flex-shrink:0}
+.bar .step{font:500 13px/1 var(--f-display);color:var(--ink-2);letter-spacing:.02em}
+.bar .title{font:600 16px/1 var(--f-display)}
+.ib{width:44px;height:44px;border-radius:50%;border:1px solid var(--line);display:grid;place-items:center;color:var(--ink);flex-shrink:0;transition:background .2s}
+.ib:active{background:var(--fill)}
+.ib svg{width:20px;height:20px}
+.ib.ghost{border-color:transparent}
+.ib.light{border-color:rgba(255,255,255,.45);color:#fff}
+.ib.light:active{background:rgba(255,255,255,.12)}
+.spacer{width:44px}
+
+/* Type */
+.h1{font:500 30px/1.15 var(--f-display);letter-spacing:-.01em}
+.lead{font:400 16px/1.5 var(--f-text);color:var(--ink-2);margin-top:12px}
+.eyebrow{font:600 12px/1 var(--f-display);letter-spacing:.16em;text-transform:uppercase}
+
+/* Buttons */
+.bottom{padding:16px var(--g) calc(16px + var(--safe-b));flex-shrink:0;display:flex;flex-direction:column;gap:8px;background:var(--bg)}
+.btn{height:56px;border-radius:28px;width:100%;display:flex;align-items:center;justify-content:center;gap:10px;font:600 15px/1 var(--f-display);letter-spacing:.01em;transition:transform .15s ease,opacity .2s}
+.btn:active{transform:scale(.98)}
+.btn.primary{background:var(--burg);color:#fff}
+.btn.primary:disabled{background:#E8ECF2;color:var(--line);transform:none;cursor:default}
+.btn.secondary{border:1px solid var(--line);color:var(--ink)}
+.btn.white{background:#fff;color:var(--ink)}
+.btn.text{height:48px;color:var(--ink-2);font-weight:500}
+.btn.split{justify-content:space-between;padding:0 24px}
+
+/* Form */
+.form{padding:12px var(--g) 0}
+.field{margin-top:32px}
+.input{width:100%;height:56px;border:1px solid var(--line);border-radius:16px;padding:0 18px;font-size:17px;outline:none;transition:border-color .2s;background:#fff}
+.input:focus{border-color:var(--ink)}
+.input::placeholder{color:var(--ink-3)}
+.choice{width:100%;height:64px;border:1px solid var(--line);border-radius:16px;padding:0 20px;display:flex;align-items:center;justify-content:space-between;font:500 17px/1 var(--f-text);transition:border-color .2s,box-shadow .2s}
+.choice + .choice{margin-top:12px}
+.choice .ck{width:24px;height:24px;border-radius:50%;display:grid;place-items:center;background:var(--accent);color:#fff;opacity:0;transform:scale(.6);transition:opacity .2s,transform .2s var(--ease)}
+.choice .ck svg{width:14px;height:14px}
+.choice.on{border-color:var(--accent);box-shadow:inset 0 0 0 1px var(--accent)}
+.choice.on .ck{opacity:1;transform:none}
+.dob{display:grid;grid-template-columns:.85fr 1.5fr 1fr;gap:10px}
+.sel{position:relative}
+.sel select{appearance:none;-webkit-appearance:none;width:100%;height:56px;border:1px solid var(--line);border-radius:16px;padding:0 34px 0 16px;font-size:16px;background:#fff;outline:none}
+.sel select:focus{border-color:var(--ink)}
+.sel select.empty{color:var(--ink-3)}
+.sel svg{position:absolute;right:12px;top:50%;width:16px;height:16px;transform:translateY(-50%);pointer-events:none;color:var(--ink-2)}
+.label{font:500 13px/1 var(--f-display);color:var(--ink-2);margin-bottom:10px;display:block}
+
+/* Splash */
+.splash{background:#0B1F45 url(assets/goat.jpg) 58% center/cover no-repeat;transition:none}
+.brand{position:absolute;left:var(--g);right:var(--g);top:calc(var(--safe-t) + 64px);color:#fff}
+.brand .eyebrow{color:rgba(255,255,255,.8)}
+.brand .year{font:300 88px/.9 var(--f-display);letter-spacing:-.03em;margin-top:14px}
+.splash .brand{opacity:0;transform:translateY(8px);transition:opacity .8s ease .2s,transform .8s var(--ease) .2s}
+.splash.in .brand{opacity:1;transform:none}
+.loader{position:absolute;left:var(--g);right:var(--g);bottom:calc(var(--safe-b) + 40px);height:2px;background:rgba(255,255,255,.28);border-radius:2px;overflow:hidden}
+.loader i{display:block;height:100%;width:100%;background:#fff;transform-origin:left;transform:scaleX(0)}
+.splash.in .loader i{transition:transform 2.3s linear .1s;transform:scaleX(1)}
+
+/* Language */
+.lang{background:var(--sky) url(assets/sea.jpg) center bottom/cover no-repeat}
+.lang .brand .year{font-size:64px}
+.lang .ask{font:400 17px/1.45 var(--f-text);color:rgba(255,255,255,.82);margin-top:28px}
+.lang .bottom{position:absolute;left:0;right:0;bottom:0;background:none;gap:12px}
+
+/* Confirm */
+.rows{margin-top:28px;border-top:1px solid var(--line-soft)}
+.row{min-height:56px;display:flex;align-items:center;justify-content:space-between;gap:16px;border-bottom:1px solid var(--line-soft);font-size:16px}
+.row .k{color:var(--ink-2)}
+.row .v{font-weight:500;text-align:right}
+button.row{width:100%;text-align:left}
+button.row .v{display:flex;align-items:center;gap:8px}
+button.row .v svg{width:16px;height:16px;color:var(--ink-3)}
+.note{display:flex;gap:12px;margin-top:20px;font-size:14px;line-height:1.5;color:var(--ink-2)}
+.note svg{width:18px;height:18px;flex-shrink:0;margin-top:1px;color:var(--accent)}
+.horizon{margin-top:28px;border-radius:20px;padding:22px 22px 24px;color:#fff;background:var(--sky) url(assets/sea.jpg) center 62%/cover no-repeat;min-height:132px;display:flex;flex-direction:column;justify-content:flex-end}
+.horizon .k{font:400 14px/1.4 var(--f-text);color:rgba(255,255,255,.82)}
+.horizon .v{font:500 34px/1 var(--f-display);margin-top:8px;letter-spacing:-.01em}
+
+/* Tariffs */
+.tar-head{padding:8px var(--g) 28px}
+.band{width:100%;display:grid;grid-template-columns:1fr auto;align-items:end;gap:6px 16px;padding:26px var(--g);text-align:left;transition:filter .2s}
+.band:active{filter:brightness(.94)}
+.band .n{font:600 18px/1.2 var(--f-display)}
+.band .d{grid-column:1;font:400 14px/1.45 var(--f-text);opacity:.78}
+.band .p{grid-row:1 / span 2;grid-column:2;font:500 30px/1 var(--f-display);letter-spacing:-.01em;white-space:nowrap;align-self:center}
+.band .p small{font-size:15px;font-weight:500;margin-left:4px}
+.band .x{grid-column:1 / -1;font:500 13px/1 var(--f-display);margin-top:8px}
+.band.b1{background:var(--burg);color:#fff}
+.band.b2{background:var(--ink);color:#fff}
+.band.b3{background:#fff;color:var(--ink);border-bottom:1px solid var(--line-soft)}
+.band.b3 .x{color:var(--ink-2)}
+.band.off{cursor:default}
+.band.off:active{filter:none}
+.band.off .n,.band.off .p{color:var(--ink-3)}
+.band.done{cursor:default}
+.band.done .p{font-size:15px;font-weight:600}
+.links{display:flex;flex-direction:column;align-items:flex-start;padding:20px var(--g) 8px;gap:4px}
+.link{height:44px;font:500 15px/1 var(--f-display);color:var(--ink);text-decoration:underline;text-underline-offset:4px;text-decoration-color:var(--line)}
+.link.muted{color:var(--ink-2)}
+
+/* Main: field */
+.field-top{position:relative;flex-shrink:0;height:clamp(300px,46%,380px);background:var(--sky) url(assets/sea.jpg) center 40%/cover no-repeat;color:#fff;display:flex;flex-direction:column;padding:calc(var(--safe-t) + 12px) var(--g) 28px}
+.field-top .top{display:flex;align-items:center;justify-content:space-between;height:44px}
+.tabs{display:flex;gap:22px;height:44px;align-items:center}
+.tabs button{font:500 15px/1 var(--f-display);color:rgba(255,255,255,.62);height:44px;position:relative}
+.tabs button.on{color:#fff}
+.tabs button.on::after{content:"";position:absolute;left:0;right:0;bottom:8px;height:1.5px;background:#fff}
+.field-top .acts{display:flex;gap:8px}
+.field-top .meta{margin-top:auto}
+.field-top .who{font:500 13px/1 var(--f-display);color:rgba(255,255,255,.75);margin-bottom:14px}
+.field-top .mname{font:500 52px/1 var(--f-display);letter-spacing:-.02em;margin-top:12px}
+.field-top .dates{display:flex;align-items:center;gap:10px;margin-top:14px;font:400 16px/1 var(--f-text);color:rgba(255,255,255,.88);height:24px}
+.ii{width:24px;height:24px;border-radius:50%;border:1px solid rgba(255,255,255,.55);display:grid;place-items:center;font:600 12px/1 var(--f-display);color:#fff}
+
+/* Ruler */
+.ruler-head{display:flex;align-items:center;justify-content:space-between;padding:18px var(--g) 0;height:62px}
+.ruler-head .y{font:600 13px/1 var(--f-display);letter-spacing:.12em;color:var(--ink-2)}
+.chip{height:36px;padding:0 16px;border-radius:18px;border:1px solid var(--line);font:500 13px/1 var(--f-display);display:flex;align-items:center;gap:8px}
+.chip svg{width:14px;height:14px}
+.ruler{display:grid;grid-template-columns:repeat(12,1fr);padding:4px calc(var(--g) - 6px) 0;height:60px;border-bottom:1px solid var(--line-soft)}
+.tick{display:flex;flex-direction:column;align-items:center;justify-content:flex-end;gap:8px;padding-bottom:12px;height:100%}
+.tick i{width:1px;height:10px;background:var(--line);transition:height .25s var(--ease),background .2s}
+.tick span{font:500 10px/1 var(--f-display);color:var(--ink-3);letter-spacing:.02em}
+.tick.av i{background:var(--ink);height:14px}
+.tick.av span{color:var(--ink-2)}
+.tick.on i{width:2px;height:22px;background:var(--accent)}
+.tick.on span{color:var(--accent);font-weight:600}
+
+/* Forecast text */
+.content{padding:0 var(--g) 24px}
+.sec{padding:28px 0;border-bottom:1px solid var(--line-soft)}
+.sec:last-child{border-bottom:0}
+.sec h3{font:600 12px/1 var(--f-display);letter-spacing:.16em;text-transform:uppercase;color:var(--accent);display:flex;align-items:center;gap:8px}
+.sec p{font:400 16px/1.65 var(--f-text);margin-top:14px}
+.sec.lock h3{color:var(--ink-3)}
+.sec.lock h3 svg{width:14px;height:14px}
+.sec.lock p{color:var(--ink-3);font-size:14px;margin-top:10px}
+.sec .per{font:500 14px/1 var(--f-display);color:var(--ink-2);margin-top:12px}
+.closed{padding:28px 0 8px}
+.closed .t{font:500 20px/1.3 var(--f-display)}
+.closed .d{font:400 15px/1.55 var(--f-text);color:var(--ink-2);margin-top:10px}
+.cta{border-top:1px solid var(--line-soft)}
+
+/* Profile */
+.group{padding:0 var(--g);margin-top:28px}
+.group .eyebrow{color:var(--ink-2);margin-bottom:8px;display:block}
+.group .rows{margin-top:0}
+.row .v.acc{color:var(--accent)}
+.row .who{display:flex;align-items:center;gap:12px;font-weight:500}
+.row .dot{width:20px;height:20px;border-radius:50%;border:1px solid var(--line);display:grid;place-items:center}
+.row .dot.on{border-color:var(--accent);background:var(--accent);color:#fff}
+.row .dot svg{width:12px;height:12px}
+.row .st{font-size:14px;color:var(--ink-2)}
+.row .st.open{color:var(--ink)}
+.row.add{color:var(--accent);font-weight:500;justify-content:flex-start;gap:12px}
+.row.add svg{width:20px;height:20px}
+.fine{padding:12px var(--g) 0;font-size:13px;line-height:1.5;color:var(--ink-3)}
+
+/* Sheet */
+.ov{position:absolute;inset:0;background:rgba(7,27,72,.42);opacity:0;transition:opacity .28s ease;z-index:20}
+.ov.in{opacity:1}
+.sheet{position:absolute;left:0;right:0;bottom:0;background:#fff;border-radius:24px 24px 0 0;z-index:21;transform:translateY(100%);transition:transform .38s var(--ease);max-height:88%;display:flex;flex-direction:column}
+.sheet.in{transform:none}
+.sheet .sh-head{display:flex;align-items:center;justify-content:space-between;padding:20px var(--g) 8px}
+.sheet .sh-head .t{font:600 18px/1.2 var(--f-display)}
+.sheet .sh-body{padding:8px var(--g) 8px;overflow-y:auto}
+.sheet .sh-body p{font-size:15px;line-height:1.6;color:var(--ink-2)}
+.months{display:grid;grid-template-columns:repeat(3,1fr);gap:10px;padding-top:8px}
+.mcell{height:84px;line-height:1.35;border:1px solid var(--line-soft);border-radius:16px;padding:14px;text-align:left;display:flex;flex-direction:column;justify-content:space-between}
+.mcell .n{font:500 15px/1 var(--f-display);display:flex;align-items:center;justify-content:space-between}
+.mcell .n svg{width:12px;height:12px;color:var(--ink-3)}
+.mcell .d{font-size:12px;color:var(--ink-2)}
+.mcell.on{border-color:var(--accent);box-shadow:inset 0 0 0 1px var(--accent)}
+.mcell.lk .n{color:var(--ink-3)}
+.seg{display:grid;grid-auto-flow:column;grid-auto-columns:1fr;border:1px solid var(--line);border-radius:14px;padding:3px;gap:3px}
+.seg button{height:40px;border-radius:11px;font:500 14px/1 var(--f-display);color:var(--ink-2);transition:background .2s,color .2s}
+.seg button.on{background:var(--ink);color:#fff}
+.gear-row{margin-top:20px}
+.gear-row:first-child{margin-top:8px}
+.amount{font:500 40px/1 var(--f-display);margin:16px 0 8px;letter-spacing:-.01em}
+.amount small{font-size:18px;margin-left:6px}
+.ok-line{font-size:14px;line-height:1.5;color:var(--accent);margin-top:10px}
+</style>
+</head>
+<body>
+<div id="app"></div>
+
+<script>
+/* ============================================================
+   Прогностика 2027 · HTML-прототип интерфейса
+   Зона программиста отмечена комментариями API:
+   оплата, хранение пользователя, тексты прогнозов, формулы.
+   ============================================================ */
+
+const tg = window.Telegram && window.Telegram.WebApp;
+if (tg && tg.initData) { tg.ready(); tg.expand(); }
+
+const I = {
+  back:'<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"><path d="M15 5l-7 7 7 7"/></svg>',
+  chev:'<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"><path d="M6 9l6 6 6-6"/></svg>',
+  right:'<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"><path d="M9 5l7 7-7 7"/></svg>',
+  check:'<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"><path d="M5 12.5l4.5 4.5L19 7.5"/></svg>',
+  lock:'<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"><rect x="5" y="10.5" width="14" height="10" rx="2.5"/><path d="M8.5 10.5V8a3.5 3.5 0 017 0v2.5"/></svg>',
+  user:'<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round"><circle cx="12" cy="8.5" r="3.5"/><path d="M5 20c1.2-3.6 4-5.5 7-5.5s5.8 1.9 7 5.5"/></svg>',
+  gear:'<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="3"/><path d="M19.4 15a1.6 1.6 0 00.3 1.8l.1.1a2 2 0 11-2.8 2.8l-.1-.1a1.6 1.6 0 00-1.8-.3 1.6 1.6 0 00-1 1.5V21a2 2 0 11-4 0v-.1a1.6 1.6 0 00-1-1.5 1.6 1.6 0 00-1.8.3l-.1.1a2 2 0 11-2.8-2.8l.1-.1a1.6 1.6 0 00.3-1.8 1.6 1.6 0 00-1.5-1H3a2 2 0 110-4h.1a1.6 1.6 0 001.5-1 1.6 1.6 0 00-.3-1.8l-.1-.1a2 2 0 112.8-2.8l.1.1a1.6 1.6 0 001.8.3H9a1.6 1.6 0 001-1.5V3a2 2 0 114 0v.1a1.6 1.6 0 001 1.5 1.6 1.6 0 001.8-.3l.1-.1a2 2 0 112.8 2.8l-.1.1a1.6 1.6 0 00-.3 1.8V9a1.6 1.6 0 001.5 1H21a2 2 0 110 4h-.1a1.6 1.6 0 00-1.5 1z"/></svg>',
+  close:'<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round"><path d="M6 6l12 12M18 6L6 18"/></svg>',
+  plus:'<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round"><path d="M12 5v14M5 12h14"/></svg>',
+  grid:'<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6"><rect x="4" y="4" width="6" height="6" rx="1.5"/><rect x="14" y="4" width="6" height="6" rx="1.5"/><rect x="4" y="14" width="6" height="6" rx="1.5"/><rect x="14" y="14" width="6" height="6" rx="1.5"/></svg>',
+};
+
+/* ---------- Тексты RU / UA. {f,m} = женский / мужской род ---------- */
+const T = {
+ru:{
+  brand:'Прогностика', next:'Далее', step:'Шаг {n} из 3',
+  nameQ:'Как тебя зовут?', nameQo:'Как зовут этого человека?', nameHint:'Имя будет в твоих прогнозах', nameHinto:'Имя будет в его прогнозе', namePh:'Имя',
+  genderQ:'Твой пол', genderQo:'Пол человека', genderHint:'Тексты прогноза пишутся с учётом пола', female:'Женский', male:'Мужской',
+  dobQ:'Дата рождения', dobHint:'По ней рассчитываются все прогнозы', day:'День', month:'Месяц', year:'Год',
+  confirmT:'Проверь данные', confirmWarn:'После подтверждения дату рождения и пол изменить нельзя. Проверь внимательно.',
+  name:'Имя', gender:'Пол', dob:'Дата рождения', newYear:'Твой новый год начинается с', newYearO:'Личный год начинается с', ok:'Всё верно', edit:'Изменить',
+  tarT:'Твоя прогностика на 2027', tarTo:'Прогноз для {name}', tarSub:'Выбери, что открыть. Оплата проходит через monoPay.',
+  pM:'Прогноз по месяцам', pMd:'Все 12 личных месяцев 2027 года', pA:'Всё вместе', pAd:'12 месяцев и прогноз на год', save:'Выгода 150 грн',
+  pY:'Прогноз на год', pYd:'Работа и личная жизнь на весь личный год', yLock:'Доступен после покупки месяцев', opened:'Открыт', uah:'грн',
+  demo:'Сначала посмотреть демо', promo:'У меня есть промокод', later:'Не сейчас',
+  promoT:'Промокод', promoPh:'Введи промокод', apply:'Применить', promoOk:'Промокод применён. Прогноз на год в подарок при покупке месяцев.', gift:'Прогноз на год в подарок',
+  payT:'Оплата', pay:'Оплатить {sum} грн', payNote:'Откроется monoPay. После оплаты прогноз откроется сразу.',
+  tM:'Месяцы', tY:'Год', pm:'Личный месяц {n} из 12', from:'с', to:'по', all:'Все месяцы',
+  s1:'Общий', s2:'Работа', s3:'Личные отношения', s4:'Здоровье', lockLine:'Откроется после покупки прогноза',
+  cta:'Открыть все 12 месяцев', closedT:'Этот месяц пока закрыт', closedD:'В демо открыт раздел «Работа» на два ближайших месяца. Полный прогноз на каждый месяц откроется после покупки.',
+  closedO:'Прогноз для {name} откроется после покупки.', buyFor:'Открыть прогноз',
+  shiftT:'Почему даты смещены', shiftD:{f:'Ты родилась после 15-го числа, поэтому события прогноза могут смещаться примерно на половину месяца. Ориентируйся на свои события и ощущения.', m:'Ты родился после 15-го числа, поэтому события прогноза могут смещаться примерно на половину месяца. Ориентируйся на свои события и ощущения.'},
+  py:'Личный год', yW:'Работа на год', yL:'Личная жизнь на год',
+  profile:'Профиль', me:'Мой прогноз', people:'Чей прогноз смотреть', add:'Добавить человека', closed:'Закрыт', mOnly:'Месяцы', allOpen:'Открыт полностью',
+  fixed:'Дату рождения и пол изменить нельзя. Язык можно сменить в любой момент.', lang:'Язык', langV:'Русский', forecasts:'Мои прогнозы', notBought:'Не куплен', buy:'Купить',
+  gearT:'Режим прототипа', acc:'Доступ', accN:'Демо', accM:'Месяцы', accA:'Всё', restart:'Начать заново', you:'Ты',
+},
+uk:{
+  brand:'Прогностика', next:'Далі', step:'Крок {n} з 3',
+  nameQ:'Як тебе звати?', nameQo:'Як звати цю людину?', nameHint:'Ім’я буде у твоїх прогнозах', nameHinto:'Ім’я буде в її прогнозі', namePh:'Ім’я',
+  genderQ:'Твоя стать', genderQo:'Стать людини', genderHint:'Тексти прогнозу пишуться з урахуванням статі', female:'Жіноча', male:'Чоловіча',
+  dobQ:'Дата народження', dobHint:'За нею розраховуються всі прогнози', day:'День', month:'Місяць', year:'Рік',
+  confirmT:'Перевір дані', confirmWarn:'Після підтвердження дату народження і стать змінити не можна. Перевір уважно.',
+  name:'Ім’я', gender:'Стать', dob:'Дата народження', newYear:'Твій новий рік починається з', newYearO:'Особистий рік починається з', ok:'Все правильно', edit:'Змінити',
+  tarT:'Твоя прогностика на 2027', tarTo:'Прогноз для {name}', tarSub:'Обери, що відкрити. Оплата проходить через monoPay.',
+  pM:'Прогноз по місяцях', pMd:'Усі 12 особистих місяців 2027 року', pA:'Усе разом', pAd:'12 місяців і прогноз на рік', save:'Вигода 150 грн',
+  pY:'Прогноз на рік', pYd:'Робота та особисте життя на весь особистий рік', yLock:'Доступний після покупки місяців', opened:'Відкрито', uah:'грн',
+  demo:'Спочатку переглянути демо', promo:'У мене є промокод', later:'Не зараз',
+  promoT:'Промокод', promoPh:'Введи промокод', apply:'Застосувати', promoOk:'Промокод застосовано. Прогноз на рік у подарунок при покупці місяців.', gift:'Прогноз на рік у подарунок',
+  payT:'Оплата', pay:'Сплатити {sum} грн', payNote:'Відкриється monoPay. Після оплати прогноз відкриється одразу.',
+  tM:'Місяці', tY:'Рік', pm:'Особистий місяць {n} з 12', from:'з', to:'по', all:'Усі місяці',
+  s1:'Загальний', s2:'Робота', s3:'Особисті стосунки', s4:'Здоров’я', lockLine:'Відкриється після покупки прогнозу',
+  cta:'Відкрити всі 12 місяців', closedT:'Цей місяць поки закритий', closedD:'У демо відкрито розділ «Робота» на два найближчі місяці. Повний прогноз на кожен місяць відкриється після покупки.',
+  closedO:'Прогноз для {name} відкриється після покупки.', buyFor:'Відкрити прогноз',
+  shiftT:'Чому дати зміщені', shiftD:{f:'Ти народилася після 15-го числа, тому події прогнозу можуть зміщуватися приблизно на половину місяця. Орієнтуйся на свої події та відчуття.', m:'Ти народився після 15-го числа, тому події прогнозу можуть зміщуватися приблизно на половину місяця. Орієнтуйся на свої події та відчуття.'},
+  py:'Особистий рік', yW:'Робота на рік', yL:'Особисте життя на рік',
+  profile:'Профіль', me:'Мій прогноз', people:'Чий прогноз дивитися', add:'Додати людину', closed:'Закрито', mOnly:'Місяці', allOpen:'Відкрито повністю',
+  fixed:'Дату народження і стать змінити не можна. Мову можна змінити будь-коли.', lang:'Мова', langV:'Українська', forecasts:'Мої прогнози', notBought:'Не куплено', buy:'Купити',
+  gearT:'Режим прототипу', acc:'Доступ', accN:'Демо', accM:'Місяці', accA:'Усе', restart:'Почати заново', you:'Ти',
+}};
+
+const MONTHS = {
+  ru:['Январь','Февраль','Март','Апрель','Май','Июнь','Июль','Август','Сентябрь','Октябрь','Ноябрь','Декабрь'],
+  uk:['Січень','Лютий','Березень','Квітень','Травень','Червень','Липень','Серпень','Вересень','Жовтень','Листопад','Грудень']};
+const MSHORT = {
+  ru:['Янв','Фев','Мар','Апр','Май','Июн','Июл','Авг','Сен','Окт','Ноя','Дек'],
+  uk:['Січ','Лют','Бер','Кві','Тра','Чер','Лип','Сер','Вер','Жов','Лис','Гру']};
+
+/* API: тексты прогнозов придут с сервера. Здесь пример наполнения. */
+const SAMPLE = {
+ru:{
+  s1:'Месяц про порядок и опору. Хорошее время, чтобы закончить начатое и освободить место для нового. Решения, принятые спокойно, окажутся самыми верными.',
+  s2:'Появится шанс показать себя в деле. Не торопись соглашаться на всё сразу: выбирай задачи, которые дают рост, а не только загрузку. Ближе к концу месяца возможен разговор о деньгах.',
+  s3:'Больше тепла и честных разговоров. Отношения выигрывают от простых вещей: общего времени, внимания, ясности. Если давно хотелось что-то сказать, сейчас подходящий момент.',
+  s4:'Организм просит ритма. Сон, вода и прогулки дадут больше, чем резкие перемены. Береги спину и не переоценивай силы в первой половине месяца.',
+  yW:'Год постепенного роста. Первая половина про обучение и укрепление позиций, вторая про результат. Хорошее время для смены формата работы или запуска своего дела.',
+  yL:'Год глубины. Отношения становятся честнее, лишнее уходит само. Возможны важные встречи весной и осенью.'},
+uk:{
+  s1:'Місяць про порядок і опору. Гарний час, щоб завершити розпочате та звільнити місце для нового. Рішення, ухвалені спокійно, виявляться найвірнішими.',
+  s2:'З’явиться шанс показати себе в ділі. Не поспішай погоджуватися на все одразу: обирай задачі, які дають зростання, а не лише завантаження. Ближче до кінця місяця можлива розмова про гроші.',
+  s3:'Більше тепла та чесних розмов. Стосунки виграють від простих речей: спільного часу, уваги, ясності. Якщо давно хотілося щось сказати, зараз слушний момент.',
+  s4:'Організм просить ритму. Сон, вода і прогулянки дадуть більше, ніж різкі зміни. Бережи спину й не переоцінюй сили в першій половині місяця.',
+  yW:'Рік поступового зростання. Перша половина про навчання та зміцнення позицій, друга про результат. Гарний час для зміни формату роботи чи запуску власної справи.',
+  yL:'Рік глибини. Стосунки стають чеснішими, зайве йде саме. Можливі важливі зустрічі навесні та восени.'}};
+
+/* ---------- Состояние ---------- */
+/* API: профиль и доступы хранит сервер. Здесь всё в памяти. */
+const S = {
+  lang:'ru', profiles:[], active:0, draft:null, mode:'self',
+  tab:'months', month:null, promo:false, forIdx:0, hist:[], cur:null,
+  today:new Date(), // для демо: какие месяцы ближайшие
+};
+
+const t = (k, v={}) => {
+  let s = T[S.lang][k]; if (s == null) return k;
+  if (typeof s === 'object') s = s[gOf() || 'f'];
+  return s.replace(/\{(\w+)\}/g, (_, x) => v[x] ?? '');
+};
+const gOf = () => (S.mode === 'self' && S.draft ? S.draft.gender : null) || (prof() ? prof().gender : 'f');
+const prof = () => S.profiles[S.active];
+const pad = n => String(n).padStart(2,'0');
+const dim = (y,m) => new Date(y, m+1, 0).getDate();
+const fmt = (d, y) => pad(d.getDate()) + '.' + pad(d.getMonth()+1) + (y ? '.' + d.getFullYear() : '');
+const esc = s => String(s).replace(/[&<>"]/g, c => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;'}[c]));
+
+/* Личный месяц i: с числа рождения в месяце i по день до числа рождения в следующем.
+   API: финальные правила даст клиентка, программист продублирует на сервере. */
+function monthRange(p, i){
+  const s = new Date(2027, i, Math.min(p.d, dim(2027, i)));
+  const ny = i === 11 ? 2028 : 2027, nm = (i+1) % 12;
+  const e = new Date(ny, nm, Math.min(p.d, dim(ny, nm))); e.setDate(e.getDate() - 1);
+  return [s, e];
+}
+const newYearDate = p => new Date(2027, p.m, Math.min(p.d, dim(2027, p.m)));
+function demoMonths(p){
+  const now = S.today; let first = 0;
+  for (let i = 0; i < 12; i++){ if (monthRange(p, i)[1] >= now){ first = i; break; } if (i === 11) first = 12; }
+  return [first, first+1].filter(i => i < 12);
+}
+const canSee = (p, i) => p.access !== 'none' || (p.self && demoMonths(p).includes(i));
+
+/* ---------- Навигация ---------- */
+const app = document.getElementById('app');
+function go(name, push = true){
+  if (push && S.cur) S.hist.push(S.cur);
+  S.cur = name;
+  const el = document.createElement('section');
+  el.className = 'screen ' + name;
+  el.innerHTML = SCREENS[name]();
+  app.appendChild(el);
+  const old = [...app.querySelectorAll('.screen')].filter(x => x !== el);
+  void el.offsetWidth; // фиксируем начальное состояние, чтобы переход сработал
+  el.classList.add('in');
+  setTimeout(() => old.forEach(o => o.remove()), 340);
+  (AFTER[name] || (() => {}))(el);
+  syncTgBack();
+}
+function back(){ const p = S.hist.pop(); if (p) go(p, false); }
+function rerender(){ const el = app.querySelector('.screen:last-of-type'); if (!el) return; el.innerHTML = SCREENS[S.cur](); (AFTER[S.cur] || (() => {}))(el); }
+function syncTgBack(){ if (!tg || !tg.initData) return; const b = tg.BackButton; ['splash','lang','main'].includes(S.cur) ? b.hide() : b.show(); }
+if (tg && tg.initData) tg.BackButton.onClick(back);
+
+const header = (mid = '') => `<header class="bar"><button class="ib" onclick="back()" aria-label="Назад">${I.back}</button>${mid}<span class="spacer"></span></header>`;
+
+/* ---------- Экраны ---------- */
+const SCREENS = {
+splash: () => `
+  <div class="brand"><div class="eyebrow">Прогностика</div><div class="year">2027</div></div>
+  <div class="loader"><i></i></div>`,
+
+lang: () => `
+  <div class="brand"><div class="eyebrow">Прогностика</div><div class="year">2027</div>
+    <p class="ask">Обери мову<br>Выбери язык</p></div>
+  <div class="bottom">
+    <button class="btn white" onclick="pickLang('uk')">Українська</button>
+    <button class="btn white" onclick="pickLang('ru')">Русский</button>
+  </div>`,
+
+name: () => `
+  ${header(S.mode === 'self' ? `<span class="step">${t('step',{n:1})}</span>` : '')}
+  <div class="scroll"><div class="form">
+    <h1 class="h1">${t(S.mode === 'self' ? 'nameQ' : 'nameQo')}</h1>
+    <p class="lead">${t(S.mode === 'self' ? 'nameHint' : 'nameHinto')}</p>
+    <div class="field"><input class="input" id="nm" maxlength="32" autocomplete="given-name" placeholder="${t('namePh')}" value="${esc(S.draft.name)}"></div>
+  </div></div>
+  <div class="bottom"><button class="btn primary" id="nx" onclick="go('gender')">${t('next')}</button></div>`,
+
+gender: () => `
+  ${header(S.mode === 'self' ? `<span class="step">${t('step',{n:2})}</span>` : '')}
+  <div class="scroll"><div class="form">
+    <h1 class="h1">${t(S.mode === 'self' ? 'genderQ' : 'genderQo')}</h1>
+    <p class="lead">${t('genderHint')}</p>
+    <div class="field">
+      ${['f','m'].map(g => `<button class="choice ${S.draft.gender === g ? 'on' : ''}" onclick="setGender('${g}')">${t(g === 'f' ? 'female' : 'male')}<span class="ck">${I.check}</span></button>`).join('')}
+    </div>
+  </div></div>
+  <div class="bottom"><button class="btn primary" ${S.draft.gender ? '' : 'disabled'} onclick="go('dob')">${t('next')}</button></div>`,
+
+dob: () => {
+  const D = S.draft, y = +D.y || 2001, m = D.m === '' ? 0 : +D.m;
+  const days = Array.from({length: dim(y, m)}, (_, i) => i+1);
+  const years = []; for (let i = 2012; i >= 1935; i--) years.push(i);
+  const sel = (id, ph, opts, val) => `<div class="sel"><select id="${id}" class="${val === '' ? 'empty' : ''}" aria-label="${ph}"><option value="" ${val === '' ? 'selected' : ''} disabled>${ph}</option>${opts.map(([v, l]) => `<option value="${v}" ${String(val) === String(v) ? 'selected' : ''}>${l}</option>`).join('')}</select>${I.chev}</div>`;
+  return `
+  ${header(S.mode === 'self' ? `<span class="step">${t('step',{n:3})}</span>` : '')}
+  <div class="scroll"><div class="form">
+    <h1 class="h1">${t('dobQ')}</h1>
+    <p class="lead">${t('dobHint')}</p>
+    <div class="field dob">
+      ${sel('dd', t('day'), days.map(d => [d, d]), D.d)}
+      ${sel('mm', t('month'), MONTHS[S.lang].map((n, i) => [i, n]), D.m)}
+      ${sel('yy', t('year'), years.map(v => [v, v]), D.y)}
+    </div>
+  </div></div>
+  <div class="bottom"><button class="btn primary" id="nx" onclick="go('confirm')">${t('next')}</button></div>`;
+},
+
+confirm: () => {
+  const D = S.draft, nd = newYearDate(D);
+  return `
+  ${header()}
+  <div class="scroll"><div class="form">
+    <h1 class="h1">${t('confirmT')}</h1>
+    <div class="rows">
+      <div class="row"><span class="k">${t('name')}</span><span class="v">${esc(D.name)}</span></div>
+      <div class="row"><span class="k">${t('gender')}</span><span class="v">${t(D.gender === 'f' ? 'female' : 'male')}</span></div>
+      <div class="row"><span class="k">${t('dob')}</span><span class="v">${pad(D.d)}.${pad(D.m+1)}.${D.y}</span></div>
+    </div>
+    <div class="note">${I.lock}<span>${t('confirmWarn')}</span></div>
+    <div class="horizon"><span class="k">${t(S.mode === 'self' ? 'newYear' : 'newYearO')}</span><span class="v">${fmt(nd, true)}</span></div>
+  </div></div>
+  <div class="bottom">
+    <button class="btn primary" onclick="confirmData()">${t('ok')}</button>
+    <button class="btn text" onclick="back()">${t('edit')}</button>
+  </div>`;
+},
+
+tariffs: () => {
+  const p = S.profiles[S.forIdx], other = !p.self;
+  const mDone = p.access !== 'none', all = p.access === 'all';
+  const price = s => `<span class="p">${s}<small>${t('uah')}</small></span>`;
+  return `
+  ${header()}
+  <div class="scroll">
+    <div class="tar-head">
+      <h1 class="h1">${other ? t('tarTo', {name: esc(p.name)}) : t('tarT')}</h1>
+      <p class="lead">${t('tarSub')}</p>
+    </div>
+    <button class="band b1 ${mDone ? 'done' : ''}" ${mDone ? '' : `onclick="paySheet('months')"`}>
+      <span class="n">${t('pM')}</span>${mDone ? `<span class="p">${t('opened')}</span>` : price(850)}
+      <span class="d">${t('pMd')}</span>
+      ${S.promo && !mDone ? `<span class="x">${t('gift')}</span>` : ''}
+    </button>
+    ${mDone ? '' : `<button class="band b2" onclick="paySheet('all')">
+      <span class="n">${t('pA')}</span>${price('1100')}
+      <span class="d">${t('pAd')}</span><span class="x">${t('save')}</span>
+    </button>`}
+    <button class="band b3 ${mDone ? '' : 'off'} ${all ? 'done' : ''}" ${mDone && !all ? `onclick="paySheet('year')"` : ''}>
+      <span class="n">${t('pY')}</span>${all ? `<span class="p">${t('opened')}</span>` : price(400)}
+      <span class="d">${t('pYd')}</span>
+      ${mDone ? '' : `<span class="x">${t('yLock')}</span>`}
+    </button>
+    <div class="links">
+      ${!mDone && !S.promo ? `<button class="link" onclick="promoSheet()">${t('promo')}</button>` : ''}
+      ${other ? `<button class="link muted" onclick="toMain()">${t('later')}</button>` : (!mDone ? `<button class="link muted" onclick="toMain()">${t('demo')}</button>` : '')}
+    </div>
+  </div>`;
+},
+
+main: () => {
+  const p = prof(); const yearTab = S.tab === 'year' && p.access === 'all';
+  if (S.month == null) S.month = p.self ? (demoMonths(p)[0] ?? 0) : 0;
+  const i = S.month, [s, e] = monthRange(p, i);
+  const acts = `<div class="acts"><button class="ib light" onclick="gearSheet()" aria-label="Настройки">${I.gear}</button><button class="ib light" onclick="go('profile')" aria-label="${t('profile')}">${I.user}</button></div>`;
+  const tabs = p.access === 'all'
+    ? `<div class="tabs"><button class="${!yearTab ? 'on' : ''}" onclick="setTab('months')">${t('tM')}</button><button class="${yearTab ? 'on' : ''}" onclick="setTab('year')">${t('tY')}</button></div>`
+    : `<div class="tabs"><button class="on" style="cursor:default">${t('tM')}</button></div>`;
+  const who = p.self ? '' : `<div class="who">${t('tarTo', {name: esc(p.name)})}</div>`;
+
+  if (yearTab){
+    const ys = newYearDate(p), ye = new Date(2028, p.m, Math.min(p.d, dim(2028, p.m)));
+    return `
+    <div class="field-top"><div class="top">${tabs}${acts}</div>
+      <div class="meta">${who}<div class="eyebrow">${t('py')}</div><div class="mname">2027</div>
+        <div class="dates">${t('from')} ${fmt(ys, true)} ${t('to')} ${fmt(ye, true)}</div></div></div>
+    <div class="scroll"><div class="content">
+      <div class="sec"><h3>${t('yW')}</h3><p>${SAMPLE[S.lang].yW}</p></div>
+      <div class="sec"><h3>${t('yL')}</h3><p>${SAMPLE[S.lang].yL}</p></div>
+    </div></div>`;
+  }
+
+  const full = p.access !== 'none', vis = canSee(p, i), dm = p.self ? demoMonths(p) : [];
+  const keys = ['s1','s2','s3','s4'];
+  let body;
+  if (full) body = keys.map(k => `<div class="sec"><h3>${t(k)}</h3><p>${SAMPLE[S.lang][k]}</p></div>`).join('');
+  else if (vis) body = keys.map(k => k === 's2'
+      ? `<div class="sec"><h3>${t(k)}</h3><p>${SAMPLE[S.lang][k]}</p></div>`
+      : `<div class="sec lock"><h3>${I.lock}${t(k)}</h3><p>${t('lockLine')}</p></div>`).join('');
+  else body = p.self
+      ? `<div class="closed"><div class="t">${t('closedT')}</div><p class="d">${t('closedD')}</p></div>`
+      : `<div class="closed"><div class="t">${t('closedO', {name: esc(p.name)})}</div></div>`;
+
+  return `
+  <div class="field-top"><div class="top">${tabs}${acts}</div>
+    <div class="meta">${who}<div class="eyebrow">${t('pm', {n: i+1})}</div><div class="mname">${MONTHS[S.lang][i]}</div>
+      <div class="dates">${t('from')} ${fmt(s)} ${t('to')} ${fmt(e)}${p.d > 15 ? `<button class="ii" onclick="shiftSheet()" aria-label="${t('shiftT')}">i</button>` : ''}</div></div></div>
+  <div class="scroll">
+    <div class="ruler-head"><span class="y">2027</span><button class="chip" onclick="monthsSheet()">${I.grid}${t('all')}</button></div>
+    <div class="ruler">${MSHORT[S.lang].map((n, k) => `<button class="tick ${k === i ? 'on' : ''} ${full || dm.includes(k) ? 'av' : ''}" onclick="setMonth(${k})" aria-label="${MONTHS[S.lang][k]}"><i></i><span>${n}</span></button>`).join('')}</div>
+    <div class="content">${body}</div>
+  </div>
+  ${full ? '' : `<div class="bottom cta"><button class="btn primary split" onclick="openTariffs(${S.active})"><span>${p.self ? t('cta') : t('buyFor')}</span><span>${p.self ? '850 ' + t('uah') : ''}</span></button></div>`}`;
+},
+
+profile: () => {
+  const st = a => a === 'all' ? `<span class="st open">${t('allOpen')}</span>` : a === 'months' ? `<span class="st open">${t('mOnly')}</span>` : `<span class="st">${t('closed')}</span>`;
+  const me = S.profiles[0];
+  return `
+  <header class="bar"><button class="ib" onclick="back()" aria-label="Назад">${I.back}</button><span class="title">${t('profile')}</span><span class="spacer"></span></header>
+  <div class="scroll" style="padding-bottom:32px">
+    <div class="group"><div class="rows">
+      <div class="row"><span class="k">${t('name')}</span><span class="v">${esc(me.name)}</span></div>
+      <div class="row"><span class="k">${t('dob')}</span><span class="v">${pad(me.d)}.${pad(me.m+1)}.${me.y}</span></div>
+      <div class="row"><span class="k">${t('gender')}</span><span class="v">${t(me.gender === 'f' ? 'female' : 'male')}</span></div>
+      <button class="row" onclick="toggleLang()"><span class="k">${t('lang')}</span><span class="v">${t('langV')}${I.right}</span></button>
+    </div></div>
+    <p class="fine">${t('fixed')}</p>
+
+    <div class="group"><span class="eyebrow">${t('forecasts')}</span><div class="rows">
+      <div class="row"><span class="k">${t('pM')}</span>${me.access === 'none' ? `<button class="v acc" onclick="openTariffs(0)">${t('buy')}</button>` : `<span class="v">${t('opened')}</span>`}</div>
+      <div class="row"><span class="k">${t('pY')}</span>${me.access === 'all' ? `<span class="v">${t('opened')}</span>` : me.access === 'months' ? `<button class="v acc" onclick="openTariffs(0)">${t('buy')}</button>` : `<span class="v" style="color:var(--ink-3)">${t('notBought')}</span>`}</div>
+    </div></div>
+
+    <div class="group"><span class="eyebrow">${t('people')}</span><div class="rows">
+      ${S.profiles.map((p, k) => `<button class="row" onclick="switchTo(${k})"><span class="who"><span class="dot ${k === S.active ? 'on' : ''}">${k === S.active ? I.check : ''}</span>${p.self ? t('me') : esc(p.name)}</span>${st(p.access)}</button>`).join('')}
+      <button class="row add" onclick="addPerson()">${I.plus}${t('add')}</button>
+    </div></div>
+  </div>`;
+},
+};
+
+/* ---------- Поведение экранов ---------- */
+const AFTER = {
+  splash: () => setTimeout(() => S.cur === 'splash' && go('lang', false), 2500),
+  name: el => {
+    const inp = el.querySelector('#nm'), nx = el.querySelector('#nx');
+    const upd = () => { S.draft.name = inp.value.trim(); nx.disabled = !S.draft.name; };
+    inp.addEventListener('input', upd); upd();
+    inp.addEventListener('keydown', e => { if (e.key === 'Enter' && S.draft.name) go('gender'); });
+  },
+  dob: el => {
+    const nx = el.querySelector('#nx');
+    const ok = () => { const D = S.draft; nx.disabled = D.d === '' || D.m === '' || D.y === ''; };
+    el.querySelectorAll('select').forEach(s => s.addEventListener('change', () => {
+      const D = S.draft, v = s.value === '' ? '' : +s.value;
+      if (s.id === 'dd') D.d = v; if (s.id === 'mm') D.m = v; if (s.id === 'yy') D.y = v;
+      if (D.d !== '' && D.m !== '') D.d = Math.min(D.d, dim(+D.y || 2001, D.m));
+      if (s.id !== 'dd') rerender(); else { s.classList.remove('empty'); ok(); }
+    }));
+    ok();
+  },
+};
+
+function pickLang(l){ S.lang = l; document.documentElement.lang = l === 'uk' ? 'uk' : 'ru'; S.mode = 'self'; S.draft = {name:'', gender:'', d:'', m:'', y:''}; go('name'); }
+function setGender(g){ S.draft.gender = g; rerender(); }
+function confirmData(){
+  const D = S.draft;
+  const p = {name: D.name, gender: D.gender, d: D.d, m: D.m, y: D.y, access: 'none', self: S.mode === 'self'};
+  /* API: сохранить профиль на сервере */
+  if (p.self){ S.profiles = [p]; S.active = 0; S.forIdx = 0; }
+  else { S.profiles.push(p); S.forIdx = S.profiles.length - 1; }
+  S.hist = []; S.cur = null; go('tariffs');
+}
+function openTariffs(k){ S.forIdx = k; go('tariffs'); }
+function toMain(){ S.active = S.forIdx; S.month = null; S.tab = 'months'; S.hist = []; S.cur = null; go('main'); }
+function setMonth(k){ S.month = k; rerender(); }
+function setTab(x){ S.tab = x; rerender(); }
+function switchTo(k){ S.active = k; S.month = null; S.tab = 'months'; S.hist = []; S.cur = null; go('main'); }
+function addPerson(){ S.mode = 'other'; S.draft = {name:'', gender:'', d:'', m:'', y:''}; go('name'); }
+function toggleLang(){ S.lang = S.lang === 'ru' ? 'uk' : 'ru'; rerender(); }
+
+/* ---------- Нижние шторки ---------- */
+function sheet(title, html){
+  closeSheet(true);
+  const ov = document.createElement('div'); ov.className = 'ov'; ov.onclick = () => closeSheet();
+  const sh = document.createElement('div'); sh.className = 'sheet';
+  sh.innerHTML = `<div class="sh-head"><span class="t">${title}</span><button class="ib ghost" onclick="closeSheet()" aria-label="Закрыть">${I.close}</button></div><div class="sh-body">${html}</div><div style="height:calc(16px + var(--safe-b))"></div>`;
+  app.append(ov, sh);
+  void sh.offsetWidth;
+  ov.classList.add('in'); sh.classList.add('in');
+  return sh;
+}
+function closeSheet(now){
+  app.querySelectorAll('.ov,.sheet').forEach(x => { if (now) return x.remove(); x.classList.remove('in'); setTimeout(() => x.remove(), 380); });
+}
+
+function paySheet(plan){
+  const sum = {months: 850, year: 400, all: 1100}[plan];
+  const name = {months: t('pM'), year: t('pY'), all: t('pA')}[plan];
+  sheet(t('payT'), `
+    <p>${name}${S.profiles[S.forIdx].self ? '' : ', ' + esc(S.profiles[S.forIdx].name)}</p>
+    <div class="amount">${sum}<small>${t('uah')}</small></div>
+    <p>${t('payNote')}</p>
+    ${plan === 'months' && S.promo ? `<p class="ok-line">${t('gift')}</p>` : ''}
+    <div style="height:20px"></div>
+    <button class="btn primary" onclick="paid('${plan}')">${t('pay', {sum})}</button>`);
+}
+/* API: здесь программист вызывает monoPay и ждёт вебхук об успешной оплате */
+function paid(plan){
+  const p = S.profiles[S.forIdx];
+  if (plan === 'months') p.access = S.promo ? 'all' : 'months';
+  else p.access = 'all';
+  closeSheet(); toMain();
+}
+function promoSheet(){
+  const sh = sheet(t('promoT'), `
+    <input class="input" id="pc" placeholder="${t('promoPh')}" autocomplete="off">
+    <div style="height:16px"></div>
+    <button class="btn primary" id="pa" disabled>${t('apply')}</button>`);
+  const inp = sh.querySelector('#pc'), b = sh.querySelector('#pa');
+  inp.addEventListener('input', () => b.disabled = !inp.value.trim());
+  /* API: проверка промокода на сервере. В прототипе подходит любой. */
+  b.onclick = () => { S.promo = true; closeSheet(); rerender(); };
+}
+function shiftSheet(){ sheet(t('shiftT'), `<p>${t('shiftD')}</p>`); }
+function monthsSheet(){
+  const p = prof(), full = p.access !== 'none';
+  sheet(t('all'), `<div class="months">${MONTHS[S.lang].map((n, k) => {
+    const [s, e] = monthRange(p, k), av = full || canSee(p, k);
+    return `<button class="mcell ${k === S.month ? 'on' : ''} ${av ? '' : 'lk'}" onclick="closeSheet();setMonth(${k})"><span class="n">${n}${av ? '' : I.lock}</span><span class="d">${t('from')} ${fmt(s)}<br>${t('to')} ${fmt(e)}</span></button>`;
+  }).join('')}</div>`);
+}
+function gearSheet(){
+  const p = prof();
+  const seg = (items, cur, fn) => `<div class="seg">${items.map(([v, l]) => `<button class="${v === cur ? 'on' : ''}" onclick="${fn}('${v}')">${l}</button>`).join('')}</div>`;
+  sheet(t('gearT'), `
+    <div class="gear-row"><span class="label">${t('acc')}</span>${seg([['none', t('accN')], ['months', t('accM')], ['all', t('accA')]], p.access, 'gSetAcc')}</div>
+    <div class="gear-row"><span class="label">${t('gender')}</span>${seg([['f', t('female')], ['m', t('male')]], p.gender, 'gSetG')}</div>
+    <div class="gear-row"><span class="label">${t('lang')}</span>${seg([['uk', 'Українська'], ['ru', 'Русский']], S.lang, 'gSetL')}</div>
+    <div class="gear-row"><button class="btn secondary" onclick="restart()">${t('restart')}</button></div>`);
+}
+function gSetAcc(v){ prof().access = v; if (v !== 'all') S.tab = 'months'; rerender(); gearSheet(); }
+function gSetG(v){ prof().gender = v; rerender(); gearSheet(); }
+function gSetL(v){ S.lang = v; rerender(); gearSheet(); }
+function restart(){ closeSheet(true); S.profiles = []; S.promo = false; S.hist = []; S.cur = null; S.month = null; S.tab = 'months'; go('splash', false); }
+
+/* Быстрый вход для просмотра: ?demo открывает главный экран с тестовым профилем */
+if (location.search.includes('demo')){
+  S.profiles = [{name:'Мария', gender:'f', d:25, m:7, y:1992, access:'none', self:true}];
+  S.hist = []; go('main', false);
+} else go('splash', false);
+</script>
+</body>
+</html>
