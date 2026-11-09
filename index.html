@@ -15,12 +15,13 @@
   --ink:#071B48;
   --ink-2:rgba(7,27,72,.64);
   --ink-3:rgba(7,27,72,.40);
-  --accent:#800020;
+  --accent:#B3122F; /* v20: ярче, чем #800020 */
   --bg:#FFFFFF;
   --line:#A5B2C5;
   --line-soft:rgba(165,178,197,.42);
-  --mist:#F3F5F9;
-  --burg:radial-gradient(ellipse at 80% 100%,#A51B38 0%,#800020 48%,#570019 100%);
+  --mist:#F7F8FB; /* v20: светлее */
+  --burg:radial-gradient(ellipse at 80% 100%,#E5415D 0%,#B3122F 50%,#7E0B22 100%);
+  --burg-head:radial-gradient(120% 130% at 92% -10%,rgba(244,86,112,.85) 0%,rgba(244,86,112,0) 55%),linear-gradient(165deg,#8C0C26 0%,#B3122F 62%,#C81B3C 100%);
   --f-display:'Montserrat',system-ui,sans-serif;
   --f-text:'Inter',system-ui,sans-serif;
   --g:24px;
@@ -195,7 +196,7 @@ input,select{font:inherit;color:inherit}
 .glass > svg{width:28px;height:28px;flex-shrink:0}
 
 /* Шапка месяца и года: синее поле */
-.head{flex-shrink:0;background:var(--ink);color:#fff;padding:calc(var(--safe-t) + 8px) var(--g) 8px}
+.head{flex-shrink:0;background:var(--burg-head);color:#fff;padding:calc(var(--safe-t) + 8px) var(--g) 8px}
 .head .top{display:flex;align-items:center;justify-content:space-between;height:48px;margin:0 -10px}
 .plain{width:44px;height:44px;display:grid;place-items:center;color:#fff;border-radius:12px;transition:background .2s,opacity .2s}
 .plain:active{background:rgba(255,255,255,.08)}
@@ -223,7 +224,7 @@ input,select{font:inherit;color:inherit}
 /* Блоки прогноза: серые карточки, заголовки бордовые (версия 11) */
 .content{padding:16px 16px 28px;display:flex;flex-direction:column;gap:12px}
 .sec{background:var(--mist);border-radius:22px;padding:22px 20px 24px}
-.sec h3{font:600 18px/1.25 var(--f-display);color:var(--accent);display:flex;align-items:center;gap:8px}
+.sec h3{font:600 18px/1.25 var(--f-display);color:var(--ink);display:flex;align-items:center;gap:8px}
 .sec p{font:400 16px/1.65 var(--f-text);color:var(--ink);margin-top:10px}
 .txt{margin-top:12px;font:400 16px/1.65 var(--f-text);color:var(--ink)}
 .txt p{margin:0}
@@ -231,14 +232,12 @@ input,select{font:inherit;color:inherit}
 .txt b{font-weight:600}
 .txt ul{list-style:none;display:flex;flex-direction:column;gap:10px}
 .txt li{position:relative;padding-left:22px}
-.txt li::before{content:"";position:absolute;left:0;top:.8em;width:10px;height:2px;border-radius:1px;background:var(--accent)}
+.txt li::before{content:"";position:absolute;left:0;top:.8em;width:10px;height:2px;border-radius:1px;background:var(--ink)}
 /* Свёрнутые блоки и появление при прокрутке (версия 17) */
 .sec-h{display:block;width:100%;text-align:left}
 .fold .tw{position:relative;max-height:9.2em;overflow:hidden;transition:max-height .55s var(--ease)}
-.fold .tw::after{content:"";position:absolute;left:0;right:0;bottom:0;height:3.2em;background:linear-gradient(180deg,rgba(243,245,249,0),var(--mist));transition:opacity .35s ease;pointer-events:none}
-.fold.open .tw::after,.fold.short .tw::after{opacity:0}
 .fold.short .tw{max-height:none}
-.more{margin-top:2px;margin-bottom:-8px;min-height:44px;font:600 14px/1 var(--f-display);color:var(--accent);display:inline-flex;align-items:center}
+.more{margin-top:2px;margin-bottom:-8px;min-height:44px;font:600 14px/1 var(--f-display);color:var(--ink);display:inline-flex;align-items:center}
 .fold.short .more{display:none}
 .sec.rv{opacity:0;transform:translateY(48px) scale(.94);transform-origin:50% 0}
 .sec.rv h3,.sec.rv .tw,.sec.rv .more{opacity:0;transform:translateY(14px)}
@@ -248,7 +247,7 @@ input,select{font:inherit;color:inherit}
 .sec.rv-in .tw{transition-delay:calc(var(--rd,0ms) + 230ms),calc(var(--rd,0ms) + 230ms),0ms}
 .sec.rv-in .more{transition-delay:calc(var(--rd,0ms) + 320ms)}
 .rprog{position:absolute;left:0;right:0;bottom:0;height:2px;pointer-events:none}
-.rprog i{display:block;height:100%;background:#C23A55;transform-origin:left;transform:scaleX(0)}
+.rprog i{display:block;height:100%;background:rgba(255,255,255,.85);transform-origin:left;transform:scaleX(0)}
 .head{position:relative}
 .sec.lock{background:var(--mist)}
 .sec.lock h3{color:var(--ink-3)}
@@ -328,7 +327,7 @@ if (tg && tg.initData) {
 const DARK = ['splash','home','main','year','success'];
 function tgHeader(name){
   if (!tg || !tg.initData || !tg.isVersionAtLeast || !tg.isVersionAtLeast('6.1')) return;
-  try { tg.setHeaderColor(DARK.includes(name) ? '#071B48' : '#FFFFFF'); } catch (e) {}
+  try { tg.setHeaderColor(['main','year'].includes(name) ? '#8C0C26' : DARK.includes(name) ? '#071B48' : '#FFFFFF'); } catch (e) {}
 }
 
 
@@ -363,12 +362,12 @@ ru:{
   payT:'Оплата', pay:'Оплатить {sum} грн', payNote:'После оплаты прогноз откроется сразу.',
   tM:'Месяцы', tY:'Год', pm:'Личный месяц {n} из 12', from:'с', to:'по', all:'Все месяцы',
  
-  cta:'Открыть все 12 месяцев', closedT:'Этот месяц пока закрыт', closedD:'В демо открыты январь и февраль. Остальные месяцы откроются после покупки.',
+  cta:'Открыть все 12 месяцев', closedT:'Этот месяц пока закрыт', closedD:'В демо открыт раздел «Работа» на январь и февраль. Остальное откроется после покупки.',
   closedO:'Прогноз для {name} откроется после покупки', buyFor:'Открыть прогноз',
   py:'Личный год', yW:'Работа', yL:'Личная жизнь',
   profile:'Профиль', me:'Мой прогноз', people:'Чей прогноз смотреть', add:'Добавить человека', closed:'Закрыт', mOnly:'Месяцы', allOpen:'Открыт',
   fixed:'Дату рождения и пол изменить нельзя.', lang:'Язык', langV:'Русский', forecasts:'Мои прогнозы', notBought:'Не куплен', buy:'Купить',
-  gearT:'Режим прототипа', acc:'Доступ', accN:'Демо', accM:'Месяцы', accA:'Всё', restart:'Начать заново', gvT:'Вариант выбора пола', more:'Читать далее', less:'Свернуть', paidT:'Оплата прошла успешно', paidD_months:'Прогноз по месяцам открыт: все 12 месяцев уже ждут тебя.', paidD_year:'Прогноз на год открыт.', paidD_all:'Открыты прогноз по месяцам и прогноз на год.', payFmt:'Выбери формат оплаты', demoBtn:'Посмотреть демо', toForecast:'Перейти к прогнозу', promoOkShort:'Промокод применён: прогноз на год в подарок к месяцам.', home:'На главную', mValid:'Твой прогноз на {m} действует с {s} по {e}.', mValidO:'Прогноз на {m} действует с {s} по {e}.', yValid:'Твой годовой прогноз действует с {s} по {e}.', yValidO:'Годовой прогноз действует с {s} по {e}.', bought:'Куплено', hM:'Месячная', hMd:'На каждый месяц 2027', hY:'Годовая', hYd:'На весь год', yClosed:'Прогноз на год пока закрыт', yClosedD:'Его можно купить после прогноза по месяцам или сразу взять тариф «Всё вместе».', yCta:'Открыть прогноз на год', bornOn:'Дата рождения {d}',
+  gearT:'Режим прототипа', acc:'Доступ', accN:'Демо', accM:'Месяцы', accA:'Всё', restart:'Начать заново', gvT:'Вариант выбора пола', lockLine:'Откроется после покупки прогноза', more:'Читать далее', less:'Свернуть', paidT:'Оплата прошла успешно', paidD_months:'Прогноз по месяцам открыт: все 12 месяцев уже ждут тебя.', paidD_year:'Прогноз на год открыт.', paidD_all:'Открыты прогноз по месяцам и прогноз на год.', payFmt:'Выбери формат оплаты', demoBtn:'Посмотреть демо', toForecast:'Перейти к прогнозу', promoOkShort:'Промокод применён: прогноз на год в подарок к месяцам.', home:'На главную', mValid:'Твой прогноз на {m} действует с {s} по {e}.', mValidO:'Прогноз на {m} действует с {s} по {e}.', yValid:'Твой годовой прогноз действует с {s} по {e}.', yValidO:'Годовой прогноз действует с {s} по {e}.', bought:'Куплено', hM:'Месячная', hMd:'На каждый месяц 2027', hY:'Годовая', hYd:'На весь год', yClosed:'Прогноз на год пока закрыт', yClosedD:'Его можно купить после прогноза по месяцам или сразу взять тариф «Всё вместе».', yCta:'Открыть прогноз на год', bornOn:'Дата рождения {d}',
 },
 uk:{
   next:'Далі',
@@ -383,12 +382,12 @@ uk:{
   payT:'Оплата', pay:'Сплатити {sum} грн', payNote:'Після оплати прогноз відкриється одразу.',
   tM:'Місяці', tY:'Рік', pm:'Особистий місяць {n} з 12', from:'з', to:'по', all:'Усі місяці',
  
-  cta:'Відкрити всі 12 місяців', closedT:'Цей місяць поки закритий', closedD:'У демо відкрито січень і лютий. Решта місяців відкриється після покупки.',
+  cta:'Відкрити всі 12 місяців', closedT:'Цей місяць поки закритий', closedD:'У демо відкрито розділ «Робота» на січень і лютий. Решта відкриється після покупки.',
   closedO:'Прогноз для {name} відкриється після покупки', buyFor:'Відкрити прогноз',
   py:'Особистий рік', yW:'Робота', yL:'Особисте життя',
   profile:'Профіль', me:'Мій прогноз', people:'Чий прогноз дивитися', add:'Додати людину', closed:'Закрито', mOnly:'Місяці', allOpen:'Відкрито',
   fixed:'Дату народження і стать змінити не можна.', lang:'Мова', langV:'Українська', forecasts:'Мої прогнози', notBought:'Не куплено', buy:'Купити',
-  gearT:'Режим прототипу', acc:'Доступ', accN:'Демо', accM:'Місяці', accA:'Усе', restart:'Почати заново', gvT:'Варіант вибору статі', more:'Читати далі', less:'Згорнути', paidT:'Оплата пройшла успішно', paidD_months:'Прогноз по місяцях відкрито: усі 12 місяців уже чекають на тебе.', paidD_year:'Прогноз на рік відкрито.', paidD_all:'Відкрито прогноз по місяцях і прогноз на рік.', payFmt:'Обери формат оплати', demoBtn:'Переглянути демо', toForecast:'Перейти до прогнозу', promoOkShort:'Промокод застосовано: прогноз на рік у подарунок до місяців.', home:'На головну', mValid:'Твій прогноз на {m} діє з {s} по {e}.', mValidO:'Прогноз на {m} діє з {s} по {e}.', yValid:'Твій річний прогноз діє з {s} по {e}.', yValidO:'Річний прогноз діє з {s} по {e}.', bought:'Куплено', hM:'Місячна', hMd:'На кожен місяць 2027', hY:'Річна', hYd:'На весь рік', yClosed:'Прогноз на рік поки закритий', yClosedD:'Його можна купити після прогнозу по місяцях або одразу взяти тариф «Усе разом».', yCta:'Відкрити прогноз на рік', bornOn:'Дата народження {d}',
+  gearT:'Режим прототипу', acc:'Доступ', accN:'Демо', accM:'Місяці', accA:'Усе', restart:'Почати заново', gvT:'Варіант вибору статі', lockLine:'Відкриється після покупки прогнозу', more:'Читати далі', less:'Згорнути', paidT:'Оплата пройшла успішно', paidD_months:'Прогноз по місяцях відкрито: усі 12 місяців уже чекають на тебе.', paidD_year:'Прогноз на рік відкрито.', paidD_all:'Відкрито прогноз по місяцях і прогноз на рік.', payFmt:'Обери формат оплати', demoBtn:'Переглянути демо', toForecast:'Перейти до прогнозу', promoOkShort:'Промокод застосовано: прогноз на рік у подарунок до місяців.', home:'На головну', mValid:'Твій прогноз на {m} діє з {s} по {e}.', mValidO:'Прогноз на {m} діє з {s} по {e}.', yValid:'Твій річний прогноз діє з {s} по {e}.', yValidO:'Річний прогноз діє з {s} по {e}.', bought:'Куплено', hM:'Місячна', hMd:'На кожен місяць 2027', hY:'Річна', hYd:'На весь рік', yClosed:'Прогноз на рік поки закритий', yClosedD:'Його можна купити після прогнозу по місяцях або одразу взяти тариф «Усе разом».', yCta:'Відкрити прогноз на рік', bornOn:'Дата народження {d}',
 }};
 
 const MONTHS = {
@@ -399,7 +398,7 @@ const MSHORT = {
   uk:['Січ','Лют','Бер','Кві','Тра','Чер','Лип','Сер','Вер','Жов','Лис','Гру']};
 
 /* API: тексты прогнозов придут с сервера. Здесь пример наполнения. */
-/* API: текст месяца придёт с сервера в виде блоков {t: заголовок, h: html}.
+/* API: текст месяца придёт с сервера в виде блоков {t: заголовок, h: html, w: 1 для блока «Работа», он открыт в демо}.
    Пример ниже: трактовка «Число 7» от клиентки (UA: перевод для демонстрации). */
 const MONTH_TEXT = {
 ru:[
@@ -409,6 +408,10 @@ ru:[
 <p>Если ты готова идти вперёд, судьба подкинет нужных людей и возможности.</p>
 <p>Месяц идеально подходит для <b>путешествий, командировок, покупок автомобиля, переездов, масштабирования бизнеса, оформления документов и карьерного роста.</b> Это энергия дороги — как в буквальном, так и в символическом смысле.</p>
 <p>Главное — <b>двигаться.</b> Даже маленькими шагами, но каждый день.</p>`},
+  {t:'Работа', w:1, h:`<p>В работе месяц про <b>действие и результат.</b> Хорошо идут задачи, которые требуют скорости, переговоров и поездок.</p>
+<p>Если давно откладывала запуск проекта, повышение цен или разговор о новой должности, сейчас подходящее время.</p>
+<p>Возможны командировки и новые партнёры издалека. Документы и договоры лучше проверять дважды.</p>
+<p>Главное — <b>не распыляться:</b> выбери одну цель и веди её до результата.</p>`},
   {t:'Отношения', h:`<p>В отношениях всё обостряется: эмоции, страсть, желание контроля. Если есть внутреннее напряжение — могут вспыхивать ссоры буквально на пустом месте. Ты чувствуешь, что хочешь быть услышанной, признанной, но важно не соревноваться, а <b>договариваться.</b></p>
 <p>Если рядом сильный партнёр — вас ждёт совместный прорыв, вы можете достичь общей цели.</p>
 <p>Если отношения держатся на борьбе — появится усталость и желание свободы.</p>
@@ -438,6 +441,10 @@ uk:[
 <p>Якщо ти готова йти вперед, доля підкине потрібних людей і можливості.</p>
 <p>Місяць ідеально підходить для <b>подорожей, відряджень, купівлі автомобіля, переїздів, масштабування бізнесу, оформлення документів і кар’єрного зростання.</b> Це енергія дороги — як у буквальному, так і в символічному сенсі.</p>
 <p>Головне — <b>рухатися.</b> Навіть маленькими кроками, але щодня.</p>`},
+  {t:'Робота', w:1, h:`<p>У роботі місяць про <b>дію і результат.</b> Добре йдуть задачі, які потребують швидкості, переговорів і поїздок.</p>
+<p>Якщо давно відкладала запуск проєкту, підвищення цін або розмову про нову посаду, зараз слушний час.</p>
+<p>Можливі відрядження і нові партнери здалеку. Документи й договори краще перевіряти двічі.</p>
+<p>Головне — <b>не розпорошуватися:</b> обери одну ціль і веди її до результату.</p>`},
   {t:'Стосунки', h:`<p>У стосунках усе загострюється: емоції, пристрасть, бажання контролю. Якщо є внутрішня напруга — можуть спалахувати сварки буквально на порожньому місці. Ти відчуваєш, що хочеш бути почутою, визнаною, але важливо не змагатися, а <b>домовлятися.</b></p>
 <p>Якщо поруч сильний партнер — на вас чекає спільний прорив, ви можете досягти спільної мети.</p>
 <p>Якщо стосунки тримаються на боротьбі — з’явиться втома і бажання свободи.</p>
@@ -589,7 +596,15 @@ function go(name, push = true){
 function initRead(el){
   const sc = el.querySelector('.scroll'), head = el.querySelector('.head');
   if (!sc || !head || !el.querySelector('.content')) return;
-  el.querySelectorAll('.fold').forEach(f => { const tw = f.querySelector('.tw'); if (tw.scrollHeight <= tw.clientHeight + 8) f.classList.add('short'); });
+  /* Свёрнутый блок показывает только целые абзацы (не меньше одного), без обрезанных фраз */
+  el.querySelectorAll('.fold').forEach(f => {
+    const tw = f.querySelector('.tw'), items = [...tw.querySelectorAll('.txt > p, .txt > ul > li')], LIM = 175;
+    let h = 0;
+    for (const it of items){ const b = it.offsetTop + it.offsetHeight; if (b <= LIM || h === 0) h = b; else break; }
+    if (h >= tw.scrollHeight - 4){ f.classList.add('short'); tw.style.maxHeight = 'none'; return; }
+    tw.dataset.ch = h;
+    if (!f.classList.contains('open')){ tw.style.transition = 'none'; tw.style.maxHeight = h + 'px'; void tw.offsetHeight; tw.style.transition = ''; }
+  });
   if (!head.querySelector('.rprog')) head.insertAdjacentHTML('beforeend', '<div class="rprog"><i></i></div>');
   const bar = head.querySelector('.rprog i');
   const upd = () => { const max = sc.scrollHeight - sc.clientHeight; bar.style.transform = `scaleX(${max > 0 ? Math.min(1, sc.scrollTop / max) : 0})`; if (!RM) el.querySelector('.head').style.setProperty('--c', Math.min(1, sc.scrollTop / 140).toFixed(3)); };
@@ -606,11 +621,11 @@ function toggleSec(btn){
   const tw = f.querySelector('.tw'), more = f.querySelector('.more'), opening = !f.classList.contains('open');
   tw.style.maxHeight = (opening ? tw.clientHeight : tw.scrollHeight) + 'px'; void tw.offsetHeight;
   f.classList.toggle('open', opening);
-  tw.style.maxHeight = opening ? tw.scrollHeight + 'px' : '';
+  tw.style.maxHeight = (opening ? tw.scrollHeight : +tw.dataset.ch) + 'px';
   more.textContent = t(opening ? 'less' : 'more');
   if (opening){
     setTimeout(() => { if (f.classList.contains('open')) tw.style.maxHeight = 'none'; }, 560);
-    if (!RM){ const lim = tw.clientHeight - 30; let n = 0;
+    if (!RM){ const lim = +tw.dataset.ch - 4; let n = 0;
       [...tw.querySelectorAll('.txt > p, .txt li')].forEach(x => { if (x.offsetTop > lim) x.animate([{opacity:0, transform:'translateY(18px)'}, {opacity:1, transform:'none'}], {duration:560, delay: 60 + (n++) * 70, easing:'cubic-bezier(.2,1.12,.32,1)', fill:'backwards'}); }); }
   }
   else { const sc = f.closest('.scroll'); const top = f.getBoundingClientRect().top - sc.getBoundingClientRect().top; if (top < 0) sc.scrollBy({top: top - 12, behavior: RM ? 'auto' : 'smooth'}); }
@@ -802,9 +817,10 @@ main: () => {
   const full = p.access !== 'none', vis = canSee(p, i);
   const blocks = MONTH_TEXT[S.lang];
   const open = foldBlock;
+  const shut = b => `<div class="sec lock"><h3>${I.lock}${b.t}</h3><p>${t('lockLine')}</p></div>`;
   let body;
   if (full) body = blocks.map(open).join('');
-  else if (vis) body = blocks.map(open).join(''); /* демо: месяц открыт целиком */
+  else if (vis) body = blocks.map(b => b.w ? open(b) : shut(b)).join(''); /* демо: открыт только блок «Робота» */
   else body = p.self
     ? `<div class="closed"><div class="t">${t('closedT')}</div><p class="d">${t('closedD')}</p></div>`
     : `<div class="closed"><div class="t">${t('closedO', {name: esc(p.name)})}</div></div>`;
