@@ -1,0 +1,1221 @@
+<!doctype html>
+<html lang="ru">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover, maximum-scale=1">
+<title>Прогностика 2027</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600&family=Montserrat:wght@400;500;600;700&display=swap" rel="stylesheet">
+<link rel="preload" as="image" href="assets/bg.jpg">
+<link rel="preload" as="image" href="assets/cliff.webp">
+<script src="https://telegram.org/js/telegram-web-app.js"></script>
+<style>
+/* Прогностика 2027, вторая ветка прототипа (v2).
+   Пролёт в пещеру, онбординг с параллаксом, веер карт месяцев, анимированная оплата. */
+:root{
+  --ink:#071B48;
+  --ink-2:rgba(7,27,72,.64);
+  --ink-3:rgba(7,27,72,.40);
+  --accent:#B3122F;
+  --bg:#FFFFFF;
+  --line:#A5B2C5;
+  --line-soft:rgba(165,178,197,.42);
+  --mist:#F7F8FB;
+  --night:#070B1C;
+  --burg:radial-gradient(ellipse at 80% 100%,#E5415D 0%,#B3122F 50%,#7E0B22 100%);
+  --f-display:'Montserrat',system-ui,sans-serif;
+  --f-text:'Inter',system-ui,sans-serif;
+  --g:24px;
+  --safe-t:env(safe-area-inset-top,0px);
+  --safe-b:env(safe-area-inset-bottom,0px);
+  --ease:cubic-bezier(.32,.72,0,1);
+  --spring:cubic-bezier(.2,1.12,.32,1);
+}
+*{box-sizing:border-box;margin:0;padding:0;-webkit-tap-highlight-color:transparent}
+html{-webkit-text-size-adjust:100%;text-size-adjust:100%}
+html,body{height:100%}
+body{background:var(--bg);color:var(--ink);font-family:var(--f-text);-webkit-font-smoothing:antialiased;overflow:hidden}
+button{font:inherit;color:inherit;background:none;border:0;cursor:pointer}
+input{font:inherit;color:inherit}
+
+#app{position:relative;width:100%;height:var(--tg-viewport-stable-height,100dvh);overflow:hidden;background:var(--night)}
+@supports not (height:100dvh){ #app{height:var(--tg-viewport-stable-height,100vh)} }
+@media (min-width:600px){
+  body{display:grid;place-items:center;background:#E7EBF1}
+  #app{width:390px;height:min(844px,calc(100dvh - 48px));border-radius:36px;box-shadow:0 30px 80px rgba(7,27,72,.18)}
+  body.tg{display:block;background:var(--bg)}
+  body.tg #app{width:100%;max-width:560px;margin:0 auto;height:var(--tg-viewport-stable-height,100vh);border-radius:0;box-shadow:none}
+}
+
+.screen{position:absolute;top:0;right:0;bottom:0;left:0;display:flex;flex-direction:column;background:var(--bg);opacity:0;transform:translateX(42px);transition:opacity .35s ease,transform .6s var(--spring);overflow:hidden}
+.screen.in{opacity:1;transform:none}
+.screen.back{transform:translateX(-42px)}
+.screen.back.in{transform:none}
+.screen.fade{transform:scale(1.04);transition:opacity .9s ease,transform 1.2s var(--ease)}
+.screen.fade.in{transform:none}
+.screen.dark{background:var(--night);color:#fff}
+.rise{animation:rise .55s var(--ease) both;animation-delay:calc(var(--i, 0) * 55ms + 60ms)}
+@keyframes rise{from{opacity:0;transform:translateY(26px)}to{opacity:1;transform:none}}
+@keyframes tabin{from{transform:scaleX(0)}to{transform:scaleX(1)}}
+@media (prefers-reduced-motion: reduce){
+  *,*::before,*::after{animation-duration:.01ms !important;animation-delay:0s !important;transition-duration:.01ms !important}
+}
+.scroll{flex:1;overflow-y:auto;-webkit-overflow-scrolling:touch;scrollbar-width:thin;scrollbar-color:rgba(7,27,72,.16) transparent}
+.scroll::-webkit-scrollbar{width:6px}
+.scroll::-webkit-scrollbar-thumb{background:rgba(7,27,72,.16);border-radius:3px}
+
+/* Пылинки в пещере и звёзды в шапке */
+.dust{position:absolute;top:0;right:0;bottom:0;left:0;pointer-events:none;overflow:hidden}
+.dust i{position:absolute;width:var(--s);height:var(--s);border-radius:50%;background:rgba(255,222,200,.85);box-shadow:0 0 8px rgba(255,170,150,.7);opacity:0;animation:float var(--d) linear var(--dl) infinite}
+@keyframes float{0%{transform:translate(0,0);opacity:0}18%{opacity:.85}100%{transform:translate(var(--x),-140px);opacity:0}}
+.stars i{background:#fff;box-shadow:0 0 6px rgba(255,255,255,.8);animation:twinkle var(--d) ease-in-out var(--dl) infinite}
+@keyframes twinkle{0%,100%{opacity:.15}50%{opacity:.9}}
+
+/* ---------- 1. Пролёт в пещеру ---------- */
+.intro{background:#0B1F45;color:#fff;transition:none;cursor:pointer}
+.stage{position:absolute;top:0;right:0;bottom:0;left:0;overflow:hidden}
+.ly{position:absolute;background-size:100% 100%;will-change:transform;transform:scale(1)}
+.ly.bg{background-image:url(assets/bg.jpg)}
+.ly.cl{background-image:url(assets/cliff.webp)}
+.ly.gt{background-image:url(assets/goat.webp)}
+.intro.push .ly.bg{transform:scale(1.04);transition:transform 1.6s ease-out}
+.intro.push .ly.cl{transform:scale(1.09);transition:transform 1.6s ease-out}
+.intro.push .ly.gt{transform:scale(1.11);transition:transform 1.6s ease-out}
+.intro.fly .ly{transition:transform 1.7s cubic-bezier(.6,0,.22,1)}
+.intro.fly .ly.bg{transform:scale(2.4)}
+.intro.fly .ly.cl{transform:scale(20)}
+.intro.fly .ly.gt{transform:scale(30)}
+.veil{position:absolute;top:0;right:0;bottom:0;left:0;background:radial-gradient(circle at var(--vx,80%) var(--vy,55%),rgba(7,11,28,.2) 0%,rgba(7,11,28,.96) 38%,#070B1C 60%);opacity:0;pointer-events:none;transition:opacity .8s ease}
+.intro.deep .veil{opacity:1}
+.intro::before{content:"";position:absolute;left:0;right:0;top:0;height:46%;background:linear-gradient(180deg,rgba(7,27,72,.62) 0%,rgba(7,27,72,0) 100%);z-index:1;pointer-events:none;transition:opacity .6s}
+.intro.fly::before{opacity:0}
+.intro .ttl{position:relative;z-index:2;padding:calc(var(--safe-t) + 72px) var(--g) 0;opacity:0;transform:translateY(12px);transition:opacity .9s ease .15s,transform .9s var(--ease) .15s}
+.intro.push .ttl{opacity:1;transform:none}
+.intro.fly .ttl{opacity:0;transform:translateY(-30px) scale(.96);transition:opacity .5s ease,transform .8s var(--ease)}
+.intro .ttl h1{font:600 clamp(36px,12.2vw,46px)/1.04 var(--f-display);letter-spacing:-.025em}
+.intro .ttl p{font:500 15px/1.4 var(--f-display);color:rgba(255,255,255,.82);margin-top:14px}
+.intro .tap{position:absolute;z-index:2;left:0;right:0;bottom:calc(30px + var(--safe-b));text-align:center;font:500 12px/1 var(--f-display);letter-spacing:.16em;text-transform:uppercase;color:rgba(255,255,255,.75);opacity:0;transition:opacity .6s ease .9s}
+.intro.push .tap{opacity:1}
+.intro.fly .tap{opacity:0;transition-delay:0s}
+
+/* ---------- Тёмные экраны пещеры ---------- */
+.glow{position:absolute;pointer-events:none;border-radius:50%;filter:blur(10px)}
+.glow.a{width:120%;height:60%;left:-10%;top:-12%;background:radial-gradient(closest-side,rgba(179,18,47,.42),rgba(179,18,47,0))}
+.glow.b{width:90%;height:50%;right:-30%;bottom:-6%;background:radial-gradient(closest-side,rgba(229,65,93,.22),rgba(229,65,93,0))}
+.dk-btn{width:100%;min-height:84px;border-radius:22px;border:1px solid rgba(255,255,255,.22);background:rgba(255,255,255,.06);-webkit-backdrop-filter:blur(12px);backdrop-filter:blur(12px);padding:0 22px;display:flex;align-items:center;gap:18px;text-align:left;color:#fff;transition:background .2s,transform .15s}
+.dk-btn:active{background:rgba(255,255,255,.12);transform:scale(.99)}
+.dk-btn .code{width:50px;height:50px;border-radius:16px;background:rgba(255,255,255,.1);display:grid;place-items:center;font:600 15px/1 var(--f-display);letter-spacing:.06em;flex-shrink:0}
+.dk-btn .n{display:block;font:600 19px/1.2 var(--f-display)}
+.dk-btn .d{display:block;font:400 14px/1.4 var(--f-text);color:rgba(255,255,255,.62);margin-top:3px}
+.lwrap{position:relative;z-index:1;padding:calc(var(--safe-t) + 56px) var(--g) calc(24px + var(--safe-b));display:flex;flex-direction:column;height:100%}
+.eyebrow{font:600 12px/1 var(--f-display);letter-spacing:.16em;text-transform:uppercase}
+.lwrap .eyebrow{color:#F0A3B0}
+.lq{font:600 34px/1.15 var(--f-display);letter-spacing:-.02em;margin-top:20px}
+.lq span{display:block;color:rgba(255,255,255,.45)}
+.lchoices{display:flex;flex-direction:column;gap:12px;margin-top:auto}
+
+/* ---------- 2. Онбординг: три слайда с параллаксом ---------- */
+.onb .top{position:relative;z-index:3;height:64px;margin-top:var(--safe-t);padding:0 12px 0 var(--g);display:flex;align-items:center;justify-content:space-between;flex-shrink:0}
+.onb .brand{white-space:nowrap;font:600 13px/1 var(--f-display);letter-spacing:.14em;text-transform:uppercase;color:rgba(255,255,255,.55)}
+.skip{height:44px;padding:0 12px;font:500 15px/1 var(--f-display);color:rgba(255,255,255,.75);transition:opacity .3s}
+.onb.last .skip{opacity:0;pointer-events:none}
+.ovp{position:relative;flex:1;overflow:hidden;touch-action:pan-y}
+.pager{display:flex;height:100%;will-change:transform}
+.slide{flex:0 0 100%;height:100%;position:relative;display:flex;flex-direction:column;padding:0 var(--g);overflow-x:hidden;overflow-y:auto;scrollbar-width:none}
+.slide::-webkit-scrollbar{display:none}
+.ill{position:relative;flex:1;min-height:180px;display:grid;place-items:center;transform:translateX(calc(var(--p,0) * -55%))}
+.otx{transform:translateX(calc(var(--p,0) * 22%));opacity:var(--o,1);padding-bottom:8px}
+.pager.anim,.pager.anim .ill,.pager.anim .otx{transition:transform .65s var(--spring),opacity .4s ease}
+.otx h2{font:600 clamp(24px,7.4vw,29px)/1.18 var(--f-display);letter-spacing:-.015em}
+.otx p{font:400 16px/1.55 var(--f-text);color:rgba(255,255,255,.72);margin-top:12px}
+.otx .fine{font-size:14px;color:rgba(255,255,255,.55);margin-top:12px}
+.ogl{position:absolute;top:0;right:0;bottom:0;left:0;pointer-events:none;transition:transform .65s var(--spring)}
+.onb .bottom{position:relative;z-index:3}
+.dots{display:flex;gap:8px;justify-content:center;height:20px;align-items:center}
+.dots i{width:7px;height:7px;border-radius:4px;background:rgba(255,255,255,.25);transition:width .4s var(--spring),background .3s}
+.dots i.on{width:26px;background:#fff}
+.onb .b-last{display:none}
+.onb.last .b-next{display:none}
+.onb.last .b-last{display:flex}
+
+/* Слайд 1: дата превращается в 12 месяцев */
+.orb{position:relative;width:min(250px,64vw);aspect-ratio:1}
+.orb .ring{position:absolute;top:0;right:0;bottom:0;left:0;border-radius:50%;border:1px solid rgba(255,255,255,.12)}
+.orb .ring.r2{inset:16%;border-color:rgba(240,163,176,.2)}
+.orb .date{position:absolute;inset:0;display:grid;place-items:center;font:600 clamp(30px,9vw,38px)/1 var(--f-display);letter-spacing:.02em}
+.orb .date span{display:inline-block}
+.slide.seen .orb .date span{animation:digit 1.4s var(--ease) both;animation-delay:calc(var(--k) * 70ms + .5s)}
+@keyframes digit{0%{opacity:1;transform:none}60%{opacity:.0;transform:translate(var(--tx),var(--ty)) scale(.4)}100%{opacity:0;transform:translate(var(--tx),var(--ty)) scale(.2)}}
+.orb .core{position:absolute;inset:38%;border-radius:50%;background:radial-gradient(circle,#F45670 0%,#B3122F 55%,rgba(179,18,47,0) 72%);opacity:0;transform:scale(.4)}
+.slide.seen .orb .core{animation:core 1.2s var(--spring) 1.5s both,pulse 3.4s ease-in-out 2.7s infinite}
+@keyframes core{to{opacity:1;transform:none}}
+@keyframes pulse{0%,100%{transform:scale(1)}50%{transform:scale(1.12)}}
+.orb .orbit{position:absolute;inset:0;animation:spin 60s linear infinite}
+@keyframes spin{to{transform:rotate(360deg)}}
+.orb .m{position:absolute;left:50%;top:50%;width:34px;height:34px;margin:-17px 0 0 -17px;border-radius:50%;display:grid;place-items:center;font:600 10px/1 var(--f-display);letter-spacing:.04em;color:#fff;background:rgba(255,255,255,.08);border:1px solid rgba(255,255,255,.22);transform:rotate(var(--a)) translateY(calc(min(250px,64vw) * -.44)) rotate(calc(var(--a) * -1));opacity:0}
+.slide.seen .orb .m{animation:mon .7s var(--spring) both;animation-delay:calc(var(--k) * 90ms + 1.3s)}
+@keyframes mon{from{opacity:0;transform:rotate(var(--a)) translateY(0) rotate(calc(var(--a) * -1)) scale(.3)}to{opacity:1}}
+
+/* Слайд 2: пример прогноза */
+.peek{width:min(300px,78vw);background:linear-gradient(165deg,#FFFDF9,#F3EBE2);color:var(--ink);border-radius:24px;padding:20px 20px 22px;box-shadow:0 30px 60px rgba(0,0,0,.45),0 0 0 1px rgba(255,255,255,.06);transform:rotate(-3deg)}
+.slide.seen .peek{animation:peek 1s var(--spring) .2s both}
+@keyframes peek{from{opacity:0;transform:translateY(40px) rotate(4deg)}to{opacity:1;transform:rotate(-3deg)}}
+.peek .pm{font:600 11px/1 var(--f-display);letter-spacing:.14em;text-transform:uppercase;color:var(--accent)}
+.peek h4{font:600 18px/1.2 var(--f-display);margin-top:10px}
+.peek p{font:400 14px/1.55 var(--f-text);margin-top:8px}
+.peek .bl{filter:blur(4px);opacity:.7;user-select:none}
+.peek .lockchip{display:inline-flex;align-items:center;gap:6px;margin-top:14px;height:30px;padding:0 12px;border-radius:15px;background:var(--ink);color:#fff;font:600 12px/1 var(--f-display)}
+.peek .lockchip svg{width:14px;height:14px}
+.chips{display:flex;flex-wrap:wrap;gap:8px;margin-top:14px}
+.chips span{height:32px;padding:0 13px;border-radius:16px;border:1px solid rgba(255,255,255,.2);display:inline-flex;align-items:center;font:500 13px/1 var(--f-display);color:rgba(255,255,255,.85)}
+
+/* Слайд 3: маршрут, автор, отзывы */
+.route{width:min(300px,80vw);height:auto;overflow:visible}
+.route path{fill:none;stroke:rgba(240,163,176,.75);stroke-width:1.5;stroke-dasharray:900;stroke-dashoffset:900}
+.slide.seen .route path{animation:dash 2.6s var(--ease) .3s forwards}
+@keyframes dash{to{stroke-dashoffset:0}}
+.route circle{fill:#fff;opacity:0}
+.slide.seen .route circle{animation:star .5s ease forwards;animation-delay:calc(var(--k) * 180ms + .3s)}
+@keyframes star{to{opacity:1}}
+.route text{fill:rgba(255,255,255,.6);font:600 9px var(--f-display);letter-spacing:.06em;opacity:0}
+.slide.seen .route text{animation:star .5s ease forwards;animation-delay:calc(var(--k) * 180ms + .45s)}
+.author{display:flex;align-items:center;gap:12px;margin-top:16px}
+.author .av{width:44px;height:44px;border-radius:50%;background:var(--burg);display:grid;place-items:center;font:600 17px/1 var(--f-display);flex-shrink:0}
+.author .t{display:block;font:600 14px/1.3 var(--f-display)}
+.author .d{display:block;font:400 13px/1.4 var(--f-text);color:rgba(255,255,255,.6);margin-top:2px}
+.stat{margin-top:12px;font:500 14px/1.4 var(--f-text);color:#F0A3B0}
+.revs{display:flex;gap:10px;overflow-x:auto;scroll-snap-type:x mandatory;margin:12px calc(var(--g) * -1) 0;padding:0 var(--g) 4px;scrollbar-width:none}
+.revs::-webkit-scrollbar{display:none}
+.rev{flex:0 0 78%;scroll-snap-align:start;border-radius:18px;background:rgba(255,255,255,.07);border:1px solid rgba(255,255,255,.12);padding:12px 14px;font:400 14px/1.45 var(--f-text);color:rgba(255,255,255,.88)}
+.rev b{display:block;font:600 12px/1 var(--f-display);color:rgba(255,255,255,.55);margin-top:8px}
+
+/* ---------- Кнопки ---------- */
+.bottom{padding:16px var(--g) calc(16px + var(--safe-b));flex-shrink:0;display:flex;flex-direction:column;gap:6px;background:var(--bg)}
+.dark .bottom,.bottom.clear{background:none}
+.btn{height:56px;border-radius:28px;width:100%;display:flex;align-items:center;justify-content:center;gap:10px;font:600 15px/1 var(--f-display);letter-spacing:.01em;transition:transform .15s ease}
+.btn:active{transform:scale(.98)}
+.btn.primary{background:var(--burg);color:#fff;box-shadow:0 10px 26px rgba(179,18,47,.28)}
+.btn.primary:disabled{background:var(--mist);color:var(--line);box-shadow:none;transform:none;cursor:default}
+.btn.white{background:#fff;color:var(--ink)}
+.btn.secondary{border:1px solid var(--line)}
+.btn.ghost-d{border:1px solid rgba(255,255,255,.28);color:#fff}
+.btn.text{height:46px;color:var(--ink-2);font-weight:500}
+.dark .btn.text{color:rgba(255,255,255,.75)}
+.btn.split{justify-content:space-between;padding:0 26px;gap:12px}
+.btn.split > span{white-space:nowrap}
+.btn svg{width:20px;height:20px}
+
+/* ---------- 3. Регистрация ---------- */
+.bar{height:64px;margin-top:var(--safe-t);padding:0 var(--g);display:flex;align-items:center;justify-content:space-between;flex-shrink:0}
+.ib{width:44px;height:44px;border-radius:50%;border:1px solid var(--line);display:grid;place-items:center;color:var(--ink);flex-shrink:0;transition:background .2s}
+.ib:active{background:var(--mist)}
+.ib svg{width:20px;height:20px}
+.ib.ghost{border-color:transparent}
+.spacer{width:44px}
+.steps{display:flex;gap:6px}
+.steps i{width:28px;height:3px;border-radius:2px;background:var(--line-soft);transition:background .3s}
+.steps i.on{background:var(--accent)}
+.form{padding:16px var(--g) 0}
+.h1{font:600 28px/1.2 var(--f-display);letter-spacing:-.015em}
+.lead{font:400 16px/1.5 var(--f-text);color:var(--ink-2);margin-top:12px}
+.field{margin-top:40px}
+.uline{width:100%;height:60px;border:0;border-bottom:1.5px solid var(--line);padding:0;font:500 26px/1 var(--f-display);outline:none;background:transparent;border-radius:0;transition:border-color .2s}
+.uline:focus{border-color:var(--ink)}
+.uline::placeholder{color:var(--ink-3);font-weight:400}
+.gbig{display:flex;flex-direction:column;gap:12px}
+.gbig button{height:76px;border-radius:22px;background:var(--mist);padding:0 22px;display:flex;align-items:center;justify-content:space-between;font:600 19px/1 var(--f-display);transition:background .2s,color .2s,transform .15s}
+.gbig button:active{transform:scale(.99)}
+.gbig button svg{width:22px;height:22px;opacity:.5}
+.gbig button.on{background:var(--ink);color:#fff}
+/* Барабаны для даты */
+.wheels{position:relative;display:grid;grid-template-columns:.7fr 1.45fr 1fr;gap:6px;height:220px;margin-top:30px}
+.wheels::before{content:"";position:absolute;left:0;right:0;top:88px;height:44px;border-radius:14px;background:var(--mist);pointer-events:none}
+.wh{position:relative;height:220px;overflow-y:scroll;scroll-snap-type:y mandatory;scrollbar-width:none;perspective:600px;-webkit-mask-image:linear-gradient(180deg,transparent 0%,#000 32%,#000 68%,transparent 100%);mask-image:linear-gradient(180deg,transparent 0%,#000 32%,#000 68%,transparent 100%);overscroll-behavior:contain}
+.wh::-webkit-scrollbar{display:none}
+.wpad{height:88px}
+.wi{height:44px;display:grid;place-items:center;scroll-snap-align:center;font:500 19px/1 var(--f-display);color:var(--ink-3);cursor:pointer;transform-origin:50% 50% -60px;transition:color .15s}
+.wi.on{color:var(--ink);font-weight:600}
+.wlab{display:grid;grid-template-columns:.7fr 1.45fr 1fr;gap:6px;margin-top:24px;text-align:center;font:500 13px/1 var(--f-display);color:var(--ink-2)}
+.hintc{display:flex;gap:12px;margin-top:22px;padding:14px 16px;border-radius:18px;background:var(--mist);font:400 14px/1.5 var(--f-text);color:var(--ink-2)}
+.hintc svg{width:18px;height:18px;flex-shrink:0;margin-top:1px;color:var(--accent)}
+.hintc b{color:var(--ink);font-weight:600}
+/* Проверка */
+.ccard{margin-top:26px;border-radius:24px;background:var(--mist);padding:22px 20px}
+.ccard .row{display:flex;justify-content:space-between;gap:12px;font:400 15px/1.4 var(--f-text);color:var(--ink-2)}
+.ccard .row + .row{margin-top:10px}
+.ccard .row b{color:var(--ink);font-weight:600}
+.ccard .big{font:600 clamp(28px,8.6vw,34px)/1.1 var(--f-display);letter-spacing:-.02em;margin-top:18px;padding-top:18px;border-top:1px solid var(--line-soft)}
+.ccard .bigl{font:500 13px/1 var(--f-display);color:var(--ink-2);margin-top:18px}
+.ccard .bigl + .big{margin-top:8px;padding-top:0;border-top:0}
+.note{margin-top:16px;font:400 14px/1.5 var(--f-text);color:var(--ink-2)}
+
+/* ---------- 4. Тарифы ---------- */
+.urg{display:flex;align-items:center;gap:10px;margin-top:12px;font:500 15px/1.45 var(--f-text);color:var(--accent)}
+.urg svg{width:18px;height:18px;flex-shrink:0}
+.plans{display:flex;flex-direction:column;gap:12px;padding:24px var(--g) 0}
+.plan{position:relative;width:100%;min-height:92px;border-radius:24px;padding:18px 22px;display:flex;align-items:center;justify-content:space-between;gap:14px;text-align:left;transition:transform .15s ease;overflow:hidden}
+.plan:active{transform:scale(.985)}
+.plan .n{display:block;font:600 18px/1.25 var(--f-display)}
+.plan .s{display:block;font:400 13px/1.45 var(--f-text);opacity:.78;margin-top:5px}
+.plan .p{font:600 22px/1 var(--f-display);letter-spacing:-.01em;white-space:nowrap;display:flex;align-items:center;gap:6px}
+.plan .p small{font-size:14px;letter-spacing:0}
+.plan .p svg{width:18px;height:18px}
+.plan.p1{background:var(--burg);color:#fff;box-shadow:0 16px 34px rgba(179,18,47,.3)}
+.plan.p1::after{content:"";position:absolute;top:0;bottom:0;left:-60%;width:45%;background:linear-gradient(100deg,transparent,rgba(255,255,255,.28),transparent);transform:skewX(-18deg);animation:shine 4.2s ease-in-out 1.4s infinite}
+@keyframes shine{0%{left:-60%}35%,100%{left:130%}}
+.badge{display:inline-block;margin-bottom:8px;height:20px;padding:0 9px;border-radius:10px;background:#fff;color:var(--accent);font:700 10px/20px var(--f-display);letter-spacing:.08em;text-transform:uppercase}
+.plan.p2{background:var(--ink);color:#fff}
+.plan.p3{background:var(--mist);color:var(--ink-3)}
+.plan.done{background:var(--mist);color:var(--ink);cursor:default}
+.pill{height:32px;padding:0 14px;border-radius:16px;display:inline-flex;align-items:center;font:600 13px/1 var(--f-display);white-space:nowrap}
+.pill.ok{background:#E3F3EA;color:#1C7247}
+.pill.buy{background:var(--burg);color:#fff;height:36px;padding:0 18px;border-radius:18px}
+.extra{display:flex;flex-direction:column;gap:10px;padding:14px var(--g) 8px}
+.promo-btn{position:relative;overflow:hidden;width:100%;height:56px;border-radius:28px;background:var(--mist);display:flex;align-items:center;justify-content:center;gap:10px;font:600 15px/1 var(--f-display);color:var(--ink)}
+.promo-btn svg{width:22px;height:22px;color:var(--accent);position:relative}
+.promo-btn span{position:relative}
+.promo-btn::after{content:"";position:absolute;top:0;bottom:0;left:-60%;width:50%;background:linear-gradient(100deg,transparent,rgba(255,255,255,.95),transparent);transform:skewX(-18deg);animation:shine 3.6s ease-in-out 1.2s infinite}
+.promo-ok{margin:14px var(--g) 0;font:500 14px/1.45 var(--f-text);color:#1C7247}
+
+/* ---------- 5. Оплата: ошибка и успех ---------- */
+.failw{flex:1;display:flex;flex-direction:column;align-items:center;justify-content:center;text-align:center;padding:0 36px}
+.failw .ic{width:84px;height:84px;border-radius:50%;background:#FBE9EC;color:var(--accent);display:grid;place-items:center;animation:shake .6s ease .2s both}
+.failw .ic svg{width:38px;height:38px}
+@keyframes shake{0%,100%{transform:none}20%{transform:translateX(-8px)}40%{transform:translateX(7px)}60%{transform:translateX(-5px)}80%{transform:translateX(3px)}}
+.failw h1{font:600 26px/1.2 var(--f-display);margin-top:26px}
+.failw p{font:400 16px/1.5 var(--f-text);color:var(--ink-2);margin-top:10px}
+
+.success .stagew{position:relative;flex:1;display:flex;flex-direction:column;align-items:center;justify-content:center;text-align:center;padding:0 28px;z-index:1}
+.sfan{position:relative;width:100%;height:150px;margin-bottom:6px}
+.sc{position:absolute;left:50%;top:22px;width:58px;height:82px;margin-left:-29px;transform-origin:50% 330%;perspective:500px;animation:fanout 1s var(--spring) both;animation-delay:calc(.25s + var(--k) * 35ms)}
+@keyframes fanout{from{opacity:0;transform:translateY(60px) rotate(0) scale(.5)}to{opacity:1;transform:rotate(var(--a))}}
+.sc .fi{animation:flip .8s var(--spring) both;animation-delay:calc(1.15s + var(--k) * 70ms)}
+@keyframes flip{from{transform:rotateY(180deg)}to{transform:rotateY(0)}}
+.sc .ff,.sc .fb{border-radius:10px}
+.sc .ff{padding:8px 6px;justify-content:center;align-items:center}
+.sc .ff .fm{font-size:11px}
+.sc .fb svg{width:18px;height:18px}
+.okmark{position:relative;width:96px;height:96px;margin-top:-8px}
+.okmark::before{content:"";position:absolute;inset:0;border-radius:50%;background:rgba(240,163,176,.18);animation:okpulse 1.6s var(--ease) 2.3s both}
+.okmark svg{position:relative;width:100%;height:100%;fill:none;stroke:#fff;stroke-width:3.5;stroke-linecap:round;stroke-linejoin:round}
+.okmark .c{stroke-dasharray:277;stroke-dashoffset:277;animation:draw .7s var(--ease) 1.9s forwards}
+.okmark .k{stroke-dasharray:60;stroke-dashoffset:60;animation:draw .45s var(--ease) 2.45s forwards}
+@keyframes draw{to{stroke-dashoffset:0}}
+@keyframes okpulse{0%{transform:scale(.6);opacity:0}40%{opacity:1}100%{transform:scale(1.7);opacity:0}}
+.spark{position:absolute;left:50%;top:50%;width:3px;height:14px;margin:-7px 0 0 -1.5px;border-radius:2px;background:linear-gradient(#FFD7C2,#F45670);opacity:0;transform:rotate(var(--a)) translateY(-40px);animation:spark .9s var(--ease) 2.5s both}
+@keyframes spark{0%{opacity:0;transform:rotate(var(--a)) translateY(-40px) scaleY(.4)}30%{opacity:1}100%{opacity:0;transform:rotate(var(--a)) translateY(-86px) scaleY(1)}}
+.success h1{font:600 30px/1.2 var(--f-display);margin-top:22px;animation:rise .6s var(--ease) 2.7s both}
+.success .stagew > p{font:400 16px/1.55 var(--f-text);color:rgba(255,255,255,.78);margin-top:10px;max-width:310px;animation:rise .6s var(--ease) 2.8s both}
+.tghint{display:flex;gap:12px;align-items:flex-start;text-align:left;margin-top:22px;padding:14px 16px;border-radius:18px;background:rgba(255,255,255,.07);border:1px solid rgba(255,255,255,.12);font:400 14px/1.5 var(--f-text);color:rgba(255,255,255,.82);max-width:330px;animation:rise .6s var(--ease) 2.95s both}
+.tghint svg{width:20px;height:20px;flex-shrink:0;color:#F0A3B0}
+.success .bottom .btn{animation:rise .6s var(--ease) 3.1s both}
+
+/* ---------- 6. Главный экран: ночная шапка и веер карт ---------- */
+.night{position:relative;flex-shrink:0;color:#fff;padding:calc(var(--safe-t) + 6px) var(--g) 36px;background:radial-gradient(110% 80% at 88% -8%,rgba(214,32,64,.62) 0%,rgba(214,32,64,0) 60%),radial-gradient(70% 60% at 0% 100%,rgba(229,65,93,.2),rgba(229,65,93,0) 70%),linear-gradient(180deg,#0B1433 0%,#071B48 100%);overflow:hidden}
+.night .stars{transform:translateY(calc(var(--c,0) * -24px))}
+.night .top{position:relative;z-index:2;display:flex;align-items:center;justify-content:space-between;height:52px}
+.night .brand{font:600 13px/1.2 var(--f-display);letter-spacing:.12em;text-transform:uppercase;color:rgba(255,255,255,.6)}
+.prof{height:40px;padding:0 14px 0 10px;margin-right:-6px;border-radius:20px;display:flex;align-items:center;gap:8px;background:rgba(255,255,255,.1);border:1px solid rgba(255,255,255,.16);font:600 13px/1 var(--f-display);color:#fff}
+.prof svg{width:20px;height:20px}
+.mtabs{position:relative;z-index:2;display:grid;grid-template-columns:1fr 1fr;padding:4px;margin-top:8px;border-radius:16px;background:rgba(255,255,255,.08)}
+.mtabs button{height:40px;border-radius:12px;font:600 14px/1 var(--f-display);color:rgba(255,255,255,.65);transition:background .25s,color .25s}
+.mtabs button.on{background:#fff;color:var(--ink)}
+.dpill{position:relative;z-index:2;white-space:nowrap;display:inline-flex;align-items:center;gap:8px;margin-top:8px;height:30px;padding:0 12px;border-radius:15px;background:rgba(240,163,176,.16);color:#FFD2DA;font:600 12px/1 var(--f-display)}
+.dpill svg{width:14px;height:14px}
+.fanwrap{position:relative;z-index:2;height:calc(166px - 80px * var(--c,0));-webkit-mask-image:linear-gradient(180deg,#000 82%,transparent);mask-image:linear-gradient(180deg,#000 82%,transparent);margin:2px calc(var(--g) * -1) 0;touch-action:pan-y;-webkit-user-select:none;user-select:none;cursor:grab}
+.fanwrap:active{cursor:grabbing}
+.fan{position:absolute;inset:0;transform:scale(calc(1 - .46 * var(--c,0)));transform-origin:50% 8px}
+.fc{position:absolute;left:50%;top:14px;width:94px;height:128px;margin-left:-47px;transform-origin:50% 560%;perspective:700px;will-change:transform,opacity}
+.fan.snap .fc{transition:transform .6s var(--spring),opacity .4s ease}
+.fi{position:relative;width:100%;height:100%;transform-style:preserve-3d;transition:transform .7s var(--spring)}
+.fc.lk .fi{transform:rotateY(180deg)}
+.ff,.fb{position:absolute;top:0;right:0;bottom:0;left:0;border-radius:16px;-webkit-backface-visibility:hidden;backface-visibility:hidden}
+.ff{background:linear-gradient(160deg,#FFFDF9 0%,#F2E9DF 100%);color:var(--ink);display:flex;flex-direction:column;justify-content:space-between;padding:12px 10px 11px;box-shadow:0 10px 24px rgba(0,0,0,.32)}
+.fn{font:600 11px/1 var(--f-display);color:var(--accent);letter-spacing:.12em}
+.fm{font:600 14px/1.1 var(--f-display);letter-spacing:-.01em}
+.fd{font:500 11px/1 var(--f-text);color:var(--ink-2)}
+.fb{transform:rotateY(180deg);background:radial-gradient(ellipse at 70% 110%,#E5415D 0%,#B3122F 45%,#5E0818 100%);display:grid;place-items:center;color:rgba(255,226,210,.9);box-shadow:0 10px 24px rgba(0,0,0,.32)}
+.fb::before{content:"";position:absolute;inset:6px;border-radius:11px;border:1px solid rgba(255,220,205,.32)}
+.fb svg{width:30px;height:30px}
+.fb .lkm{position:absolute;bottom:12px;left:0;right:0;display:flex;justify-content:center}
+.fb .lkm svg{width:14px;height:14px;opacity:.75}
+.fc.cur .ff{box-shadow:0 0 0 2px rgba(255,255,255,.9),0 16px 36px rgba(244,86,112,.55)}
+.fc.cur .fb{box-shadow:0 0 0 2px rgba(255,255,255,.55),0 16px 36px rgba(244,86,112,.5)}
+.hph{position:relative;z-index:2;text-align:center;font:400 15px/1.45 var(--f-text);color:rgba(255,255,255,.82);margin:calc(10px * (1 - var(--c,0))) auto 0;max-width:320px;opacity:calc(1 - 1.4 * var(--c,0));max-height:calc(4.4em * (1 - var(--c,0)));overflow:hidden}
+.night .ytl{position:relative;z-index:2;font:600 30px/1.1 var(--f-display);letter-spacing:-.02em;margin-top:calc(18px - 8px * var(--c,0))}
+.night .ytl + .hph{text-align:left;margin-left:0}
+.rprog{position:absolute;left:24px;right:24px;bottom:28px;height:2px;border-radius:1px;background:rgba(255,255,255,.12);pointer-events:none;z-index:2}
+.rprog i{display:block;height:100%;border-radius:1px;background:rgba(255,255,255,.85);transform-origin:left;transform:scaleX(0)}
+.main .scroll{position:relative;z-index:3;margin-top:-20px;border-radius:22px 22px 0 0;background:#fff}
+
+.content{padding:18px 16px 28px;display:flex;flex-direction:column;gap:12px}
+.sec{background:var(--mist);border-radius:22px;padding:22px 20px 24px}
+.sec h3{font:600 18px/1.25 var(--f-display);color:var(--accent);display:flex;align-items:center;gap:8px}
+.txt{margin-top:12px;font:400 16px/1.65 var(--f-text);color:var(--ink)}
+.txt p + p{margin-top:12px}
+.txt b{font-weight:600}
+.txt ul{list-style:none;display:flex;flex-direction:column;gap:10px}
+.txt li{position:relative;padding-left:22px}
+.txt li::before{content:"";position:absolute;left:0;top:.8em;width:10px;height:2px;border-radius:1px;background:var(--ink)}
+.sec-h{display:block;width:100%;text-align:left}
+.fold .tw{position:relative;max-height:9.2em;overflow:hidden;transition:max-height .55s var(--ease)}
+.fold.short .tw{max-height:none}
+.more{margin-top:2px;margin-bottom:-8px;min-height:44px;font:600 14px/1 var(--f-display);color:var(--ink);display:inline-flex;align-items:center}
+.fold.short .more{display:none}
+.sec.rv{opacity:0;transform:translateY(48px) scale(.94);transform-origin:50% 0}
+.sec.rv-in{opacity:1;transform:none;transition:opacity .6s ease,transform .85s var(--spring);transition-delay:var(--rd,0ms)}
+.sec.lock h3{color:var(--ink-3)}
+.sec.lock h3 svg{width:16px;height:16px}
+.sec.lock p{color:var(--ink-3);font-size:14px;margin-top:6px}
+.closed{padding:8px 4px}
+.closed .t{font:600 20px/1.3 var(--f-display)}
+.closed .d{font:400 15px/1.55 var(--f-text);color:var(--ink-2);margin-top:10px}
+.nextm{height:60px;border-radius:22px;border:1px solid var(--line);display:flex;align-items:center;justify-content:space-between;padding:0 22px;font:600 15px/1 var(--f-display)}
+.nextm svg{width:22px;height:22px}
+.ybanner{position:relative;overflow:hidden;border-radius:24px;padding:22px 20px;color:#fff;background:radial-gradient(90% 90% at 100% 0%,rgba(214,32,64,.7),rgba(214,32,64,0) 70%),linear-gradient(160deg,#0B1433,#071B48)}
+.ybanner .k{font:600 11px/1 var(--f-display);letter-spacing:.14em;text-transform:uppercase;color:#F0A3B0}
+.ybanner .t{font:600 19px/1.3 var(--f-display);margin-top:10px}
+.ybanner .btn{margin-top:16px;height:50px}
+/* Год: выбор темы */
+.yq{font:600 22px/1.25 var(--f-display);padding:6px 4px 4px}
+.ycards{display:grid;grid-template-columns:1fr 1fr;gap:12px}
+.yc{position:relative;height:184px;border-radius:24px;padding:18px;display:flex;flex-direction:column;justify-content:space-between;text-align:left;color:#fff;overflow:hidden;transition:transform .15s}
+.yc:active{transform:scale(.98)}
+.yc.w{background:radial-gradient(ellipse at 80% 110%,#E5415D 0%,#B3122F 50%,#7E0B22 100%)}
+.yc.l{background:linear-gradient(160deg,#0B1433,#1A2A66)}
+.yc svg{width:34px;height:34px}
+.yc .n{display:block;font:600 18px/1.2 var(--f-display)}
+.yc .d{display:block;font:400 13px/1.4 var(--f-text);color:rgba(255,255,255,.75);margin-top:6px}
+.yseg{display:grid;grid-template-columns:1fr 1fr;background:var(--mist);border-radius:16px;padding:4px;gap:4px}
+.yseg button{height:44px;border-radius:12px;font:600 14px/1 var(--f-display);color:var(--ink-2);transition:background .25s,color .25s}
+.yseg button.on{background:var(--ink);color:#fff}
+
+/* ---------- 7. Профиль ---------- */
+.lsw{display:flex;gap:2px;margin-right:-8px}
+.lsw button{min-width:40px;height:44px;font:500 13px/1 var(--f-display);color:var(--ink-3);letter-spacing:.06em}
+.lsw button.on{color:var(--ink);font-weight:700}
+.me{display:flex;align-items:center;gap:18px;padding:12px var(--g) 8px}
+.ava{width:72px;height:72px;border-radius:50%;flex-shrink:0;background:var(--mist);display:grid;place-items:center;font:600 30px/1 var(--f-display);overflow:hidden}
+.ava img{width:100%;height:100%;object-fit:cover}
+.me .nm{font:600 28px/1.1 var(--f-display);letter-spacing:-.02em}
+.me .sub{font:400 15px/1.45 var(--f-text);color:var(--ink-2);margin-top:8px}
+.group{padding:0 var(--g);margin-top:30px}
+.group > .eyebrow{color:var(--ink-3);display:block;margin-bottom:12px}
+.list{background:var(--mist);border-radius:20px;padding:4px 0}
+.item{width:100%;min-height:60px;display:flex;align-items:center;justify-content:space-between;gap:12px;padding:8px 12px 8px 18px;font:500 16px/1.3 var(--f-text);text-align:left}
+.item[role=button]{cursor:pointer}
+.item .who{display:flex;align-items:center;gap:12px}
+.item .dot{width:22px;height:22px;border-radius:50%;border:1.5px solid var(--line);display:grid;place-items:center;flex-shrink:0;background:#fff}
+.item .dot.on{border-color:var(--ink);background:var(--ink);color:#fff}
+.item .dot svg{width:12px;height:12px}
+.item.act{color:var(--accent);font:600 15px/1 var(--f-display);justify-content:flex-start;gap:12px}
+.item.act svg{width:20px;height:20px}
+.item.act.ink{color:var(--ink)}
+.linkb{display:block;margin:28px auto 0;min-height:44px;padding:0 16px;font:600 14px/1 var(--f-display);color:var(--accent)}
+.proto{display:block;margin:8px auto 0;min-height:44px;padding:0 16px;font:500 13px/1 var(--f-display);color:var(--ink-3)}
+
+/* ---------- Шторки ---------- */
+.ov{position:absolute;top:0;right:0;bottom:0;left:0;background:rgba(7,27,72,.42);opacity:0;transition:opacity .28s ease;z-index:20}
+.ov.in{opacity:1}
+.sheet{position:absolute;left:0;right:0;bottom:0;background:#fff;border-radius:24px 24px 0 0;z-index:21;transform:translateY(100%);transition:transform .38s var(--ease);max-height:88%;display:flex;flex-direction:column}
+.sheet.in{transform:none}
+.sh-head{display:flex;align-items:center;justify-content:space-between;padding:16px var(--g) 4px 24px}
+.sh-head .t{font:600 18px/1.2 var(--f-display)}
+.sh-body{padding:8px var(--g);overflow-y:auto}
+.sh-body p{font-size:15px;line-height:1.6;color:var(--ink-2)}
+.sh-body p + p{margin-top:8px}
+.amount{font:600 44px/1 var(--f-display);margin:14px 0 14px;letter-spacing:-.02em;color:var(--ink)}
+.amount small{font-size:18px;margin-left:6px;letter-spacing:0}
+.paynote{display:flex;gap:12px;padding:14px 16px;border-radius:18px;background:var(--mist);font:400 14px/1.5 var(--f-text);color:var(--ink-2)}
+.paynote svg{width:20px;height:20px;flex-shrink:0;color:var(--accent)}
+.err{font:500 14px/1.4 var(--f-text);color:var(--accent);margin-top:10px;min-height:20px}
+.seg{display:grid;grid-auto-flow:column;grid-auto-columns:1fr;background:var(--mist);border-radius:14px;padding:4px;gap:4px}
+.seg button{height:40px;border-radius:10px;font:600 14px/1 var(--f-display);color:var(--ink-2)}
+.seg button.on{background:#fff;color:var(--ink);box-shadow:0 1px 3px rgba(7,27,72,.12)}
+.gear-row{margin-top:18px}
+.label{font:500 13px/1 var(--f-display);color:var(--ink-2);display:block;margin-bottom:10px}
+
+/* ---------- Адаптивность ---------- */
+@media (max-width:359px){
+  :root{--g:20px}
+  .btn{font-size:14px}
+  .h1{font-size:25px}
+  .lq{font-size:30px}
+  .plan{padding-left:18px;padding-right:18px}
+  .plan .n{font-size:16px}
+  .plan .p{font-size:19px}
+  .fc{width:86px;height:118px;margin-left:-43px}
+  .fm{font-size:13px}
+  .btn.split{padding:0 20px;font-size:14px}
+  .onb .brand,.night .brand{font-size:11px;letter-spacing:.1em}
+  .dpill{font-size:11px;padding:0 10px}
+}
+@media (max-height:700px){
+  .lwrap{padding-top:calc(var(--safe-t) + 32px)}
+  .field{margin-top:26px}
+  .wheels{margin-top:16px}
+  .bar{height:56px}
+  .onb .top{height:52px}
+  .otx p{font-size:15px;margin-top:8px}
+  .orb{width:min(200px,56vw)}
+  .orb .m{transform:rotate(var(--a)) translateY(calc(min(200px,56vw) * -.44)) rotate(calc(var(--a) * -1))}
+  .ill{min-height:150px}
+  .slide[data-k="2"] .ill{flex:0 0 auto;min-height:0;padding:14px 0 10px}
+  .revs{display:none}
+  .bottom{padding-top:10px;padding-bottom:calc(12px + var(--safe-b))}
+  .btn.text{height:40px}
+  .sfan{height:126px}
+  .success h1{margin-top:14px}
+  .tghint{margin-top:14px}
+  .ccard{margin-top:18px;padding:18px}
+}
+</style>
+</head>
+<body>
+<div id="app"></div>
+
+<script>
+/* ============================================================
+   Прогностика 2027 · HTML-прототип, ветка v2 (тексты из документа «версия 2»)
+   Места для программиста помечены комментарием "API:".
+   ============================================================ */
+const tg = window.Telegram && window.Telegram.WebApp;
+const RM = (window.matchMedia && matchMedia('(prefers-reduced-motion: reduce)').matches) || location.search.includes('still');
+if (tg && tg.initData) {
+  document.body.classList.add('tg');
+  tg.ready(); tg.expand();
+  if (tg.disableVerticalSwipes) tg.disableVerticalSwipes();
+  if (tg.isVersionAtLeast && tg.isVersionAtLeast('6.1')) tg.setBackgroundColor('#070B1C');
+}
+const DARK = {intro:'#0B1F45', lang:'#070B1C', onb:'#070B1C', success:'#070B1C', main:'#0B1433'};
+function tgHeader(name){
+  if (!tg || !tg.initData || !tg.isVersionAtLeast || !tg.isVersionAtLeast('6.1')) return;
+  try { tg.setHeaderColor(DARK[name] || '#FFFFFF'); } catch (e) {}
+}
+
+const I = {
+  back:'<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M15 5l-7 7 7 7"/></svg>',
+  right:'<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M9 5l7 7-7 7"/></svg>',
+  arrow:'<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M5 12h14M13 6l6 6-6 6"/></svg>',
+  check:'<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.6" stroke-linecap="round" stroke-linejoin="round"><path d="M5 12.5l4.5 4.5L19 7.5"/></svg>',
+  lock:'<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><rect x="5" y="10.5" width="14" height="10" rx="2.5"/><path d="M8.5 10.5V8a3.5 3.5 0 017 0v2.5"/></svg>',
+  user:'<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linecap="round"><circle cx="12" cy="8.5" r="3.6"/><path d="M5 20c1.2-3.6 4-5.5 7-5.5s5.8 1.9 7 5.5"/></svg>',
+  ticket:'<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M3 8a2 2 0 012-2h14a2 2 0 012 2v2a2 2 0 000 4v2a2 2 0 01-2 2H5a2 2 0 01-2-2v-2a2 2 0 000-4z"/><path d="M14 6v12" stroke-dasharray="2 2.5"/></svg>',
+  close:'<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"><path d="M6 6l12 12M18 6L6 18"/></svg>',
+  gift:'<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><rect x="3.5" y="9" width="17" height="11.5" rx="2"/><path d="M3.5 13h17M12 9v11.5M12 9c-1.5-3.5-6-4-6-1.5S10 9 12 9zm0 0c1.5-3.5 6-4 6-1.5S14 9 12 9z"/></svg>',
+  chat:'<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M20 12a8 8 0 01-11.6 7.1L4 20l1-4.2A8 8 0 1120 12z"/></svg>',
+  star:'<svg viewBox="0 0 32 32" fill="currentColor"><path d="M16 2l2.2 9.8L28 9.2l-7.4 6.8L28 22.8l-9.8-2.6L16 30l-2.2-9.8L4 22.8l7.4-6.8L4 9.2l9.8 2.6z" opacity=".9"/></svg>',
+  clock:'<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"><circle cx="12" cy="12" r="8.5"/><path d="M12 7.5V12l3 2"/></svg>',
+  info:'<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"><circle cx="12" cy="12" r="8.5"/><path d="M12 11v5M12 8h.01"/></svg>',
+  card:'<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="5.5" width="18" height="13" rx="2.5"/><path d="M3 10h18M7 15h4"/></svg>',
+  bag:'<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="7" width="18" height="13" rx="2.5"/><path d="M8.5 7V5.5A1.5 1.5 0 0110 4h4a1.5 1.5 0 011.5 1.5V7M3 12.5h18"/></svg>',
+  heart:'<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"><path d="M12 20s-7.5-4.6-7.5-10.2A4.3 4.3 0 0112 7.3a4.3 4.3 0 017.5 2.5C19.5 15.4 12 20 12 20z"/></svg>',
+  bot:'<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M21 4L3 11l6 2.2M21 4l-3 16-9-6.8M21 4L9 13.2v5.3l3-3"/></svg>',
+  alert:'<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="M12 7v6M12 16.5h.01"/></svg>',
+};
+
+const MONTHS = ['Январь','Февраль','Март','Апрель','Май','Июнь','Июль','Август','Сентябрь','Октябрь','Ноябрь','Декабрь'];
+const MGEN = ['января','февраля','марта','апреля','мая','июня','июля','августа','сентября','октября','ноября','декабря'];
+const MPREP = ['январь','февраль','март','апрель','май','июнь','июль','август','сентябрь','октябрь','ноябрь','декабрь'];
+
+/* API: тексты прогнозов придут с сервера. Пример: трактовка «Число 7» от клиентки.
+   Блок с w:1 («Работа и деньги») открыт в бесплатном демо. */
+const MONTH_TEXT = [
+  {t:'Общий настрой', h:`<p>Этот месяц требует фокуса, воли и решительности. Ты можешь чувствовать, что жизнь снова ускоряется, появляются цели, задачи, дела, и всё движется быстро.</p>
+<p>Энергия даёт <b>силу реализации</b>: ты можешь добиться многого, если действуешь осознанно и не теряешь концентрацию.</p>
+<p>Наступает время <b>побед и личных достижений.</b> Ты начинаешь видеть результат того, во что вкладывалась ранее.</p>
+<p>Месяц подходит для <b>путешествий, командировок, переездов, оформления документов и карьерного роста.</b></p>
+<p>Главное: <b>двигаться.</b> Даже маленькими шагами, но каждый день.</p>`},
+  {t:'Работа и деньги', w:1, h:`<p>В работе месяц про <b>действие и результат.</b> Хорошо идут задачи, которые требуют скорости, переговоров и поездок.</p>
+<p>Если давно откладывала запуск проекта, повышение цен или разговор о новой должности, сейчас подходящее время.</p>
+<p>Возможны командировки и новые партнёры издалека. Документы и договоры лучше проверять дважды.</p>
+<p>Главное: <b>не распыляться.</b> Выбери одну цель и веди её до результата.</p>`},
+  {t:'Отношения', h:`<p>В отношениях всё обостряется: эмоции, страсть, желание контроля. Если есть внутреннее напряжение, могут вспыхивать ссоры на пустом месте. Важно не соревноваться, а <b>договариваться.</b></p>
+<p>Если рядом сильный партнёр, вас ждёт совместный прорыв.</p>
+<p>Для одиноких это период ярких знакомств, часто в дороге, на мероприятиях или через работу.</p>`},
+  {t:'Здоровье', h:`<p>Под прицелом <b>ноги, колени, сосуды, нервная система, поясница и спина.</b></p>
+<p>Если слишком спешишь, появляются травмы и падения. Организм требует <b>ритма, движения и дисциплины.</b></p>
+<p>Полезно: спорт, растяжка, прогулки, дыхание, регулярный сон.</p>`},
+  {t:'Сложный период', h:`<p>Возможны вспышки раздражения, спешка, желание доказать всем и сразу. Если действуешь из стресса, пространство начнёт ставить преграды: поломки, задержки, конфликты.</p>
+<p>Главная ошибка месяца: <b>бежать без цели.</b></p>
+<p>Ты водитель, а не пассажир.</p>`},
+  {t:'Как вернуть баланс', h:`<ul>
+<li>Чётко ставь цель и разбей её на шаги.</li>
+<li>Если что-то не идёт, не ломись: это не твой путь.</li>
+<li>Больше движения: спорт, поездки, активные прогулки.</li>
+<li>Работай с телом: мышцы и дыхание твоя точка силы.</li>
+</ul>`},
+];
+/* API: годовой текст придёт с сервера: две темы, внутри блоки. */
+const YEAR_TEXT = {
+  yW:[
+    {t:'Общий фон', h:`<p>Год постепенного роста. Первая половина про обучение и укрепление позиций, вторая про результат.</p>
+<p>Хорошее время для <b>смены формата работы</b> или запуска своего дела. Всё, что строится сейчас, будет работать на тебя несколько лет.</p>
+<p>Весной появятся новые предложения. Не соглашайся сразу, сначала посчитай, сколько сил и времени это займёт.</p>`},
+    {t:'Деньги', h:`<p>Доход растёт ступенями. Возможны периоды затишья, после которых приходит заметный рывок.</p>
+<p>Год хорош для <b>долгосрочных вложений</b>: обучение, инструменты, команда.</p>`},
+    {t:'Сложный период', h:`<p>Спешка и желание успеть всё сразу ведут к ошибкам в документах и договорённостях.</p>
+<p>Главная ошибка года: <b>брать на себя чужую ответственность.</b></p>`},
+    {t:'Что делать', h:`<ul><li>Поставь цель на год и разбей её по кварталам.</li><li>Раз в месяц пересматривай планы.</li><li>Делегируй то, что забирает силы, но не приносит результата.</li></ul>`},
+  ],
+  yL:[
+    {t:'Общий фон', h:`<p>Год глубины. Отношения становятся честнее, лишнее уходит само.</p>
+<p>Возможны <b>важные встречи весной и осенью.</b> Если ты в паре, это время общих решений: переезд, ремонт, планы на будущее.</p>`},
+    {t:'Отношения', h:`<p>Больше тепла и искренних разговоров. Партнёр будет ждать от тебя ясности и поддержки.</p>
+<p>Для одиноких это год знакомств через друзей, путешествия и обучение.</p>`},
+    {t:'Сложный период', h:`<p>Старые обиды могут всплывать снова. Если их не проговорить, появится дистанция.</p>
+<p>Главная ошибка года: <b>ждать, что другой догадается сам.</b></p>`},
+    {t:'Что делать', h:`<ul><li>Говори о чувствах прямо.</li><li>Планируй совместное время заранее.</li><li>Уделяй время себе: из ресурса легче любить.</li></ul>`},
+  ]};
+
+/* ---------- Состояние. API: профили и доступы хранит сервер ---------- */
+const S = { lang:'ru', profiles:[], active:0, draft:null, mode:'self', tab:'m', month:null, ytopic:null, promo:false, forIdx:0, hist:[], cur:null, onbI:0, wantDemo:false, onbFrom:null, lastPlan:'months' };
+const prof = () => S.profiles[S.active];
+const gOf = () => (S.draft && ['name','gender','dob','confirm'].includes(S.cur) ? S.draft.gender : null) || (prof() ? prof().gender : 'f') || 'f';
+const gx = (f, m) => gOf() === 'm' ? m : f;
+const pad = n => String(n).padStart(2,'0');
+const dim = (y,m) => new Date(y, m+1, 0).getDate();
+const fmt = (d, y) => pad(d.getDate()) + '.' + pad(d.getMonth()+1) + (y ? '.' + d.getFullYear() : '');
+const esc = s => String(s).replace(/[&<>"]/g, c => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;'}[c]));
+const cap = n => n ? n.charAt(0).toUpperCase() + n.slice(1) : n;
+const dobStr = p => `${pad(p.d)}.${pad(p.m+1)}.${p.y}`;
+const dobLong = p => `${p.d} ${MGEN[p.m]} ${p.y}`;
+/* Личный месяц i: с числа рождения в месяце i по день до числа рождения в следующем.
+   API: финальные правила даст клиентка (вопрос про 15 число открыт). */
+function monthRange(p, i){
+  const s = new Date(2027, i, Math.min(p.d, dim(2027, i)));
+  const ny = i === 11 ? 2028 : 2027, nm = (i+1) % 12;
+  const e = new Date(ny, nm, Math.min(p.d, dim(ny, nm))); e.setDate(e.getDate() - 1);
+  return [s, e];
+}
+const newYearDate = p => new Date(2027, p.m, Math.min(p.d, dim(2027, p.m)));
+const demoMonths = () => [0, 1]; /* «2 ближайших месяца»: январь и февраль 2027 */
+const canSee = (p, i) => p.access !== 'none' || (p.self && demoMonths().includes(i));
+const rnd = (a, b) => a + Math.random() * (b - a);
+const dust = (n, cls = '') => `<div class="dust ${cls}">${Array.from({length: n}, () => `<i style="left:${rnd(0,100).toFixed(1)}%;top:${rnd(cls ? 0 : 30, 100).toFixed(1)}%;--s:${rnd(1.5,3.4).toFixed(1)}px;--d:${rnd(5,11).toFixed(1)}s;--dl:-${rnd(0,10).toFixed(1)}s;--x:${rnd(-30,30).toFixed(0)}px"></i>`).join('')}</div>`;
+
+/* ---------- Навигация ---------- */
+const app = document.getElementById('app');
+function go(name, push = true, how = ''){
+  if (push && S.cur) S.hist.push(S.cur);
+  S.cur = name;
+  const el = document.createElement('section');
+  el.className = 'screen ' + name + (DARK[name] && name !== 'main' ? ' dark' : '') + (how ? ' ' + how : (push ? '' : ' back'));
+  el.innerHTML = SCREENS[name]();
+  app.appendChild(el);
+  const old = [...app.querySelectorAll('.screen')].filter(x => x !== el);
+  void el.offsetWidth;
+  el.classList.add('in');
+  setTimeout(() => old.forEach(o => o.remove()), how === 'fade' ? 900 : 320);
+  (AFTER[name] || (() => {}))(el);
+  stagger(el);
+  initRead(el);
+  syncTgBack();
+  tgHeader(name);
+}
+const cur = () => app.querySelector('.screen:last-of-type');
+function back(){ const p = S.hist.pop(); if (p) go(p, false); }
+function rerender(){ const el = cur(); if (!el) return; const sc = el.querySelector('.scroll'), top = sc ? sc.scrollTop : 0; el.innerHTML = SCREENS[S.cur](); const ns = el.querySelector('.scroll'); if (ns) ns.scrollTop = top; (AFTER[S.cur] || (() => {}))(el); setTimeout(() => initRead(el), 0); }
+function syncTgBack(){ if (!tg || !tg.initData) return; ['intro','lang','onb','success','main','fail'].includes(S.cur) && !(S.cur === 'onb' && S.onbFrom) ? tg.BackButton.hide() : tg.BackButton.show(); }
+if (tg && tg.initData) tg.BackButton.onClick(() => S.cur === 'onb' ? finishOnb() : back());
+function hap(type){
+  const h = tg && tg.initData && tg.HapticFeedback; if (!h) return;
+  if (type === 'success') h.notificationOccurred('success');
+  else if (type === 'error') h.notificationOccurred('error');
+  else if (type === 'select') h.selectionChanged();
+  else h.impactOccurred(type === 'soft' ? 'soft' : 'light');
+}
+document.addEventListener('click', e => { if (e.target.closest('button')) hap('tap'); }, true);
+
+const RISE = '.lq, .lchoices > *, .h1, .lead, .field, .wheels, .wlab, .hintc, .ccard, .note, .urg, .plans > *, .extra > *, .promo-ok, .me, .group, .linkb, .failw > *, .bottom > *';
+function stagger(el){
+  if (RM || ['intro','success','onb','main'].includes(S.cur)) return;
+  [...el.querySelectorAll(RISE)].slice(0, 12).forEach((n, k) => { n.style.setProperty('--i', k); n.classList.add('rise'); });
+}
+
+/* Чтение прогноза: прогресс в шапке, сжатие шапки, плавное появление блоков */
+function initRead(el){
+  const sc = el.querySelector('.scroll'), head = el.querySelector('.night');
+  if (!sc || !head || !el.querySelector('.content')) return;
+  fitFolds(el);
+  if (document.fonts && document.fonts.status !== 'loaded') document.fonts.ready.then(() => fitFolds(el));
+  if (!head.querySelector('.rprog')) head.insertAdjacentHTML('beforeend', '<div class="rprog"><i></i></div>');
+  const bar = head.querySelector('.rprog i');
+  const upd = () => { const max = sc.scrollHeight - sc.clientHeight; bar.style.transform = `scaleX(${max > 0 ? Math.min(1, sc.scrollTop / max) : 0})`; if (!RM) head.style.setProperty('--c', Math.min(1, sc.scrollTop / 160).toFixed(3)); };
+  if (!sc.dataset.rp){ sc.dataset.rp = 1; sc.addEventListener('scroll', upd, {passive: true}); }
+  upd();
+  if (RM || !('IntersectionObserver' in window)) return;
+  const secs = [...el.querySelectorAll('.content > .sec:not(.rv)')];
+  const io = new IntersectionObserver(es => es.forEach(e => { if (e.isIntersecting){ e.target.classList.add('rv-in'); io.unobserve(e.target); } }), {root: sc, threshold: .1, rootMargin: '0px 0px -6% 0px'});
+  let n = 0;
+  secs.forEach(s => { s.classList.add('rv'); const r = s.getBoundingClientRect(), rr = sc.getBoundingClientRect(); s.style.setProperty('--rd', (r.top < rr.bottom ? (n++) * 110 + 120 : 0) + 'ms'); io.observe(s); });
+}
+function fitFolds(el){
+  el.querySelectorAll('.fold').forEach(f => {
+    if (f.classList.contains('open')) return; f.classList.remove('short');
+    const tw = f.querySelector('.tw'), items = [...tw.querySelectorAll('.txt > p, .txt > ul > li')], LIM = 175;
+    let h = 0;
+    for (const it of items){ const b = it.offsetTop + it.offsetHeight; if (b <= LIM || h === 0) h = b; else break; }
+    if (h >= tw.scrollHeight - 4){ f.classList.add('short'); tw.style.maxHeight = 'none'; return; }
+    tw.dataset.ch = h; tw.style.transition = 'none'; tw.style.maxHeight = h + 'px'; void tw.offsetHeight; tw.style.transition = '';
+  });
+}
+window.addEventListener('resize', () => { const el = cur(); if (!el) return; fitFolds(el); if (S.cur === 'intro') placeIntro(el); });
+function toggleSec(btn){
+  const f = btn.closest('.fold'); if (!f || f.classList.contains('short')) return;
+  const tw = f.querySelector('.tw'), more = f.querySelector('.more'), opening = !f.classList.contains('open');
+  tw.style.maxHeight = (opening ? tw.clientHeight : tw.scrollHeight) + 'px'; void tw.offsetHeight;
+  f.classList.toggle('open', opening);
+  tw.style.maxHeight = (opening ? tw.scrollHeight : +tw.dataset.ch) + 'px';
+  more.textContent = opening ? 'Свернуть' : 'Читать далее';
+  if (opening){
+    setTimeout(() => { if (f.classList.contains('open')) tw.style.maxHeight = 'none'; }, 560);
+    if (!RM){ const lim = +tw.dataset.ch - 4; let n = 0;
+      [...tw.querySelectorAll('.txt > p, .txt li')].forEach(x => { if (x.offsetTop > lim) x.animate([{opacity:0, transform:'translateY(18px)'}, {opacity:1, transform:'none'}], {duration:560, delay: 60 + (n++) * 70, easing:'cubic-bezier(.2,1.12,.32,1)', fill:'backwards'}); }); }
+  } else { const sc = f.closest('.scroll'); const top = f.getBoundingClientRect().top - sc.getBoundingClientRect().top; if (top < 0) sc.scrollBy({top: top - 12, behavior: RM ? 'auto' : 'smooth'}); }
+  hap('select');
+}
+
+const backBtn = `<button class="ib" onclick="back()" aria-label="Назад">${I.back}</button>`;
+const stepBar = n => S.mode === 'self' ? `<span class="steps" aria-label="Шаг ${n} из 4">${[1,2,3,4].map(k => `<i class="${k <= n ? 'on' : ''}"></i>`).join('')}</span>` : '<span class="spacer"></span>';
+const foldBlock = b => `<div class="sec fold"><button class="sec-h" onclick="toggleSec(this)"><h3>${b.t}</h3></button><div class="tw"><div class="txt">${b.h}</div></div><button class="more" onclick="toggleSec(this)">Читать далее</button></div>`;
+const uah = v => `<span class="p">${v}<small>грн</small></span>`;
+
+/* Карта месяца для веера: открытая лицом, закрытая рубашкой */
+const fanCard = (p, k, small) => { const [s] = monthRange(p, k);
+  return `<div class="${small ? 'sc' : 'fc'} ${canSee(p, k) || small ? '' : 'lk'}" data-k="${k}" style="--k:${k};--a:${((k - 5.5) * 9).toFixed(1)}deg"><div class="fi">
+    <div class="ff">${small ? `<span class="fm">${MONTHS[k].slice(0,3)}</span>` : `<span class="fn">${pad(k+1)}</span><span class="fm">${MONTHS[k]}</span><span class="fd">с ${fmt(s)}</span>`}</div>
+    <div class="fb">${I.star}${small ? '' : `<span class="lkm">${I.lock}</span>`}</div>
+  </div></div>`; };
+
+/* ---------- Экраны ---------- */
+const SCREENS = {
+intro: () => `
+  <div class="stage"><div class="ly bg"></div><div class="ly cl"></div><div class="ly gt"></div></div>
+  <div class="veil"></div>
+  <div class="ttl"><h1>Прогностика<br>2027</h1><p>Твой 2027 год по дате рождения</p></div>
+  <div class="tap">Нажми, чтобы войти</div>`,
+
+lang: () => `
+  <div class="glow a"></div><div class="glow b"></div>${dust(22)}
+  <div class="lwrap">
+    <div class="eyebrow">Прогностика 2027</div>
+    <h1 class="lq">Обери мову<span>Выбери язык</span></h1>
+    <div class="lchoices">
+      <button class="dk-btn" onclick="pickLang('uk')"><span class="code">UA</span><span><span class="n">Українська</span><span class="d">Продовжити українською</span></span></button>
+      <button class="dk-btn" onclick="pickLang('ru')"><span class="code">RU</span><span><span class="n">Русский</span><span class="d">Продолжить на русском</span></span></button>
+    </div>
+  </div>`,
+
+onb: () => {
+  const digits = '25.08'.split('').map((c, k) => `<span style="--k:${k};--tx:${[-60,-30,0,30,60][k]}px;--ty:${[-40,30,-50,40,-30][k]}px">${c}</span>`).join('');
+  const ring = MONTHS.map((m, k) => `<span class="m" style="--k:${k};--a:${k * 30}deg">${m.slice(0,3)}</span>`).join('');
+  const P = [[20,120],[50,92],[82,104],[112,70],[146,84],[176,52],[206,66],[236,36],[262,58],[288,26],[312,42],[336,14]];
+  const route = `<svg class="route" viewBox="0 0 356 140" aria-hidden="true"><path d="M${P.map(p => p.join(' ')).join(' L')}"/>${P.map(([x, y], k) => `<circle cx="${x}" cy="${y}" r="${k === 0 || k === 11 ? 4 : 2.6}" style="--k:${k}"/><text x="${x}" y="${y + 18}" text-anchor="middle" style="--k:${k}">${MONTHS[k].slice(0,3).toUpperCase()}</text>`).join('')}</svg>`;
+  return `
+  <div class="ogl"><div class="glow a"></div><div class="glow b"></div></div>${dust(26)}
+  <div class="top"><span class="brand">Прогностика 2027</span><button class="skip" onclick="finishOnb()">Пропустить</button></div>
+  <div class="ovp"><div class="pager">
+    <div class="slide" data-k="0">
+      <div class="ill"><div class="orb"><div class="ring"></div><div class="ring r2"></div><div class="core"></div><div class="date">${digits}</div><div class="orbit">${ring}</div></div></div>
+      <div class="otx"><h2>Знай заранее, когда действовать, а когда переждать</h2>
+        <p>Прогностика по дате рождения показывает, что ждёт тебя каждый месяц 2027 года: в деньгах, отношениях и здоровье.</p></div>
+    </div>
+    <div class="slide" data-k="1">
+      <div class="ill"><div class="peek"><div class="pm">Январь 2027</div><h4>Работа и деньги</h4>
+        <p>В работе месяц про действие и результат. Хорошо идут задачи, которые требуют скорости и переговоров.</p>
+        <p class="bl">Если давно ${gx('откладывала','откладывал')} запуск проекта или разговор о новой должности, сейчас подходящее время.</p>
+        <span class="lockchip">${I.lock}Полный текст после оплаты</span></div></div>
+      <div class="otx"><h2>Вот как это выглядит</h2>
+        <div class="chips"><span>Работа и деньги</span><span>Отношения</span><span>Здоровье</span><span>Баланс</span><span>Сложные периоды</span></div>
+        <p class="fine">Без прикрас: и возможности, и риски. Чтобы ты ${gx('знала','знал')}, где подстелить соломку.</p></div>
+    </div>
+    <div class="slide" data-k="2">
+      <div class="ill">${route}</div>
+      <div class="otx"><h2>Твой год как один маршрут</h2>
+        <p>Каждый месяц продолжает предыдущий. Читай по порядку, и год сложится в одну картину. Нужны только имя и дата рождения.</p>
+        <div class="author"><span class="av">В</span><span><span class="t">Вероника Леончикова-Штепа</span><span class="d">Автор прогностики, нумеролог, [N] лет практики</span></span></div>
+        <div class="stat">Уже [N] человек прочитали свой прогноз на 2026 год</div>
+        <div class="revs"><div class="rev">Февраль совпал до мелочей.<b>[Имя]</b></div><div class="rev">Перестала планировать важное на «минусовые» месяцы.<b>[Имя]</b></div><div class="rev">Читаю каждый месяц, как письмо себе.<b>[Имя]</b></div></div></div>
+    </div>
+  </div></div>
+  <div class="bottom">
+    <div class="dots">${[0,1,2].map(k => `<i class="${k === S.onbI ? 'on' : ''}"></i>`).join('')}</div>
+    <div class="b-next" style="flex-direction:column"><button class="btn white" onclick="onbNext()">Дальше</button></div>
+    <div class="b-last" style="flex-direction:column;gap:6px"><button class="btn primary" onclick="finishOnb()">${S.onbFrom ? 'Понятно' : 'Начать'}</button>${S.onbFrom ? '' : `<button class="btn text" onclick="S.wantDemo=true;finishOnb()">Сначала посмотреть бесплатно</button>`}</div>
+  </div>`;
+},
+
+name: () => `
+  <header class="bar">${backBtn}${stepBar(1)}</header>
+  <div class="scroll"><div class="form">
+    <h1 class="h1">${S.mode === 'self' ? 'Как тебя зовут?' : 'Кому даришь прогноз?'}</h1>
+    ${S.mode === 'self' ? '' : '<p class="lead">Понадобятся имя и дата рождения этого человека.</p>'}
+    <div class="field"><input class="uline" id="nm" maxlength="32" autocomplete="given-name" placeholder="Имя" value="${esc(S.draft.name)}"></div>
+  </div></div>
+  <div class="bottom"><button class="btn primary" id="nx" onclick="go('gender')">Дальше</button></div>`,
+
+gender: () => {
+  const nm = esc(cap(S.draft.name));
+  return `
+  <header class="bar">${backBtn}${stepBar(2)}</header>
+  <div class="scroll"><div class="form">
+    <h1 class="h1">${S.mode === 'self' ? `${nm}, выбери свой вариант текстов` : `Вариант текстов для ${nm}`}</h1>
+    <p class="lead">Для женщин и мужчин прогноз звучит по-разному.</p>
+    <div class="field gbig">${[['f','Женщина'],['m','Мужчина']].map(([g, l]) => `<button class="${S.draft.gender === g ? 'on' : ''}" onclick="setGender('${g}')"><span>${l}</span>${I.right}</button>`).join('')}</div>
+  </div></div>`;
+},
+
+dob: () => {
+  const years = []; for (let y = 1930; y <= 2012; y++) years.push(y);
+  const wheel = (k, items) => `<div class="wh" data-k="${k}"><div class="wpad"></div>${items.map(([v, l]) => `<div class="wi" data-v="${v}">${l}</div>`).join('')}<div class="wpad"></div></div>`;
+  return `
+  <header class="bar">${backBtn}${stepBar(3)}</header>
+  <div class="scroll"><div class="form">
+    <h1 class="h1">${S.mode === 'self' ? 'Твоя дата рождения' : `Дата рождения ${esc(cap(S.draft.name))}`}</h1>
+    <div class="wlab"><span>День</span><span>Месяц</span><span>Год</span></div>
+    <div class="wheels" style="margin-top:8px">
+      ${wheel('d', Array.from({length: 31}, (_, i) => [i+1, i+1]))}
+      ${wheel('m', MGEN.map((n, i) => [i, n]))}
+      ${wheel('y', years.map(v => [v, v]))}
+    </div>
+    <div class="hintc" id="dh">${I.info}<span>${dobHint()}</span></div>
+  </div></div>
+  <div class="bottom"><button class="btn primary" onclick="go('confirm')">Дальше</button></div>`;
+},
+
+confirm: () => {
+  const D = S.draft;
+  return `
+  <header class="bar">${backBtn}${stepBar(4)}</header>
+  <div class="scroll"><div class="form" style="padding-bottom:24px">
+    <h1 class="h1">Проверь, всё ли верно</h1>
+    <div class="ccard">
+      <div class="row"><span>Имя</span><b>${esc(cap(D.name))}</b></div>
+      <div class="row"><span>Тексты</span><b>${D.gender === 'f' ? 'Для женщины' : 'Для мужчины'}</b></div>
+      <div class="bigl">Дата рождения</div>
+      <div class="big">${dobLong(D)}</div>
+    </div>
+    <p class="note">${S.mode === 'self' ? 'Прогноз строится по этой дате.' : `Прогноз для ${esc(cap(D.name))} строится по этой дате.`}</p>
+  </div></div>
+  <div class="bottom">
+    <button class="btn primary" onclick="confirmData()">Всё верно</button>
+    <button class="btn text" onclick="back()">Изменить</button>
+  </div>`;
+},
+
+tariffs: () => {
+  const p = S.profiles[S.forIdx], other = !p.self;
+  const mDone = p.access !== 'none', all = p.access === 'all';
+  const [s0] = monthRange(p, 0);
+  const done = n => `<div class="plan done"><span class="n">${n}</span><span class="pill ok">Куплено</span></div>`;
+  return `
+  <header class="bar">${backBtn}<span class="spacer"></span></header>
+  <div class="scroll">
+    <div class="form" style="padding-top:6px">
+      ${other ? `<div class="eyebrow" style="color:var(--accent);margin-bottom:12px">Подарок для ${esc(p.name)}</div>` : ''}
+      <h1 class="h1">${other ? 'Выбери формат' : `${esc(p.name)}, твой прогноз готов`}</h1>
+      ${mDone ? '' : `<div class="urg">${I.clock}<span>${other ? `Январь ${esc(p.name)} начинается ${fmt(s0)}.` : `Твой январь начинается ${fmt(s0)}. Прочитай заранее.`}</span></div>`}
+    </div>
+    <div class="plans">
+      ${mDone ? '' : `<button class="plan p1" onclick="paySheet('all')"><span><span class="badge">Выгоднее всего</span><span class="n">Всё вместе</span><span class="s">12 месяцев и главные повороты года. Экономия 150 грн</span></span>${uah(1100)}</button>`}
+      ${mDone ? done('12 месяцев 2027') : `<button class="plan p2" onclick="paySheet('months')"><span><span class="n">${other ? '12 месяцев 2027' : 'Твои 12 месяцев 2027'}</span><span class="s">71 грн за месяц</span></span>${uah(850)}</button>`}
+      ${all ? done('Главные повороты года') : mDone
+        ? `<button class="plan p1" onclick="paySheet('year')"><span><span class="n">Главные повороты года</span><span class="s">Работа и любовь</span></span>${uah(400)}</button>`
+        : `<button class="plan p3" onclick="yearLockSheet()"><span><span class="n">Главные повороты года</span><span class="s">Работа и любовь. Открывается после 12 месяцев</span></span><span class="p">400<small>грн</small>${I.lock}</span></button>`}
+    </div>
+    ${S.promo && !mDone ? `<p class="promo-ok">Промокод принят. Прогноз на год в подарок.</p>` : ''}
+    <div class="extra">
+      ${!mDone && !other ? `<button class="btn secondary" onclick="startDemo()">Сначала посмотреть бесплатно</button>` : ''}
+      ${!mDone && !S.promo ? `<button class="promo-btn" onclick="promoSheet()">${I.ticket}<span>Есть промокод</span></button>` : ''}
+    </div>
+  </div>
+  ${mDone || other ? `<div class="bottom"><button class="btn text" onclick="toMain()">${other ? 'Не сейчас' : 'Перейти к прогнозу'}</button></div>` : ''}`;
+},
+
+fail: () => `
+  <header class="bar"><span class="spacer"></span><span class="spacer"></span></header>
+  <div class="failw"><div class="ic">${I.alert}</div><h1>Оплата не прошла</h1><p>Деньги не списаны. Попробуй ещё раз.</p></div>
+  <div class="bottom">
+    <button class="btn primary" onclick="retryPay()">Повторить</button>
+    <button class="btn text" onclick="support()">Написать в поддержку</button>
+  </div>`,
+
+success: () => {
+  const p = S.profiles[S.forIdx];
+  const txt = p.self ? 'Твой прогноз открыт. Начни с января и читай по порядку.' : `Прогноз для ${esc(p.name)} готов. Найти его можно в профиле, в списке «Чей прогноз смотреть».`;
+  return `
+  <div class="glow a"></div><div class="glow b"></div>${dust(30)}
+  <div class="stagew">
+    <div class="sfan">${MONTHS.map((_, k) => fanCard(p, k, true)).join('')}</div>
+    <div class="okmark"><svg viewBox="0 0 96 96" aria-hidden="true"><circle class="c" cx="48" cy="48" r="44"/><path class="k" d="M29 49.5l12.5 12.5L67 36"/></svg>${Array.from({length: 12}, (_, k) => `<i class="spark" style="--a:${k * 30}deg"></i>`).join('')}</div>
+    <h1>Готово!</h1>
+    <p>${txt}</p>
+    ${p.self ? `<div class="tghint">${I.bot}<span>Прогноз всегда в этом боте. Нажми кнопку «Открыть» внизу чата.</span></div>` : ''}
+  </div>
+  <div class="bottom"><button class="btn white" onclick="toMain()">Открыть прогноз</button></div>`;
+},
+
+main: () => {
+  const p = prof(), yOpen = p.access === 'all', tab = yOpen ? S.tab : 'm';
+  const brand = p.self ? 'Прогностика 2027' : `Прогноз: ${esc(p.name)}`;
+  const top = `${dust(18, 'stars')}<div class="top"><span class="brand">${brand}</span><button class="prof" onclick="go('profile')">${I.user}Профиль</button></div>
+    ${yOpen ? `<div class="mtabs" role="tablist"><button role="tab" class="${tab === 'm' ? 'on' : ''}" onclick="setTab('m')">Месяцы</button><button role="tab" class="${tab === 'y' ? 'on' : ''}" onclick="setTab('y')">Год</button></div>` : ''}`;
+  if (tab === 'y') return yearView(p, top);
+  if (S.month == null) S.month = 0;
+  const i = S.month, [s, e] = monthRange(p, i), full = p.access !== 'none', vis = canSee(p, i);
+  const shut = b => `<div class="sec lock"><h3>${I.lock}${b.t}</h3><p>Откроется после оплаты</p></div>`;
+  let body;
+  if (full) body = MONTH_TEXT.map(foldBlock).join('');
+  else if (vis) body = MONTH_TEXT.map(b => b.w ? foldBlock(b) : shut(b)).join('');
+  else body = `<div class="closed"><div class="t">Этот месяц откроется после оплаты</div><p class="d">${p.self ? 'Бесплатно открыта работа и деньги на январь и февраль.' : `Прогноз для ${esc(p.name)} откроется после оплаты.`}</p></div>`;
+  if (i < 11 && canSee(p, i + 1) && (full || vis)) body += `<button class="nextm" onclick="setMonth(${i + 1})"><span>Дальше: ${MPREP[i + 1]}</span>${I.arrow}</button>`;
+  if (p.access === 'months') body += `<div class="ybanner"><div class="k">Прогноз на год</div><div class="t">Главные повороты 2027 года: работа и любовь</div><button class="btn white" onclick="openTariffs(${S.active})">Открыть год за 400 грн</button></div>`;
+  const cta = full ? '' : `<div class="bottom"><button class="btn primary split" onclick="openTariffs(${S.active})"><span>${p.self ? 'Открыть все 12 месяцев' : 'Открыть прогноз'}</span><span>${p.self ? '850 грн' : ''}</span></button></div>`;
+  return `
+  <div class="night">${top}
+    ${p.self && !full ? `<div class="dpill">${I.gift}Бесплатно: работа на 2 ближайших месяца</div>` : ''}
+    <div class="fanwrap"><div class="fan">${MONTHS.map((_, k) => fanCard(p, k)).join('')}</div></div>
+    <p class="hph">${p.self ? 'Твой прогноз' : 'Прогноз'} на ${MPREP[i]} действует с ${fmt(s)} по ${fmt(e)}.</p>
+  </div>
+  <div class="scroll"><div class="content">${body}</div></div>
+  <div class="mcta">${cta}</div>`;
+},
+
+profile: () => {
+  const me = S.profiles[0];
+  const ok = `<span class="pill ok">Куплено</span>`;
+  const buy = k => `<button class="pill buy" onclick="event.stopPropagation();openTariffs(${k})">Купить</button>`;
+  /* API: фото и имя из Telegram (initDataUnsafe.user.photo_url) */
+  const photo = tg && tg.initDataUnsafe && tg.initDataUnsafe.user && tg.initDataUnsafe.user.photo_url;
+  const others = S.profiles.map((p, k) => [p, k]).filter(([p]) => !p.self);
+  return `
+  <header class="bar">${backBtn}
+    <div class="lsw" role="group" aria-label="Язык"><button class="${S.lang === 'uk' ? 'on' : ''}" onclick="setLang('uk')">UA</button><button class="${S.lang === 'ru' ? 'on' : ''}" onclick="setLang('ru')">RU</button></div>
+  </header>
+  <div class="scroll" style="padding-bottom:16px">
+    <div class="me">
+      <div class="ava">${photo ? `<img src="${esc(photo)}" alt="">` : esc(me.name.charAt(0).toUpperCase())}</div>
+      <div><div class="nm">${esc(me.name)}</div><div class="sub">${dobLong(me)}<br>${me.gender === 'f' ? 'Женщина' : 'Мужчина'}</div></div>
+    </div>
+    <div class="group"><span class="eyebrow">Мои прогнозы</span><div class="list">
+      <div class="item"><span>Твои 12 месяцев 2027</span>${me.access === 'none' ? buy(0) : ok}</div>
+      <div class="item"><span>Главные повороты года</span>${me.access === 'all' ? ok : buy(0)}</div>
+    </div></div>
+    <div class="group"><span class="eyebrow">Чей прогноз смотреть</span><div class="list">
+      <button class="item" onclick="switchTo(0)"><span class="who"><span class="dot ${S.active === 0 ? 'on' : ''}">${S.active === 0 ? I.check : ''}</span>Мой прогноз</span></button>
+      ${others.map(([p, k]) => `<div class="item" role="button" tabindex="0" onclick="switchTo(${k})"><span class="who"><span class="dot ${k === S.active ? 'on' : ''}">${k === S.active ? I.check : ''}</span>${esc(p.name)}</span>${p.access === 'none' ? buy(k) : ok}</div>`).join('')}
+    </div></div>
+    <div class="group"><div class="list">
+      <button class="item act" onclick="addPerson()">${I.gift}Подарить прогноз близкому</button>
+      <button class="item act ink" onclick="support()">${I.chat}Написать в поддержку</button>
+    </div></div>
+    <button class="linkb" onclick="openOnbFromProfile()">Что такое прогностика</button>
+    <button class="proto" onclick="gearSheet()">Режим прототипа</button>
+  </div>`;
+},
+};
+
+function yearView(p, top){
+  const ye = new Date(2028, p.m, Math.min(p.d, dim(2028, p.m))); ye.setDate(ye.getDate() - 1);
+  const k = S.ytopic;
+  const body = !k
+    ? `<div class="yq">Что хочешь прочитать?</div>
+       <div class="ycards">
+         <button class="yc w" onclick="setTopic('yW')">${I.bag}<span><span class="n">Работа</span><span class="d">Карьера, деньги, решения</span></span></button>
+         <button class="yc l" onclick="setTopic('yL')">${I.heart}<span><span class="n">Личная жизнь</span><span class="d">Любовь, семья, близкие</span></span></button>
+       </div>`
+    : `<div class="yseg">${['yW','yL'].map(x => `<button class="${x === k ? 'on' : ''}" onclick="setTopic('${x}')">${x === 'yW' ? 'Работа' : 'Личная жизнь'}</button>`).join('')}</div>${YEAR_TEXT[k].map(foldBlock).join('')}`;
+  return `
+  <div class="night">${top}
+    <h1 class="ytl">${p.self ? 'Твой год' : `Год ${esc(p.name)}`}</h1>
+    <p class="hph">Действует с ${fmt(newYearDate(p), true)} по ${fmt(ye, true)}</p>
+  </div>
+  <div class="scroll"><div class="content">${body}</div></div>
+  <div class="mcta"></div>`;
+}
+
+function dobHint(){
+  const D = S.draft, d = D && D.d ? D.d : 25;
+  const [s, e] = monthRange({d}, 0);
+  return S.mode === 'self'
+    ? `Твои месяцы начинаются от дня рождения. Например, январь у тебя будет длиться <b>с ${fmt(s)} по ${fmt(e)}</b>.`
+    : `Месяцы считаются от дня рождения: январь будет длиться <b>с ${fmt(s)} по ${fmt(e)}</b>.`;
+}
+
+/* ---------- Поведение экранов ---------- */
+const AFTER = {
+  intro: el => {
+    placeIntro(el);
+    const hold = new URLSearchParams(location.search).has('hold');
+    let stage = 0;
+    const fly = () => { if (stage > 0 || S.cur !== 'intro') return; stage = 1; el.classList.add('fly'); hap('soft');
+      setTimeout(() => el.classList.add('deep'), 650);
+      setTimeout(() => S.cur === 'intro' && go('lang', false, 'fade'), 1750); };
+    el.addEventListener('click', () => stage ? go('lang', false, 'fade') : fly());
+    if (RM){ el.classList.add('push'); if (!hold) setTimeout(() => S.cur === 'intro' && go('lang', false, 'fade'), 1800); return; }
+    setTimeout(() => el.classList.add('push'), 40);
+    if (!hold) setTimeout(fly, 1500);
+  },
+  onb: el => onbInit(el),
+  name: el => {
+    const inp = el.querySelector('#nm'), nx = el.querySelector('#nx');
+    const upd = () => { S.draft.name = inp.value.trim(); nx.disabled = !S.draft.name; };
+    inp.addEventListener('input', upd); upd();
+    inp.addEventListener('keydown', e => { if (e.key === 'Enter' && S.draft.name) go('gender'); });
+  },
+  dob: el => wheelsInit(el),
+  main: el => {
+    const fan = el.querySelector('.fan');
+    if (fan) fanInit(el, fan);
+    if (el.dataset.swipe) return; el.dataset.swipe = 1;
+    let x0 = null, y0 = 0;
+    el.addEventListener('touchstart', e => { if (e.target.closest('.fanwrap,.revs')) return; x0 = e.touches[0].clientX; y0 = e.touches[0].clientY; }, {passive: true});
+    el.addEventListener('touchend', e => {
+      if (x0 == null) return; const dx = e.changedTouches[0].clientX - x0, dy = e.changedTouches[0].clientY - y0; x0 = null;
+      if (S.tab === 'm' && Math.abs(dx) > 60 && Math.abs(dx) > Math.abs(dy) * 1.5) setMonth(S.month + (dx < 0 ? 1 : -1));
+    });
+  },
+  success: () => { hap('success'); },
+};
+
+/* Пролёт: три слоя фото (небо и море, скала с дверью, коза) приближаются с разной скоростью к двери */
+function placeIntro(el){
+  const W = el.clientWidth, H = el.clientHeight, iw = 1086, ih = 1448;
+  const s = Math.max(W / iw, H / ih), dw = iw * s, dh = ih * s, ox = (W - dw) * .62, oy = (H - dh) * .5;
+  const door = [824, 753];
+  const set = (n, x, y, w, h, o) => Object.assign(el.querySelector(n).style, {left: x + 'px', top: y + 'px', width: w + 'px', height: h + 'px', transformOrigin: o});
+  const o = `${door[0] * s}px ${door[1] * s}px`;
+  set('.ly.bg', ox, oy, dw, dh, o);
+  set('.ly.cl', ox, oy, dw, dh, o);
+  set('.ly.gt', ox + 472 * s, oy + 652 * s, 228 * s, 230 * s, `${(door[0] - 472) * s}px ${(door[1] - 652) * s}px`);
+  el.style.setProperty('--vx', (ox + door[0] * s) + 'px'); el.style.setProperty('--vy', (oy + door[1] * s) + 'px');
+}
+
+/* Онбординг: листание пальцем, у картинки и текста разная скорость (параллакс) */
+function onbInit(el){
+  const vp = el.querySelector('.ovp'), pg = el.querySelector('.pager'), slides = [...el.querySelectorAll('.slide')], ogl = el.querySelector('.ogl');
+  const dots = [...el.querySelectorAll('.dots i')];
+  let x0 = null, y0 = 0, dx = 0, lock = null;
+  const render = anim => {
+    pg.classList.toggle('anim', !!anim);
+    const W = vp.clientWidth || 1, pos = S.onbI - dx / W;
+    pg.style.transform = `translateX(${-pos * 100}%)`;
+    slides.forEach((s, k) => { const p = k - pos; s.style.setProperty('--p', p.toFixed(3)); s.style.setProperty('--o', Math.max(0, 1 - Math.abs(p) * 1.3).toFixed(3)); });
+    ogl.style.transform = `translateX(${-pos * 14}%)`;
+    dots.forEach((d, k) => d.classList.toggle('on', k === S.onbI));
+    el.classList.toggle('last', S.onbI === 2);
+    slides[S.onbI].classList.add('seen');
+  };
+  el._onbGo = k => { S.onbI = Math.max(0, Math.min(2, k)); dx = 0; render(!RM); hap('select'); };
+  vp.addEventListener('touchstart', e => { if (e.target.closest('.revs')) return; x0 = e.touches[0].clientX; y0 = e.touches[0].clientY; lock = null; }, {passive: true});
+  vp.addEventListener('touchmove', e => {
+    if (x0 == null) return; const mx = e.touches[0].clientX - x0, my = e.touches[0].clientY - y0;
+    if (lock == null && Math.abs(mx) + Math.abs(my) > 8) lock = Math.abs(mx) > Math.abs(my) ? 'x' : 'y';
+    if (lock !== 'x') return;
+    dx = mx * ((S.onbI === 0 && mx > 0) || (S.onbI === 2 && mx < 0) ? .3 : 1); render(false);
+  }, {passive: true});
+  vp.addEventListener('touchend', () => { if (x0 == null) return; x0 = null; if (lock === 'x' && Math.abs(dx) > 50) el._onbGo(S.onbI + (dx < 0 ? 1 : -1)); else { dx = 0; render(true); } });
+  render(false);
+}
+function onbNext(){ const el = cur(); if (el && el._onbGo) el._onbGo(S.onbI + 1); }
+function finishOnb(){
+  if (S.onbFrom){ S.onbFrom = null; S.cur = null; go('profile', false); S.hist = ['main']; return; }
+  S.mode = 'self';
+  const tn = tg && tg.initDataUnsafe && tg.initDataUnsafe.user && tg.initDataUnsafe.user.first_name; /* API: имя из Telegram */
+  S.draft = {name: tn || '', gender:'', d:1, m:0, y:1990};
+  S.hist = []; S.cur = null; go('name', true);
+}
+function openOnbFromProfile(){ S.onbFrom = 'profile'; S.onbI = 0; go('onb', true, 'fade'); }
+
+/* Барабаны даты: прокрутка с привязкой, объёмный наклон строк, подсказка обновляется сразу */
+function wheelsInit(el){
+  const IH = 44;
+  el.querySelectorAll('.wh').forEach(w => {
+    const k = w.dataset.k, items = [...w.querySelectorAll('.wi')];
+    const paint = () => { const c = w.scrollTop / IH;
+      items.forEach((it, j) => { const d = j - c; if (Math.abs(d) > 4){ if (it.style.transform) { it.style.transform = ''; it.style.opacity = ''; } return; }
+        it.style.transform = `rotateX(${(-d * 20).toFixed(1)}deg)`; it.style.opacity = (1 - Math.min(.85, Math.abs(d) * .22)).toFixed(2); it.classList.toggle('on', Math.round(c) === j); }); };
+    const commit = () => { const j = Math.max(0, Math.min(items.length - 1, Math.round(w.scrollTop / IH))); const v = +items[j].dataset.v;
+      if (S.draft[k] !== v){ S.draft[k] = v; hap('select'); }
+      const mx = dim(S.draft.y, S.draft.m); if (S.draft.d > mx){ S.draft.d = mx; const dw = el.querySelector('.wh[data-k="d"]'); dw.scrollTo({top: (mx - 1) * IH, behavior: RM ? 'auto' : 'smooth'}); }
+      const h = el.querySelector('#dh span'); if (h) h.innerHTML = dobHint(); };
+    const idx = items.findIndex(x => x.dataset.v === String(S.draft[k]));
+    w.scrollTop = Math.max(0, idx) * IH; paint();
+    let tmo; w.addEventListener('scroll', () => { paint(); clearTimeout(tmo); tmo = setTimeout(commit, 110); }, {passive: true});
+    w.addEventListener('click', e => { const it = e.target.closest('.wi'); if (it) w.scrollTo({top: items.indexOf(it) * IH, behavior: RM ? 'auto' : 'smooth'}); });
+  });
+}
+
+/* Веер карт месяцев: тянешь пальцем, карты поворачиваются по дуге, ближайшая встаёт в центр */
+function fanLayout(fan, pos){
+  fan.querySelectorAll('.fc').forEach(c => {
+    const k = +c.dataset.k, off = k - pos, a = Math.abs(off);
+    c.style.transform = `rotate(${(off * 7.2).toFixed(2)}deg) translateY(${(-12 * Math.max(0, 1 - a)).toFixed(1)}px) scale(${(1 - Math.min(a, 4) * .05).toFixed(3)})`;
+    c.style.opacity = a > 3.6 ? 0 : Math.max(0, 1 - Math.max(0, a - .6) * .3).toFixed(2);
+    c.style.filter = a > .5 ? `brightness(${(1 - Math.min(a, 3) * .12).toFixed(2)})` : '';
+    c.style.zIndex = 100 - Math.round(a * 10);
+    c.classList.toggle('cur', Math.round(pos) === k);
+  });
+}
+function fanInit(el, fan){
+  const wrap = el.querySelector('.fanwrap');
+  let pos = S.fanFrom != null ? S.fanFrom : S.month; S.fanFrom = null;
+  fanLayout(fan, pos);
+  if (pos !== S.month){ void fan.offsetWidth; fan.classList.add('snap'); pos = S.month; fanLayout(fan, pos); }
+  let x0 = null, p0 = 0, moved = 0, lastX = 0, lastT = 0, vel = 0, tgt = null;
+  wrap.addEventListener('pointerdown', e => { x0 = e.clientX; p0 = pos; moved = 0; vel = 0; lastX = e.clientX; lastT = performance.now(); tgt = e.target.closest('.fc'); fan.classList.remove('snap'); try { wrap.setPointerCapture(e.pointerId); } catch (_) {} });
+  wrap.addEventListener('pointermove', e => {
+    if (x0 == null) return; const dx = e.clientX - x0; moved = Math.max(moved, Math.abs(dx));
+    const now = performance.now(); vel = (e.clientX - lastX) / Math.max(1, now - lastT); lastX = e.clientX; lastT = now;
+    const np = Math.max(-.45, Math.min(11.45, p0 - dx / 62));
+    if (Math.round(np) !== Math.round(pos)) hap('select');
+    pos = np; fanLayout(fan, pos);
+  });
+  const up = () => {
+    if (x0 == null) return; x0 = null;
+    if (performance.now() - lastT > 90) vel = 0; /* палец остановился: без броска */
+    let k = moved < 6 && tgt ? +tgt.dataset.k : Math.round(pos - Math.max(-1.2, Math.min(1.2, vel)) * 1.6);
+    k = Math.max(0, Math.min(11, k));
+    fan.classList.add('snap'); pos = k; fanLayout(fan, k);
+    if (k !== S.month) setMonth(k, true);
+  };
+  wrap.addEventListener('pointerup', up); wrap.addEventListener('pointercancel', up);
+}
+
+function pickLang(l){ S.lang = l; document.documentElement.lang = l; S.onbI = 0; S.onbFrom = null; go('onb', true, 'fade'); }
+function setGender(g){ S.draft.gender = g; rerender(); setTimeout(() => S.cur === 'gender' && go('dob'), 260); }
+function confirmData(){
+  const D = S.draft; D.d = Math.min(D.d, dim(D.y, D.m));
+  const p = {name: cap(D.name), gender: D.gender || 'f', d: D.d, m: D.m, y: D.y, access: 'none', self: S.mode === 'self'};
+  /* API: сохранить профиль на сервере */
+  if (p.self){ S.profiles = [p]; S.active = 0; S.forIdx = 0; }
+  else { S.profiles.push(p); S.forIdx = S.profiles.length - 1; }
+  S.hist = []; S.cur = null;
+  if (p.self && S.wantDemo){ S.wantDemo = false; startDemo(); } else go('tariffs');
+}
+function openTariffs(k){ S.forIdx = k; go('tariffs'); }
+function toMain(){ S.active = S.forIdx; S.month = 0; S.tab = 'm'; S.ytopic = null; S.hist = []; S.cur = null; go('main', false, 'fade'); }
+function startDemo(){ S.active = S.forIdx; S.month = 0; S.tab = 'm'; S.hist = []; S.cur = null; go('main', false, 'fade'); }
+function swapContent(dir = 1){
+  const el = cur(), c = el.querySelector('.content'), sc = el.querySelector('.scroll'), h = el.querySelector('.hph');
+  if (sc) sc.scrollTop = 0;
+  if (RM) return;
+  const sp = 'cubic-bezier(.2,1.12,.32,1)';
+  if (h) h.animate([{opacity:0, transform:`translateX(${dir * 30}px)`}, {opacity:1, transform:'none'}], {duration:520, easing:sp});
+  if (c) c.animate([{opacity:0, transform:`translateX(${dir * 60}px)`}, {opacity:1, transform:'none'}], {duration:620, easing:sp});
+}
+/* Смена месяца: веер остаётся на месте, меняются фраза, текст и кнопка внизу */
+function setMonth(k, fromFan){
+  if (k < 0 || k > 11 || k === S.month) return;
+  const dir = k > S.month ? 1 : -1, el = cur();
+  S.month = k;
+  const tmp = document.createElement('div'); tmp.innerHTML = SCREENS.main();
+  ['.hph', '.content', '.mcta'].forEach(s => { const a = el.querySelector(s), b = tmp.querySelector(s); if (a && b) a.replaceWith(b); });
+  if (!fromFan){ const fan = el.querySelector('.fan'); if (fan){ fan.classList.add('snap'); fanLayout(fan, k); } }
+  swapContent(dir); hap('select');
+  setTimeout(() => initRead(el), 0);
+}
+function setTab(t){ if (S.tab === t) return; S.tab = t; rerender(); swapContent(t === 'y' ? 1 : -1); }
+function setTopic(k){ const was = S.ytopic; if (was === k) return; S.ytopic = k; rerender(); swapContent(was && k === 'yW' ? -1 : 1); hap('select'); }
+function switchTo(k){ S.active = k; S.month = 0; S.tab = 'm'; S.ytopic = null; S.hist = []; S.cur = null; go('main', false); }
+function addPerson(){ S.mode = 'other'; S.draft = {name:'', gender:'', d:1, m:0, y:1990}; go('name'); }
+function setLang(l){ S.lang = l; document.documentElement.lang = l; rerender(); if (l === 'uk') toast('Украинские тексты добавим следующим шагом'); }
+function support(){ /* API: ссылка на поддержку, например t.me/аккаунт */ toast('Здесь откроется чат с поддержкой'); }
+function toast(msg){
+  const t = document.createElement('div');
+  t.style.cssText = 'position:absolute;left:24px;right:24px;bottom:calc(96px + var(--safe-b));z-index:30;padding:14px 18px;border-radius:16px;background:var(--ink);color:#fff;font:500 14px/1.4 var(--f-text);text-align:center;opacity:0;transform:translateY(10px);transition:opacity .3s,transform .4s var(--spring)';
+  t.textContent = msg; app.appendChild(t); void t.offsetWidth; t.style.opacity = 1; t.style.transform = 'none';
+  setTimeout(() => { t.style.opacity = 0; setTimeout(() => t.remove(), 300); }, 2200);
+}
+
+/* ---------- Нижние шторки ---------- */
+function sheet(title, html){
+  closeSheet(true);
+  const ov = document.createElement('div'); ov.className = 'ov'; ov.onclick = () => closeSheet();
+  const sh = document.createElement('div'); sh.className = 'sheet';
+  sh.innerHTML = `<div class="sh-head"><span class="t">${title}</span><button class="ib ghost" onclick="closeSheet()" aria-label="Закрыть">${I.close}</button></div><div class="sh-body">${html}</div><div style="height:calc(16px + var(--safe-b))"></div>`;
+  app.append(ov, sh); void sh.offsetWidth; ov.classList.add('in'); sh.classList.add('in');
+  return sh;
+}
+function closeSheet(now){ app.querySelectorAll('.ov,.sheet').forEach(x => { if (now) return x.remove(); x.classList.remove('in'); setTimeout(() => x.remove(), 380); }); }
+function paySheet(plan){
+  S.lastTry = plan;
+  const sum = {months: 850, year: 400, all: 1100}[plan];
+  const name = {months: '12 месяцев 2027', year: 'Главные повороты года', all: 'Всё вместе: 12 месяцев и год'}[plan];
+  const fp = S.profiles[S.forIdx];
+  sheet('Оплата', `
+    <p>${name}${fp.self ? '' : ', подарок для ' + esc(fp.name)}</p>
+    <div class="amount">${sum}<small>грн</small></div>
+    ${plan === 'months' && S.promo ? `<p style="color:#1C7247;font-weight:500;margin:-6px 0 12px">+ прогноз на год в подарок</p>` : ''}
+    <div class="paynote">${I.card}<span>Сейчас откроется страница оплаты monobank. Можно оплатить картой любого банка, Apple Pay или Google Pay. После оплаты ты вернёшься сюда, и прогноз откроется.</span></div>
+    <div style="height:20px"></div>
+    <button class="btn primary" onclick="paid('${plan}')">Оплатить ${sum} грн</button>`);
+}
+/* API: здесь программист вызывает monoPay и ждёт вебхук об успешной оплате. При ошибке: go('fail') */
+function paid(plan){
+  const p = S.profiles[S.forIdx];
+  p.access = plan === 'months' && !S.promo ? 'months' : 'all';
+  S.lastPlan = plan; closeSheet(); S.hist = []; S.cur = null; go('success', false, 'fade');
+}
+function retryPay(){ S.hist = []; S.cur = null; go('tariffs', false); setTimeout(() => paySheet(S.lastTry || 'months'), 350); }
+function yearLockSheet(){ sheet('Главные повороты года', `<p>Прогноз на год открывается после 12 месяцев. Возьми всё вместе, так выгоднее на 150 грн.</p><div style="height:20px"></div>
+  <div style="display:flex;flex-direction:column;gap:10px">
+    <button class="btn primary split" onclick="closeSheet();setTimeout(()=>paySheet('all'),200)"><span>Всё вместе</span><span>1100 грн</span></button>
+    <button class="btn secondary split" onclick="closeSheet();setTimeout(()=>paySheet('months'),200)"><span>Только месяцы</span><span>850 грн</span></button>
+  </div>`); }
+function promoSheet(){
+  const sh = sheet('Введи промокод', `
+    <p>Промокод можно получить у Вероники в Instagram.</p>
+    <input class="uline" id="pc" placeholder="Промокод" autocomplete="off" style="font-size:22px;margin-top:8px">
+    <div class="err" id="pe"></div>
+    <button class="btn primary" id="pa" disabled style="margin-top:8px">Применить</button>`);
+  const inp = sh.querySelector('#pc'), b = sh.querySelector('#pa'), er = sh.querySelector('#pe');
+  inp.addEventListener('input', () => { b.disabled = !inp.value.trim(); er.textContent = ''; });
+  /* API: проверка промокода на сервере. В прототипе подходит любой код от 4 символов. */
+  b.onclick = () => { const v = inp.value.trim(); if (v.length < 4){ er.textContent = 'Такого промокода нет. Проверь, нет ли лишних пробелов.'; hap('error'); return; } S.promo = true; closeSheet(); rerender(); hap('success'); };
+}
+function gearSheet(){
+  const p = prof();
+  const seg = (items, c, fn) => `<div class="seg">${items.map(([v, l]) => `<button class="${v === c ? 'on' : ''}" onclick="${fn}('${v}')">${l}</button>`).join('')}</div>`;
+  sheet('Режим прототипа', `
+    <div class="gear-row" style="margin-top:4px"><span class="label">Доступ</span>${seg([['none','Демо'],['months','Месяцы'],['all','Всё']], p.access, 'gSetAcc')}</div>
+    <div class="gear-row"><span class="label">Пол</span>${seg([['f','Женщина'],['m','Мужчина']], p.gender, 'gSetG')}</div>
+    <div class="gear-row"><button class="btn secondary" onclick="closeSheet(true);S.hist=[];S.cur=null;go('fail',false)">Показать: оплата не прошла</button></div>
+    <div class="gear-row" style="margin-top:10px"><button class="btn secondary" onclick="closeSheet(true);S.forIdx=0;S.hist=[];S.cur=null;go('success',false,'fade')">Показать: успешная оплата</button></div>
+    <div class="gear-row" style="margin-top:10px"><button class="btn secondary" onclick="restart()">Начать заново</button></div>`);
+}
+function gSetAcc(v){ prof().access = v; gearSheet(); }
+function gSetG(v){ prof().gender = v; gearSheet(); }
+function restart(){ closeSheet(true); S.mode = 'self'; S.profiles = []; S.promo = false; S.hist = []; S.cur = null; S.month = 0; S.onbI = 0; go('intro', false); }
+
+/* Быстрый вход для просмотра:
+   ?demo=intro | lang | onb | name | gender | dob | confirm | tariffs | main | year | profile | success | fail
+   &access=none|months|all, &people, &slide=0..2, &hold (заставка без перехода), &still (без анимаций) */
+const Q = new URLSearchParams(location.search);
+if (Q.has('demo')){
+  S.profiles = [{name:'Мария', gender: Q.get('g') || 'f', d:25, m:7, y:1992, access: Q.get('access') || 'none', self:true}];
+  if (Q.has('people')) S.profiles.push({name:'Андрей', gender:'m', d:3, m:2, y:1990, access:'none', self:false}, {name:'Елена', gender:'f', d:17, m:10, y:1965, access:'all', self:false});
+  const v = Q.get('demo');
+  S.month = +(Q.get('month') || 0);
+  const D = () => { S.mode = 'self'; S.draft = {name:'Мария', gender: Q.get('g') || 'f', d:25, m:7, y:1992}; S.hist = ['onb']; };
+  if (v === 'intro') go('intro', false);
+  else if (v === 'lang') go('lang', false);
+  else if (v === 'onb'){ S.onbI = +(Q.get('slide') || 0); go('onb', false); }
+  else if (v === 'name'){ D(); go('name'); }
+  else if (v === 'gender'){ D(); S.draft.gender = Q.get('g') || ''; go('gender'); }
+  else if (v === 'dob'){ D(); go('dob'); }
+  else if (v === 'confirm'){ D(); go('confirm'); }
+  else if (v === 'tariffs'){ S.hist = ['main']; go('tariffs'); }
+  else if (v === 'year'){ S.tab = 'y'; S.ytopic = Q.get('topic') || null; go('main', false); }
+  else if (v === 'profile'){ S.hist = ['main']; go('profile'); }
+  else if (v === 'success'){ S.forIdx = 0; go('success', false); }
+  else if (v === 'fail'){ go('fail', false); }
+  else go('main', false);
+  if (Q.has('expand')) setTimeout(() => { const b = cur().querySelector('.more'); if (b) toggleSec(b); }, 80);
+  if (Q.has('scroll')) setTimeout(() => { const sc = cur().querySelector('.scroll'); if (sc) { sc.scrollTop = +Q.get('scroll'); sc.dispatchEvent(new Event('scroll')); } }, 150);
+} else go('intro', false);
+</script>
+</body>
+</html>
