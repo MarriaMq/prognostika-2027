@@ -879,6 +879,10 @@ body{background:var(--sea)}
 .ycard::after{height:55%;background:linear-gradient(180deg,rgba(20,40,64,0),rgba(20,40,64,.75))}
 .ycard b{font:600 12px/1 var(--f-text);letter-spacing:.02em;font-style:normal;bottom:6px}
 @media (max-height:700px){ .ycard b{font-size:10px} .acard{padding:10px 12px;margin-top:10px} .acard .stat{font-size:15px;margin-top:8px;padding-top:8px} }
+/* v49: «Вот как это выглядит»: чипы и подпись читаются на фото */
+.chips span{background:rgba(20,45,72,.38);border-color:rgba(255,255,255,.75);color:#fff;-webkit-backdrop-filter:none;backdrop-filter:none}
+.otx .fine{color:#fff;font-size:15px;text-shadow:0 1px 10px rgba(20,45,70,.55)}
+.otx h2{text-shadow:0 1px 16px rgba(20,45,70,.45)}
 </style>
 </head>
 <body>
@@ -1184,7 +1188,7 @@ onb: () => {
         <span class="lockchip">${I.lock}Полный текст после оплаты</span></div></div>
       <div class="otx"><h2>Вот как <em>это выглядит</em></h2>
         <div class="chips"><span>Работа и деньги</span><span>Отношения</span><span>Здоровье</span><span>Баланс</span><span>Сложные периоды</span></div>
-        <p class="fine">Без прикрас: и возможности, и риски. Чтобы ты ${gx('знала','знал')}, где подстелить соломку.</p></div>
+        <p class="fine">Без прикрас: и возможности, и риски. Чтобы знать, где подстелить себе соломку.</p></div>
     </div>
     <div class="slide" data-k="2">
       <div class="ill"><div class="yroute"><svg class="ypath" viewBox="0 0 100 100" preserveAspectRatio="none" aria-hidden="true"><path d="M7.9 24 L87.9 24 C99 24 99 76 87.9 76 L7.9 76"/></svg>${MSHORT[UA_READY && S.lang === 'uk' ? 'uk' : 'ru'].map((n, k) => `<div class="ycard" style="--k:${k};grid-row:${k < 6 ? 1 : 2};grid-column:${k < 6 ? k + 1 : 12 - k}"><img src="assets/land/${pad(k + 1)}.webp" alt="" draggable="false"><b>${n}</b></div>`).join('')}</div></div>
