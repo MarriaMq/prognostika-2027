@@ -799,15 +799,24 @@ body{background:var(--sea)}
 .lbg{position:absolute !important;inset:0;z-index:0 !important;overflow:hidden;pointer-events:none}
 .lbg img{position:absolute;inset:0;width:100%;height:100%;object-fit:cover;object-position:50% 50%}
 .screen.lang{background:#6E93B8}
-.screen.portal{opacity:1;transform:none;clip-path:circle(0% at var(--px,50%) var(--py,50%));-webkit-clip-path:circle(0% at var(--px,50%) var(--py,50%));transition:clip-path 1s cubic-bezier(.55,0,.15,1),-webkit-clip-path 1s cubic-bezier(.55,0,.15,1)}
-.screen.portal.in{clip-path:circle(80% at var(--px,50%) var(--py,50%));-webkit-clip-path:circle(80% at var(--px,50%) var(--py,50%))}
-.screen.portal .lbg img{animation:lbgin 1.8s cubic-bezier(.2,.7,.2,1) both}
-@keyframes lbgin{from{transform:scale(1.18)}to{transform:none}}
+.screen.portal{opacity:1;transform:none;animation:curtain 1.15s cubic-bezier(.6,0,.2,1) both}
+@keyframes curtain{
+  0%{clip-path:inset(var(--dt,40%) var(--dr,45%) var(--db,30%) var(--dl,45%) round 3px);-webkit-clip-path:inset(var(--dt,40%) var(--dr,45%) var(--db,30%) var(--dl,45%) round 3px)}
+  38%{clip-path:inset(0 var(--dr,45%) 0 var(--dl,45%));-webkit-clip-path:inset(0 var(--dr,45%) 0 var(--dl,45%))}
+  100%{clip-path:inset(0 0 0 0);-webkit-clip-path:inset(0 0 0 0)}}
+.screen.portal .lbg img{animation:lbgin 1.6s cubic-bezier(.3,.6,.2,1) both}
+@keyframes lbgin{from{transform:scale(1.16)}to{transform:none}}
 .screen.portal .rise{animation-delay:calc(var(--i, 0) * 80ms + 650ms)}
 .lang .lq{color:#fff;text-shadow:0 2px 18px rgba(30,60,100,.45)}
 .lang .lq span{color:#FFE3CF}
 .lang .eyebrow{color:rgba(255,255,255,.9);text-shadow:0 1px 8px rgba(30,60,100,.5)}
 .lang .rule{background:rgba(255,255,255,.7)}
+/* v36: туман на заставке не пропадает при полёте и плавно рассеивается уже на экране языка */
+.ifogs{position:absolute !important;inset:0;z-index:1 !important;pointer-events:none;transform-origin:50% 50%}
+.intro.fly .ifogs{transform:scale(1.35);transition:transform 1.6s cubic-bezier(.5,0,.6,1)}
+.lfog{opacity:0}
+.screen.portal .lfog{animation:lfog 3.2s ease .2s both}
+@keyframes lfog{0%{opacity:1}35%{opacity:1}100%{opacity:0}}
 </style>
 </head>
 <body>
@@ -1069,14 +1078,14 @@ const MSHORT = {ru: ['Янв','Фев','Мар','Апр','Май','Июн','Ию
 /* ---------- Экраны ---------- */
 const SCREENS = {
 intro: () => `
-  <div class="iscene"><img src="assets/goat-sun.webp" alt="Белая коза на красной скале у моря" draggable="false">
-    <div class="fog fB"><div class="tile"></div></div><div class="fog fA"><div class="tile"></div></div><div class="fog fC"><div class="tile"></div></div></div>
+  <div class="iscene"><img src="assets/goat-sun.webp" alt="Белая коза на красной скале у моря" draggable="false"></div>
+  <div class="ifogs"><div class="fog fB"><div class="tile"></div></div><div class="fog fA"><div class="tile"></div></div><div class="fog fC"><div class="tile"></div></div></div>
   <div class="shade"></div>
   <div class="ttl"><p class="eyebrow">Год впереди</p><h1>Прогностика <em>2027</em></h1></div>
   <div class="ifade"></div>`,
 
 lang: () => `
-  <div class="lbg"><img src="assets/lang-bg.webp" alt="" draggable="false"></div>
+  <div class="lbg"><img src="assets/lang-bg.webp" alt="" draggable="false"></div><div class="ifogs lfog"><div class="fog fB"><div class="tile"></div></div><div class="fog fA"><div class="tile"></div></div><div class="fog fC"><div class="tile"></div></div></div>
   <div class="lwrap">
     <div class="eyebrow">Прогностика 2027</div>
     <h1 class="lq">Обери мову<span>Выбери язык</span></h1><span class="rule"></span>
@@ -1332,6 +1341,7 @@ function dobHint(){
 /* ---------- Поведение экранов ---------- */
 const AFTER = {
   intro: el => introInit(el),
+  lang: el => { if (!setFog(el)) { const f = el.querySelector('.lfog'); if (f) f.remove(); } },
   onb: el => onbInit(el),
   name: el => {
     const inp = el.querySelector('#nm'), nx = el.querySelector('#nx');
@@ -1375,14 +1385,18 @@ function fogTexture(seed, W = 256, H = 96){
   }
   ctx.putImageData(id, 0, 0); return c.toDataURL('image/png');
 }
-function introInit(el){
-  const scene = el.querySelector('.iscene'), img = scene.querySelector('img'), fade = el.querySelector('.ifade');
-  const FOGS = [['.fA', 11, .62, 16, -1], ['.fB', 29, .45, 22, 1], ['.fC', 47, .68, 12, -1]];
-  if (!FOG_TEX) FOG_TEX = FOGS.map(f => fogTexture(f[1]));
-  FOGS.forEach(([sel, , op, dur, dir], k) => { const box = el.querySelector(sel), tile = box.querySelector('.tile');
+const FOGS = [['.fA', 11, .62, 16, -1], ['.fB', 29, .45, 22, 1], ['.fC', 47, .68, 12, -1]];
+function setFog(el){ /* золотистый туман: тот же на заставке и на экране языка, чтобы он не пропадал при переходе */
+  if (!FOG_TEX) return false;
+  FOGS.forEach(([sel, , op, dur, dir], k) => { const box = el.querySelector(sel); if (!box) return; const tile = box.querySelector('.tile');
     tile.style.backgroundImage = `url(${FOG_TEX[k]})`; box.style.opacity = op;
     box.style.setProperty('--dur', dur + 's'); box.style.setProperty('--dir', dir < 0 ? 'normal' : 'reverse');
     box.style.setProperty('--bob', (4 + dur / 6) + 's'); box.style.setProperty('--br', (7 + dur / 20) + 's'); box.style.setProperty('--by', (dir * 10) + 'px'); });
+  return true; }
+function introInit(el){
+  const scene = el.querySelector('.iscene'), img = scene.querySelector('img'), fade = el.querySelector('.ifade');
+  if (!FOG_TEX) FOG_TEX = FOGS.map(f => fogTexture(f[1]));
+  setFog(el);
   let P, C, p = 0, t0 = 0, state = 'home';
   const layout = () => { const W = el.clientWidth, H = el.clientHeight, r = (img.naturalWidth || 941) / (img.naturalHeight || 1672);
     let w = W, h = W / r; if (h < H){ h = H; w = H * r; }
@@ -1395,16 +1409,21 @@ function introInit(el){
   let handed = false; /* экран языка проявляется прямо поверх влёта в дверь, без паузы на пустом фоне */
   const frame = now => { if (!el.isConnected) return; const k = Math.min(1, (now - t0) / (RM ? 1000 : FLY));
     p = k * k; apply();
-    if (!handed && k >= .5){ handed = true; /* проходим сквозь дверь: экран языка раскрывается кругом из двери */
-      const m = sineOut(Math.min(1, p * 1.25)), dx = P.x + (C.x - P.x) * m, dy = P.y + (C.y - P.y) * m;
-      app.style.setProperty('--px', (dx / el.clientWidth * 100).toFixed(1) + '%'); app.style.setProperty('--py', (dy / el.clientHeight * 100).toFixed(1) + '%');
-      go('lang', false, 'portal'); }
+    if (!handed && k >= .5){ handed = true; doorCurtain(); go('lang', false, 'portal'); }
     if (k < 1) requestAnimationFrame(frame); };
   const fly = () => { if (state !== 'home' || S.cur !== 'intro') return; state = 'door'; el.classList.add('fly'); hap('soft');
     el.querySelectorAll('.fA,.fC').forEach(b => b.style.opacity = Math.min(.9, +b.style.opacity * 1.35));
     t0 = performance.now(); requestAnimationFrame(frame); };
   el._layout = layout;
-  el.addEventListener('click', () => state === 'home' ? fly() : (S.cur === 'intro' && (app.style.setProperty('--px', '50%'), app.style.setProperty('--py', '50%'), go('lang', false, 'portal'))));
+  /* проём двери на экране сейчас: из него экран языка раскрывается шторкой в стороны */
+  const doorCurtain = () => {
+    const s = Math.exp(Math.log(ZOOM) * p), m = sineOut(Math.min(1, p * 1.25)), dx = P.x + (C.x - P.x) * m, dy = P.y + (C.y - P.y) * m;
+    const W = el.clientWidth, H = el.clientHeight, w = parseFloat(img.style.width), h = parseFloat(img.style.height), ox = parseFloat(img.style.left), oy = parseFloat(img.style.top);
+    const X = fx => dx - s * P.x + s * (ox + fx * w), Y = fy => dy - s * P.y + s * (oy + fy * h);
+    const l = Math.max(0, X(672 / 941)), r = Math.min(W, X(733 / 941)), t = Math.max(0, Y(675 / 1672)), b = Math.min(H, Y(940 / 1672));
+    const set = (k, v) => app.style.setProperty(k, (v * 100).toFixed(2) + '%');
+    set('--dt', t / H); set('--dr', (W - r) / W); set('--db', (H - b) / H); set('--dl', l / W); };
+  el.addEventListener('click', () => state === 'home' ? fly() : (S.cur === 'intro' && !handed && (handed = true, doorCurtain(), go('lang', false, 'portal'))));
   const ready = img.decode ? img.decode().catch(() => {}) : Promise.resolve();
   layout();
   const QP = new URLSearchParams(location.search).get('p'); /* для скриншотов: ?demo=intro&hold&p=0.6 */
