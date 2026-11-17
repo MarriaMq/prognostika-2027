@@ -108,13 +108,13 @@ input{font:inherit;color:inherit}
 .intro.fly .shade{opacity:0}
 .ifade{position:absolute !important;z-index:4 !important;top:0;right:0;bottom:0;left:0;background:#5B86AF;opacity:0;pointer-events:none}
 .intro .ttl{position:absolute !important;z-index:3 !important;left:0;right:0;top:calc(var(--safe-t) + 9%);text-align:center;padding:0 var(--g);transition:opacity .36s ease,transform .36s ease}
-.intro.fly .ttl{opacity:0;transform:translateY(-12px)}
+.intro.fly .ttl{opacity:0;transform:translateY(-12px);transition:opacity .5s ease .55s,transform .6s ease .55s} /* надпись ещё видна в начале полёта, чтобы её успели прочитать */
 .intro .ttl .eyebrow{color:rgba(242,237,229,.85);margin-bottom:14px;text-shadow:0 1px 12px rgba(0,0,0,.35)}
-.intro .ttl h1{font:400 clamp(40px,11.5vw,56px)/1 var(--f-serif);letter-spacing:.02em;color:var(--cream);text-shadow:0 2px 24px rgba(0,0,0,.35)}
-.intro .ttl h1 em{display:block;font-style:normal;font-weight:400;font-size:1.7em;line-height:.95;color:var(--scarlet);margin-top:4px}
-.intro .ttl > *{opacity:0;transform:translateY(10px);transition:opacity .9s ease,transform .9s var(--ease)}
+.intro .ttl h1{font:400 clamp(34px,9.6vw,46px)/1 var(--f-serif);letter-spacing:.02em;color:var(--cream);text-shadow:0 2px 24px rgba(0,0,0,.35)}
+.intro .ttl h1 em{display:block;font-style:normal;font-weight:400;font-size:1.85em;line-height:.95;color:var(--scarlet);margin-top:4px}
+.intro .ttl > *{opacity:0;transform:translateY(8px);transition:opacity .45s ease,transform .5s var(--ease)}
 .intro.push .ttl > *{opacity:1;transform:none}
-.intro.push .ttl > :nth-child(2){transition-delay:.15s}
+.intro.push .ttl > :nth-child(2){transition-delay:.08s}
 
 /* ---------- Язык ---------- */
 .glow{position:absolute;pointer-events:none;border-radius:50%;filter:blur(10px);z-index:0}
@@ -826,7 +826,7 @@ body{background:var(--sea)}
 .screen.intro{z-index:3}
 .screen.under{z-index:1;opacity:1;transform:none;transition:none}
 .screen.under .lfog{animation:lfog 2.6s ease .1s both}
-.screen.under .rise{animation-delay:calc(var(--i, 0) * 80ms + 150ms)}
+.screen.under .rise{animation-delay:calc(var(--i, 0) * 50ms)}
 /* v41: на онбординге и экранах регистрации — фото моря на закате вместо синего фона с размытой скалой */
 .rockbg{left:0;right:0;top:0;bottom:0;height:auto;background:url(assets/sky-bg.webp) center bottom/cover;opacity:1;filter:none;-webkit-mask-image:none;mask-image:none}
 .rockbg::after{content:"";position:absolute;inset:0;background:linear-gradient(180deg,rgba(28,52,82,.18) 0%,rgba(28,52,82,0) 22%,rgba(28,52,82,.12) 50%,rgba(28,52,82,.38) 80%,rgba(28,52,82,.2) 100%)}
@@ -870,7 +870,13 @@ body{background:var(--sea)}
 .slide.seen .ypath{animation:softin 1.2s ease .15s both}
 @media (max-height:700px){ .yroute{gap:8px 6px;max-width:250px;margin:0 auto} .ycard b{font-size:10px} .slide[data-k="2"] .ill{padding:0 0 10px} .slide[data-k="2"] .author{margin-top:10px} }
 /* v59: волна года вместо картинок месяцев */
-.wave{position:relative;width:100%;max-width:400px;margin:34px auto 0}
+.wave{position:relative;width:100%;max-width:min(400px,36vh);margin:28px auto 0}
+.slide[data-k="2"] .ill{flex:0 0 auto;place-items:start center;padding:0 0 18px}
+.slide[data-k="2"] .otx > *{opacity:0}
+.slide[data-k="2"].seen .otx > *{animation:softin .6s ease both;animation-delay:calc(.75s + var(--j,0) * 120ms)} /* сначала рисуется волна, потом появляется текст */
+.slide[data-k="2"] .otx > :nth-child(2){--j:1}
+.slide[data-k="2"] .otx > :nth-child(3){--j:2}
+@media (max-height:800px) and (min-height:701px){ .wave{margin-top:22px} .slide[data-k="2"] .ill{padding-bottom:10px} .slide[data-k="2"] .otx p{font-size:15px;line-height:1.45} .slide[data-k="2"] .acard{margin-top:12px;padding:12px 14px} }
 .wave svg{display:block;width:100%;height:auto;overflow:visible}
 .wbase{stroke:rgba(255,248,238,.35);stroke-width:1;stroke-dasharray:2 5}
 .wline{fill:none;stroke:#FFF4E6;stroke-width:2.6;stroke-linecap:round;stroke-dasharray:1;stroke-dashoffset:1;filter:drop-shadow(0 2px 6px rgba(20,40,70,.25))}
@@ -889,7 +895,7 @@ body{background:var(--sea)}
 @keyframes wdraw{to{stroke-dashoffset:0}}
 @keyframes tagin{from{opacity:0;scale:.8}to{opacity:1;scale:1}}
 @media (prefers-reduced-motion:reduce){ .wline{stroke-dashoffset:0} .warea,.wdot,.wm,.wtag,.wmark{opacity:1} }
-@media (max-height:700px){ .wave{max-width:240px;margin-top:26px} .wm{font-size:14px} .wtag{font-size:11px;padding:4px 8px} }
+@media (max-height:700px){ .wave{max-width:240px;margin-top:24px} .wm{font-size:14px} .wtag{font-size:11px;padding:4px 8px} }
 /* v47: на тарифах крупный призыв выбрать формат доступа */
 .screen.tariffs .form .h1{font-size:27px}
 .ptitle{margin-top:18px;font:500 34px/1.1 var(--f-serif);color:#fff;text-shadow:0 1px 14px rgba(20,45,70,.35)}
@@ -909,7 +915,7 @@ body{background:var(--sea)}
 .otx .fine{color:#fff;font-size:15px;text-shadow:0 1px 10px rgba(20,45,70,.55)}
 .otx h2{text-shadow:0 1px 16px rgba(20,45,70,.45)}
 /* v51: заголовок и кнопки экрана языка проявляются одним целым, а не по очереди */
-.lang .rise{animation:softin 1.1s cubic-bezier(.4,0,.2,1) .25s both}
+.lang .rise{animation:softin .55s cubic-bezier(.4,0,.2,1) 0s both}
 /* v53: тариф «Твои 12 месяцев» мягко пульсирует светом; доступ навсегда на тарифах и в онбординге */
 .plans .plan.p2.hot{box-shadow:0 0 0 2px rgba(255,214,160,.95),0 12px 30px rgba(16,40,64,.22);animation:hot 2.6s ease-in-out infinite}
 @keyframes hot{0%,100%{box-shadow:0 0 0 2px rgba(255,214,160,.95),0 0 0 0 rgba(255,200,140,.55),0 12px 30px rgba(16,40,64,.22);transform:scale(1)}50%{box-shadow:0 0 0 2px rgba(255,214,160,1),0 0 0 9px rgba(255,200,140,0),0 14px 34px rgba(16,40,64,.28);transform:scale(1.015)}}
@@ -939,19 +945,32 @@ body{background:var(--sea)}
 .screen.success{background:#22304f}
 .okbg{position:absolute !important;inset:0;z-index:0 !important;overflow:hidden;pointer-events:none}
 .okbg{background:linear-gradient(180deg,#26355f 0%,#4b6893 60%,#59759a 100%)}
-.okbg img{position:absolute;left:0;bottom:-13%;width:100%;height:auto;transform-origin:50% 100%;-webkit-mask-image:linear-gradient(180deg,transparent 0,#000 12%);mask-image:linear-gradient(180deg,transparent 0,#000 12%);animation:okzoom 2.4s cubic-bezier(.3,.6,.2,1) both}
+.okimg{position:absolute;left:0;bottom:-13%;width:100%;aspect-ratio:941/1670;transform-origin:50% 100%;animation:okzoom 2.4s cubic-bezier(.3,.6,.2,1) both}
+.okimg img{position:absolute;inset:0;width:100%;height:100%;-webkit-mask-image:linear-gradient(180deg,transparent 0,#000 12%);mask-image:linear-gradient(180deg,transparent 0,#000 12%)}
+/* солнечные лучи: медленно вращаются вокруг солнца на фото (58% / 20% картинки) */
+.oksun{position:absolute;left:58%;top:20%;width:170%;aspect-ratio:1;translate:-50% -50%;border-radius:50%;background:repeating-conic-gradient(from 0deg,rgba(255,232,196,0) 0deg,rgba(255,232,196,.2) 4deg,rgba(255,232,196,0) 9deg,rgba(255,232,196,0) 17deg);-webkit-mask-image:radial-gradient(closest-side,#000 6%,rgba(0,0,0,.55) 30%,transparent 72%);mask-image:radial-gradient(closest-side,#000 6%,rgba(0,0,0,.55) 30%,transparent 72%);mix-blend-mode:screen;opacity:0;animation:softin 2s ease .6s forwards,okspin 70s linear infinite}
+.okglow{position:absolute;left:58%;top:20%;width:46%;aspect-ratio:1;translate:-50% -50%;border-radius:50%;background:radial-gradient(closest-side,rgba(255,244,222,.75),rgba(255,214,170,.28) 45%,rgba(255,214,170,0));mix-blend-mode:screen;animation:okpulse2 4.5s ease-in-out infinite}
+.okgl b{position:absolute;width:10px;height:10px;translate:-50% -50%;background:radial-gradient(closest-side,#fff,rgba(255,240,210,0));clip-path:polygon(50% 0,58% 42%,100% 50%,58% 58%,50% 100%,42% 58%,0 50%,42% 42%);opacity:0;animation:okglint 3.6s ease-in-out infinite;animation-delay:var(--d)}
+@keyframes okspin{to{rotate:360deg}}
+@keyframes okpulse2{0%,100%{opacity:.75;scale:1}50%{opacity:1;scale:1.12}}
+@keyframes okglint{0%,100%{opacity:0;scale:.4}45%{opacity:.95;scale:1}60%{opacity:0;scale:.5}}
 .okbg::after{content:"";position:absolute;inset:0;background:linear-gradient(180deg,rgba(24,34,66,.78) 0%,rgba(30,42,78,.55) 26%,rgba(40,50,90,.12) 44%,rgba(0,0,0,0) 56%,rgba(60,10,8,0) 78%,rgba(60,10,8,.35) 100%)}
 @keyframes okzoom{from{transform:scale(1.08)}to{transform:none}}
 .okw{position:relative;z-index:1;text-align:center;padding:calc(var(--safe-t) + 9vh) 28px 0}
 .okw h1{font:400 clamp(38px,11vw,50px)/1.05 var(--f-serif);color:var(--cream);text-shadow:0 2px 20px rgba(10,20,45,.45);animation:softin 1s ease .2s both}
 .okk{margin-top:16px;font:400 12px/1 var(--f-text);letter-spacing:.42em;text-transform:uppercase;color:rgba(255,255,255,.88);animation:softin 1s ease .4s both}
-.okr{display:block;width:44px;height:1px;margin:22px auto 0;background:rgba(255,236,220,.75);animation:softin 1s ease .5s both}
-.okt{margin:20px auto 0;max-width:330px;font:400 20px/1.4 var(--f-serif);color:#fff;text-shadow:0 1px 14px rgba(10,20,45,.5);animation:softin 1s ease .6s both}
+.okt{margin:22px auto 0;max-width:330px;font:400 20px/1.4 var(--f-serif);color:#fff;text-shadow:0 1px 14px rgba(10,20,45,.5);animation:softin 1s ease .6s both}
 .okh{margin:0 auto 12px;max-width:340px;padding:11px 18px;border-radius:16px;text-align:center;font:400 13.5px/1.45 var(--f-text);color:rgba(255,246,236,.95);background:rgba(40,8,8,.48);border:1px solid rgba(255,228,205,.22);-webkit-backdrop-filter:blur(10px) saturate(1.1);backdrop-filter:blur(10px) saturate(1.1);animation:softin 1s ease .8s both}
 .success .bottom{position:relative;z-index:1;margin-top:auto}
-.success .bottom .btn.okbtn{animation:softin 1s ease 1s both;background:linear-gradient(180deg,rgba(150,24,20,.72),rgba(110,12,12,.82));border:1px solid rgba(255,228,205,.75);color:#FFF4E8;font:400 22px/1 var(--f-serif);letter-spacing:.01em;-webkit-backdrop-filter:blur(8px);backdrop-filter:blur(8px);box-shadow:0 12px 30px rgba(70,8,8,.35)}
-.success .bottom .btn.okbtn svg{width:22px;height:22px}
-@media (max-height:700px){ .okw{padding-top:calc(var(--safe-t) + 5vh)} .okt{font-size:18px;margin-top:14px} .okr{margin-top:16px} }
+/* кнопка на успехе: тёплое свечение пульсирует, по ней пробегает блик, стрелка зовёт вперёд */
+.success .bottom .btn.okbtn{position:relative;overflow:hidden;height:60px;animation:softin .8s ease .9s both,okhot 2.4s ease-in-out 1.8s infinite;background:linear-gradient(180deg,#E2563C,#B0231A 55%,#8E1612);border:1px solid rgba(255,228,205,.85);color:#FFF6EC;font:400 23px/1 var(--f-serif);letter-spacing:.01em;box-shadow:0 10px 28px rgba(120,14,8,.45),0 0 0 0 rgba(255,170,120,.55)}
+.success .bottom .btn.okbtn::after{content:"";position:absolute;top:0;bottom:0;left:-40%;width:34%;background:linear-gradient(100deg,transparent,rgba(255,244,230,.55),transparent);transform:skewX(-18deg);animation:okshine 3.2s ease-in-out 2s infinite}
+.success .bottom .btn.okbtn svg{width:22px;height:22px;animation:oknudge 1.6s ease-in-out 2s infinite}
+@keyframes okhot{0%,100%{box-shadow:0 10px 28px rgba(120,14,8,.45),0 0 0 0 rgba(255,170,120,.5)}50%{box-shadow:0 12px 34px rgba(160,24,12,.6),0 0 0 9px rgba(255,170,120,0)}}
+@keyframes okshine{0%{left:-40%}45%,100%{left:120%}}
+@keyframes oknudge{0%,100%{transform:none}50%{transform:translateX(5px)}}
+@media (prefers-reduced-motion:reduce){ .oksun{opacity:1} }
+@media (max-height:700px){ .okw{padding-top:calc(var(--safe-t) + 5vh)} .okt{font-size:18px;margin-top:14px} }
 </style>
 </head>
 <body>
@@ -1342,7 +1361,7 @@ confirm: () => {
     <h1 class="h1">Проверь, всё ли верно</h1>
     <div class="ccard">
       <div class="row"><span>Имя</span><b>${esc(cap(D.name))}</b></div>
-      <div class="row"><span>Тексты</span><b>${D.gender === 'f' ? 'Для женщины' : 'Для мужчины'}</b></div>
+      <div class="row"><span>Пол</span><b>${D.gender === 'f' ? 'Женский' : 'Мужской'}</b></div>
       <div class="bigl">Дата рождения</div>
       <div class="big">${dobLong(D)}</div>
     </div>
@@ -1401,7 +1420,7 @@ success: () => {
       : L === 'year' ? 'Річна прогностика вже чекає на тебе. Загальний і особистий прогноз.'
       : both ? 'Усі прогнози вже чекають на тебе.'
       : 'Усі 12 місяців уже чекають на тебе.',
-    hint: 'Прогноз завжди в цьому боті. Натисни кнопку «Відкрити» внизу чату.',
+    hint: 'Прогноз завжди буде в цьому боті. Він у тебе назавжди.',
     b: both ? 'Обери прогноз' : L === 'year' ? 'Відкрити прогноз на рік' : 'Відкрити прогноз'
   } : {
     h: 'Оплата успешна', k: 'Доступ открыт',
@@ -1409,15 +1428,15 @@ success: () => {
       : L === 'year' ? 'Годовая прогностика уже ждёт тебя. Общий и личный прогноз.'
       : both ? 'Все прогнозы уже ждут тебя.'
       : 'Все 12 месяцев уже ждут тебя.',
-    hint: 'Прогноз всегда в этом боте. Нажми кнопку «Открыть» внизу чата.',
+    hint: 'Прогноз всегда будет в этом боте. Он у тебя навсегда.',
     b: both ? 'Выбери прогноз' : L === 'year' ? 'Открыть прогноз на год' : 'Открыть прогноз'
   };
   return `
-  <div class="okbg"><img src="assets/success-bg.webp" alt="" draggable="false"></div>
+  <div class="okbg"><div class="okimg"><img src="assets/success-bg.webp" alt="" draggable="false"><i class="oksun"></i><i class="okglow"></i><span class="okgl"><b style="left:55%;top:41%;--d:0s"></b><b style="left:60%;top:42.5%;--d:0.9s"></b><b style="left:57%;top:44%;--d:1.7s"></b><b style="left:62%;top:45.5%;--d:0.4s"></b><b style="left:53%;top:43%;--d:2.3s"></b><b style="left:59%;top:47%;--d:1.2s"></b><b style="left:64%;top:42%;--d:2.8s"></b><b style="left:56%;top:48.5%;--d:3.3s"></b></span></div></div>
   <div class="okw">
     <h1>${T.h}</h1>
     <p class="okk">${T.k}</p>
-    <i class="okr"></i>
+    
     <p class="okt">${T.t}</p>
   </div>
   <div class="bottom">${p.self ? `<p class="okh">${T.hint}</p>` : ''}<button class="btn okbtn" onclick="toMain('${L === 'year' ? 'y' : 'm'}')">${T.b} ${I.arrow}</button></div>`;
@@ -1640,6 +1659,7 @@ function introInit(el){
   const fly = () => { if (state !== 'home' || S.cur !== 'intro') return; state = 'door'; el.classList.add('fly'); hap('soft');
     t0 = performance.now(); requestAnimationFrame(frame); };
   el._layout = layout;
+  requestAnimationFrame(() => requestAnimationFrame(() => el.classList.add('push'))); /* надпись появляется сразу, не дожидаясь картинки */
   el.addEventListener('click', () => state === 'home' ? fly() : skip());
   layout();
   const QP = new URLSearchParams(location.search).get('p'); /* для скриншотов: ?demo=intro&hold&p=0.6 */
