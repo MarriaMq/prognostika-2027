@@ -837,6 +837,8 @@ body{background:var(--sea)}
 .lfog,.screen.portal .lfog,.screen.under .lfog{opacity:1;animation:none}
 .sfog{left:-20% !important;right:-20% !important;opacity:.85}
 .screen.intro{background:#718094}
+/* v51: заставка в одном canvas, без отдельных слоёв, которые дрожали относительно друг друга */
+.icv{position:absolute !important;z-index:0 !important;inset:0;width:100%;height:100%;display:block}
 /* v44: тариф года ярче; пояснение к покупке для близкого */
 .plans .plan.p3{border-color:rgba(255,255,255,.85);background:rgba(255,255,255,.08);color:#fff}
 .plans .plan.p3 .n{color:#fff}
@@ -884,6 +886,8 @@ body{background:var(--sea)}
 .chips span{background:rgba(20,45,72,.38);border-color:rgba(255,255,255,.75);color:#fff;-webkit-backdrop-filter:none;backdrop-filter:none}
 .otx .fine{color:#fff;font-size:15px;text-shadow:0 1px 10px rgba(20,45,70,.55)}
 .otx h2{text-shadow:0 1px 16px rgba(20,45,70,.45)}
+/* v51: заголовок и кнопки экрана языка проявляются одним целым, а не по очереди */
+.lang .rise{animation:softin 1.1s cubic-bezier(.4,0,.2,1) .25s both}
 </style>
 </head>
 <body>
@@ -1148,8 +1152,7 @@ const MSHORT = {ru: ['Янв','Фев','Мар','Апр','Май','Июн','Ию
 /* ---------- Экраны ---------- */
 const SCREENS = {
 intro: () => `
-  <div class="iscene"><img src="assets/goat-sun.webp" alt="Белая коза на красной скале у моря" draggable="false"></div>
-  <div class="iaper"><img src="assets/lang-bg2.webp" alt="" draggable="false"><i class="ajamb"></i></div>
+  <canvas class="icv" role="img" aria-label="Белая коза на красной скале у моря"></canvas>
   <div class="ifogs"><div class="fog fB"><div class="tile"></div></div><div class="fog fA"><div class="tile"></div></div><div class="fog fC"><div class="tile"></div></div></div>
   <div class="shade"></div>
   <div class="ttl"><p class="eyebrow">Год впереди</p><h1>Прогностика <em>2027</em></h1></div>
@@ -1478,52 +1481,74 @@ function skyFog(el){ /* дымка над морем на фото: те же т
   if (!FOG_TEX) FOG_TEX = FOGS.map(f => fogTexture(f[1]));
   setFog(el.querySelector('.sfog') || el); }
 function introInit(el){
-  const scene = el.querySelector('.iscene'), img = scene.querySelector('img'), fade = el.querySelector('.ifade');
+  /* v51: вся сцена рисуется в одном canvas: коза, проём и вид из пещеры считаются в одних координатах,
+     поэтому края двери, картинка в проёме и затенение не могут разъехаться между собой ни на пиксель */
+  const cv = el.querySelector('.icv'), ctx = cv.getContext('2d');
   if (!FOG_TEX) FOG_TEX = FOGS.map(f => fogTexture(f[1]));
   setFog(el);
-  let P, C, p = 0, t0 = 0, state = 'home', ZE = ZOOM;
-  const layout = () => { const W = el.clientWidth, H = el.clientHeight, r = (img.naturalWidth || 941) / (img.naturalHeight || 1672);
-    let w = W, h = W / r; if (h < H){ h = H; w = H * r; }
-    const ox = (W - w) / 2, oy = (H - h) / 2; Object.assign(img.style, {width: w + 'px', height: h + 'px', left: ox + 'px', top: oy + 'px'});
+  const goat = new Image(); goat.src = 'assets/goat-sun.webp';
+  const view = new Image(); view.src = 'assets/lang-bg2.webp'; if (view.decode) view.decode().catch(() => {});
+  const GW = 941, GH = 1672, VW = 986, VH = 1594;
+  let p = 0, t0 = 0, state = 'home', W = 0, H = 0, dpr = 1, w, h, ox, oy, P, C, ZE, SC, FH, H0;
+  const layout = () => { W = el.clientWidth; H = el.clientHeight; dpr = Math.min(3, window.devicePixelRatio || 1);
+    cv.width = Math.round(W * dpr); cv.height = Math.round(H * dpr);
+    w = W; h = W * GH / GW; if (h < H){ h = H; w = H * GW / GH; }
+    ox = (W - w) / 2; oy = (H - h) / 2;
     P = {x: ox + DOOR.x * w, y: oy + DOOR.y * h}; C = {x: W / 2, y: H / 2};
-    ZE = Math.max(3, W / (w * 61 / 941) * 1.35); /* в конце проём шире экрана: камера уже прошла сквозь дверь */
-    apply(); };
-  const sineOut = t => Math.sin(t * Math.PI / 2);
-  /* Проём двери как окно: внутри с самого начала виден вид из пещеры (экран языка).
-     Пока проём меньше экрана, снимок вписан в проём; когда проём больше экрана, снимок вписан в экран.
-     В конце полёта он совпадает с фоном экрана языка один в один, поэтому переход без швов. */
-  const aper = el.querySelector('.iaper'), aimg = aper.querySelector('img'), jamb = aper.querySelector('.ajamb');
-  const apply = () => { const s = Math.exp(Math.log(ZE) * p), m = sineOut(Math.min(1, p * 1.25));
+    ZE = Math.max(3, W / (w * 61 / GW) * 1.35); /* в конце проём шире экрана: камера уже прошла сквозь дверь */
+    /* камера доворачивает к двери не быстрее, чем дверь растёт: оба косяка всегда уходят наружу, без встречного движения */
+    const off = Math.max(Math.abs(P.x - C.x) / (30 / GW * w), Math.abs(P.y - C.y) / (130 / GH * h));
+    SC = Math.min(ZE, 1 + 1.7 * off);
+    FH = Math.max(H, W * VH / VW); H0 = 265 / GH * h; /* высота вида из пещеры: в конце как фон экрана языка; в начале как проём */
+    draw(); };
+  const smooth = (a, b, x) => { const v = Math.max(0, Math.min(1, (x - a) / (b - a))); return v * v * (3 - 2 * v); };
+  /* рисуем часть картинки, попадающую на экран: так быстрее и одинаково в Safari и Chrome */
+  const blit = (im, iw, ih, X, Y, DW, DH) => {
+    const kx = iw / DW, ky = ih / DH, x0 = Math.max(0, X), y0 = Math.max(0, Y), x1 = Math.min(W, X + DW), y1 = Math.min(H, Y + DH);
+    if (x1 <= x0 || y1 <= y0) return;
+    ctx.drawImage(im, (x0 - X) * kx, (y0 - Y) * ky, (x1 - x0) * kx, (y1 - y0) * ky, x0, y0, x1 - x0, y1 - y0); };
+  const draw = () => { if (!W) return;
+    const s = Math.exp(Math.log(ZE) * p), u = Math.min(1, (s - 1) / (SC - 1)), m = 1 - Math.pow(1 - u, 1.5);
     const dx = P.x + (C.x - P.x) * m, dy = P.y + (C.y - P.y) * m, tx = dx - s * P.x, ty = dy - s * P.y;
-    scene.style.transform = `translate3d(${tx}px,${ty}px,0) scale(${s})`;
-    const W = el.clientWidth, H = el.clientHeight, w = parseFloat(img.style.width), h = parseFloat(img.style.height), ox = parseFloat(img.style.left), oy = parseFloat(img.style.top);
-    const l = tx + s * (ox + 672 / 941 * w), r = tx + s * (ox + 733 / 941 * w), t = ty + s * (oy + 675 / 1672 * h), b = ty + s * (oy + 940 / 1672 * h);
-    aper.style.clipPath = aper.style.webkitClipPath = `inset(${t.toFixed(1)}px ${(W - r).toFixed(1)}px ${(H - b).toFixed(1)}px ${l.toFixed(1)}px)`;
-    const bw = Math.min(W, r - l), bh = Math.min(H, b - t), cx = Math.min(W - bw / 2, Math.max(bw / 2, (l + r) / 2)), cy = Math.min(H - bh / 2, Math.max(bh / 2, (t + b) / 2));
-    const IA = 986 / 1594, cov = bw / bh > IA ? [bw, bw / IA] : [bh * IA, bh];
-    Object.assign(aimg.style, {width: cov[0] + 'px', height: cov[1] + 'px', left: cx - cov[0] / 2 + 'px', top: cy - cov[1] / 2 + 'px'});
-    const v = Math.max(0, Math.min(1, (p - .22) / .5)); aimg.style.opacity = (v * v * (3 - 2 * v)).toFixed(3); /* сначала проём тёмный, вид проявляется по мере приближения */
-    jamb.style.opacity = Math.min(v, Math.max(0, Math.min(1, (1.3 - (r - l) / W) / .3))).toFixed(3); /* на заставке проём как на фото, без затемнения */
-    Object.assign(jamb.style, {left: l + 'px', top: t + 'px', width: r - l + 'px', height: b - t + 'px', boxShadow: `inset ${(r - l) * .09}px 0 ${(r - l) * .12}px rgba(40,14,8,.55), inset ${-(r - l) * .05}px 0 ${(r - l) * .08}px rgba(40,14,8,.35), inset 0 ${(r - l) * .1}px ${(r - l) * .14}px rgba(40,14,8,.4)`}); };
+    ctx.setTransform(dpr, 0, 0, dpr, 0, 0);
+    ctx.fillStyle = '#718094'; ctx.fillRect(0, 0, W, H);
+    if (goat.complete && goat.naturalWidth) blit(goat, GW, GH, tx + s * ox, ty + s * oy, s * w, s * h);
+    const l = tx + s * (ox + 672 / GW * w), r = tx + s * (ox + 733 / GW * w), t = ty + s * (oy + 675 / GH * h), b = ty + s * (oy + 940 / GH * h);
+    const v = smooth(.22, .72, p); /* сначала проём как на фото, вид из пещеры проявляется по мере приближения */
+    if (v <= 0 || !(view.complete && view.naturalWidth)) return;
+    /* размер вида плавно растёт от проёма до экрана и останавливается без рывка ровно тогда, когда проём закрыл экран по высоте */
+    const x0 = Math.log(H0 / FH), x = Math.min(0, Math.log((b - t) / FH)), y = -x * x / Math.abs(x0);
+    const ih = FH * Math.exp(y), iw = ih * VW / VH, e = (ih - H0) / (FH - H0);
+    const cx = (l + r) / 2 + (W / 2 - (l + r) / 2) * e, cy = (t + b) / 2 + (H / 2 - (t + b) / 2) * e;
+    ctx.save(); ctx.beginPath(); ctx.rect(l, t, r - l, b - t); ctx.clip();
+    ctx.globalAlpha = v; blit(view, VW, VH, cx - iw / 2, cy - ih / 2, iw, ih);
+    const ja = Math.min(v, smooth(1.3, 1, (r - l) / W)); /* мягкая тень по краям проёма, пока он меньше экрана */
+    if (ja > 0){ const dw = r - l, sh = (a0, a1, b0, b1, c) => { const g = ctx.createLinearGradient(a0, a1, b0, b1); g.addColorStop(0, c); g.addColorStop(1, 'rgba(40,14,8,0)'); return g; };
+      ctx.globalAlpha = ja;
+      ctx.fillStyle = sh(l, 0, l + dw * .22, 0, 'rgba(40,14,8,.55)'); ctx.fillRect(l, t, dw, b - t);
+      ctx.fillStyle = sh(r, 0, r - dw * .14, 0, 'rgba(40,14,8,.35)'); ctx.fillRect(l, t, dw, b - t);
+      ctx.fillStyle = sh(0, t, 0, t + dw * .26, 'rgba(40,14,8,.4)'); ctx.fillRect(l, t, dw, b - t); }
+    ctx.restore(); };
   const frame = now => { if (!el.isConnected || state !== 'door') return; const k = Math.min(1, (now - t0) / (RM ? 1000 : FLY));
-    p = k < .5 ? 4 * k * k * k : 1 - Math.pow(-2 * k + 2, 3) / 2; apply(); /* плавный разгон и торможение камеры */
-    if (k < 1) requestAnimationFrame(frame); else split(); };
-  /* Дверь на весь экран, затем экран расходится на две створки, как двери лифта; экран языка уже ждёт под ними */
-  const split = () => { if (state === 'split' || !el.isConnected) return; state = 'split';
-    if (p < 1){ /* нажали во время полёта: быстро долетаем */ const p0 = p, t1 = performance.now();
-      const f = now => { const u = Math.min(1, (now - t1) / 450); p = p0 + (1 - p0) * (1 - Math.pow(1 - u, 3)); apply(); if (u < 1) requestAnimationFrame(f); else { go('lang', false, 'under'); el.remove(); } };
-      return requestAnimationFrame(f); }
-    go('lang', false, 'under'); el.remove(); /* кадр уже совпадает с экраном языка: просто меняем экран под ним */ };
+    p = k < .5 ? 4 * k * k * k : 1 - Math.pow(-2 * k + 2, 3) / 2; draw(); /* плавный разгон и торможение камеры */
+    if (k < 1) requestAnimationFrame(frame); else finish(); };
+  /* в последнем кадре canvas совпадает с фоном экрана языка: экран языка уже готов под заставкой, заставка просто убирается */
+  const finish = () => { if (state === 'end' || !el.isConnected) return; state = 'end';
+    go('lang', false, 'under'); requestAnimationFrame(() => el.remove()); };
+  const skip = () => { if (state !== 'door') return; state = 'skip'; const p0 = p, t1 = performance.now(); /* нажали во время полёта: быстро долетаем */
+    const f = now => { const u = Math.min(1, (now - t1) / 450); p = p0 + (1 - p0) * (1 - Math.pow(1 - u, 3)); draw(); if (u < 1) requestAnimationFrame(f); else finish(); };
+    requestAnimationFrame(f); };
   const fly = () => { if (state !== 'home' || S.cur !== 'intro') return; state = 'door'; el.classList.add('fly'); hap('soft');
     t0 = performance.now(); requestAnimationFrame(frame); };
   el._layout = layout;
-  el.addEventListener('click', () => state === 'home' ? fly() : state === 'door' && split());
-  const ready = img.decode ? img.decode().catch(() => {}) : Promise.resolve();
+  el.addEventListener('click', () => state === 'home' ? fly() : skip());
   layout();
   const QP = new URLSearchParams(location.search).get('p'); /* для скриншотов: ?demo=intro&hold&p=0.6 */
   if (QP != null){ p = +QP; el.classList.add('fly'); }
-  ready.then(() => { layout(); setTimeout(() => el.classList.add('push'), 30);
+  const dec = im => im.decode ? im.decode().catch(() => {}) : new Promise(r => { im.onload = im.onerror = r; });
+  dec(goat).then(() => { layout(); setTimeout(() => el.classList.add('push'), 30);
     if (!new URLSearchParams(location.search).has('hold')) setTimeout(fly, START); });
+  dec(view).then(() => { const k = document.createElement('canvas').getContext('2d'); k.drawImage(view, 0, 0, 2, 2); k.drawImage(goat, 0, 0, 2, 2); draw(); }); /* заранее готовим картинку, чтобы на середине полёта не было паузы */
 }
 
 /* Онбординг: листание пальцем, у картинки и текста разная скорость (параллакс) */
