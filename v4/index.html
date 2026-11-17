@@ -35,8 +35,9 @@
   --f-serif:'Cormorant Garamond','Cormorant',Georgia,serif;
   --f-text:'Inter',system-ui,sans-serif;
   --g:24px;
-  --safe-t:env(safe-area-inset-top,0px);
-  --safe-b:env(safe-area-inset-bottom,0px);
+  /* вырез и полоска телефона (iOS и Android) + кнопки Telegram в полноэкранном режиме (Bot API 8.0 задаёт эти переменные сам) */
+  --safe-t:calc(max(env(safe-area-inset-top,0px), var(--tg-safe-area-inset-top,0px)) + var(--tg-content-safe-area-inset-top,0px));
+  --safe-b:calc(max(env(safe-area-inset-bottom,0px), var(--tg-safe-area-inset-bottom,0px)) + var(--tg-content-safe-area-inset-bottom,0px));
   --ease:cubic-bezier(.32,.72,0,1);
   --spring:cubic-bezier(.2,1.12,.32,1);
   --slow:cubic-bezier(.65,0,.35,1);
@@ -1572,7 +1573,7 @@ function finishOnb(){
   S.mode = 'self';
   const tn = tg && tg.initDataUnsafe && tg.initDataUnsafe.user && tg.initDataUnsafe.user.first_name; /* API: имя из Telegram */
   S.draft = {name: tn || '', gender:'', d:1, m:0, y:1990};
-  S.hist = []; S.cur = null; go('name', true);
+  S.hist = ['onb']; S.cur = null; go('name', true); /* «Назад» с экрана имени возвращает на онбординг */
 }
 function openOnbFromProfile(){ S.onbFrom = 'profile'; S.onbI = 0; go('onb', true, 'fade'); }
 
