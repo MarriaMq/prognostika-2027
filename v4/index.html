@@ -816,6 +816,7 @@ body{background:var(--sea)}
 /* v36: туман на заставке не пропадает при полёте и плавно рассеивается уже на экране языка */
 .ifogs{position:absolute !important;inset:0;z-index:1 !important;pointer-events:none;transform-origin:50% 50%}
 .intro.fly .ifogs{transform:none}
+.screen.intro.gone{opacity:0;transition:opacity .6s ease;pointer-events:none}
 .lfog{opacity:0}
 .screen.portal .lfog{animation:lfog 3.2s ease .2s both}
 @keyframes lfog{0%{opacity:1}35%{opacity:1}100%{opacity:0}}
@@ -1291,7 +1292,7 @@ intro: () => `
   <canvas class="icv" role="img" aria-label="Белая коза на красной скале у моря"></canvas>
   <div class="ifogs"><div class="fog fB"><div class="tile"></div></div><div class="fog fA"><div class="tile"></div></div><div class="fog fC"><div class="tile"></div></div></div>
   <div class="shade"></div>
-  <div class="ttl"><p class="eyebrow">Год впереди</p><h1>Прогностика <em>2027</em></h1></div>
+  <div class="ttl"><p class="eyebrow">${isBack() ? 'С возвращением, ' + esc(S.profiles[0].name) : 'Год впереди'}</p><h1>Прогностика <em>2027</em></h1></div>
   <div class="ifade"></div>`,
 
 lang: () => `
@@ -1690,6 +1691,7 @@ function introInit(el){
     if (k < 1) requestAnimationFrame(frame); else finish(); };
   /* в последнем кадре canvas совпадает с фоном экрана языка: экран языка уже готов под заставкой, заставка просто убирается */
   const finish = () => { if (state === 'end' || !el.isConnected) return; state = 'end';
+    if (isBack()){ openReturning(el); return; } /* уже был в боте: язык и знакомство пропускаем, сразу его прогноз */
     go('lang', false, 'under'); requestAnimationFrame(() => el.remove()); };
   const skip = () => { if (state !== 'door') return; state = 'skip'; const p0 = p, t1 = performance.now(); /* нажали во время полёта: быстро долетаем */
     const f = now => { const u = Math.min(1, (now - t1) / 450); p = p0 + (1 - p0) * (1 - Math.pow(1 - u, 3)); draw(); if (u < 1) requestAnimationFrame(f); else finish(); };
@@ -1903,6 +1905,15 @@ function confirmData(){
   if (p.self && S.wantDemo){ S.wantDemo = false; startDemo(); } else go('tariffs'); /* история сохраняется: «Назад» на тарифах ведёт к проверке данных */
 }
 function openTariffs(k){ S.forIdx = k; go('tariffs'); }
+/* Вернувшийся человек. API: программист при запуске кладёт сохранённые профили в S.profiles (и язык в S.lang) до показа заставки */
+function isBack(){ return S.profiles.length > 0; }
+function nowMonth(){ const d = new Date(); return d.getFullYear() === 2027 ? d.getMonth() : 0; } /* до 2027 года открываем январь */
+function openReturning(intro){
+  S.active = 0; S.forIdx = 0; S.tab = 'm'; S.ytopic = null; S.hist = []; S.cur = null;
+  S.month = Q.has('month') ? +Q.get('month') : nowMonth();
+  go('main', false, 'fade');
+  intro.classList.add('gone'); setTimeout(() => intro.remove(), 700); /* заставка тает поверх прогноза */
+}
 function toMain(tab){ S.active = S.forIdx; S.month = 0; S.tab = tab === 'y' && S.profiles[S.forIdx].access === 'all' ? 'y' : 'm'; S.ytopic = null; S.hist = []; S.cur = null; go('main', false, 'fade'); }
 function startDemo(){ S.active = S.forIdx; S.month = 0; S.tab = 'm'; S.hist = []; S.cur = null; go('main', false, 'fade'); }
 function swapContent(dir = 1){
@@ -2004,7 +2015,7 @@ function gSetG(v){ prof().gender = v; gearSheet(); }
 function restart(){ closeSheet(true); S.mode = 'self'; S.profiles = []; S.promo = false; S.hist = []; S.cur = null; S.month = 0; S.onbI = 0; go('intro', false); }
 
 /* Быстрый вход для просмотра:
-   ?demo=intro | lang | onb | name | gender | dob | confirm | tariffs | main | year | profile | success | fail
+   ?demo=intro | back | lang | onb | name | gender | dob | confirm | tariffs | main | year | profile | success | fail
    &access=none|months|all, &people, &slide=0..2, &hold (заставка без перехода), &still (без анимаций) */
 const Q = new URLSearchParams(location.search); if (Q.get('lang') === 'uk') S.lang = 'uk'; /* для скриншотов: &lang=uk */
 if (Q.has('demo')){
@@ -2014,6 +2025,7 @@ if (Q.has('demo')){
   S.month = +(Q.get('month') || 0);
   const D = () => { S.mode = 'self'; S.draft = {name:'Мария', gender: Q.get('g') || 'f', d:25, m:7, y:1992}; S.hist = ['onb']; };
   if (v === 'intro') go('intro', false);
+  else if (v === 'back'){ S.profiles[0].access = Q.get('access') || 'months'; bootIntro(); } /* вход уже оплатившего: ?demo=back&access=months|all */
   else if (v === 'lang') go('lang', false);
   else if (v === 'onb'){ S.onbI = +(Q.get('slide') || 0); go('onb', false); }
   else if (v === 'name'){ D(); go('name'); }
