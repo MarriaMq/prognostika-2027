@@ -974,6 +974,50 @@ body{background:var(--sea)}
 @keyframes oknudge{0%,100%{transform:none}50%{transform:translateX(5px)}}
 @media (prefers-reduced-motion:reduce){ .oksun{opacity:1} }
 @media (max-height:700px){ .okw{padding-top:calc(var(--safe-t) + 5vh)} .okt{font-size:18px;margin-top:14px} }
+/* ===== v62: экран прогноза. Лента месяцев, один лист текста, вкладки без линий ===== */
+.mtabs{display:flex;margin:10px auto 0;max-width:280px;padding:3px;border:0;border-radius:20px;background:rgba(255,255,255,.14)}
+.night .mtabs button{flex:1;height:34px;border-radius:17px;font:400 17px/1 var(--f-serif);color:#fff;font-style:normal}
+.night .mtabs button.on{background:var(--card);color:var(--ink2);font-style:normal;box-shadow:0 2px 8px rgba(16,40,64,.15)}
+.mtabs button.on::after{display:none}
+.mstrip{position:relative;z-index:2;display:flex;gap:6px;overflow-x:auto;scrollbar-width:none;-webkit-overflow-scrolling:touch;margin:12px calc(var(--g) * -1) 0;padding:2px var(--g) 4px;scroll-padding:0 var(--g)}
+.mstrip::-webkit-scrollbar{display:none}
+.mstrip button{flex-shrink:0;display:inline-flex;align-items:center;gap:5px;height:36px;padding:0 15px;border-radius:18px;border:1px solid rgba(255,255,255,.42);font:400 17px/1 var(--f-serif);color:#fff;transition:background .25s,border-color .25s,transform .15s}
+.mstrip button:active{transform:scale(.95)}
+.mstrip button.on{background:var(--red-grad);border-color:transparent;box-shadow:0 6px 16px rgba(160,30,20,.3)}
+.mstrip button.lk{color:rgba(255,255,255,.6);border-color:rgba(255,255,255,.22)}
+.mstrip button.lk svg{width:12px;height:12px;opacity:.8}
+.rprog{opacity:var(--c,0)}
+.mhero{padding:4px 6px 4px}
+.mhero h2{font:400 46px/1 var(--f-serif);color:#fff;text-shadow:0 2px 18px rgba(16,40,64,.25)}
+.mhero p{margin-top:8px;font:400 14px/1.4 var(--f-text);color:rgba(255,255,255,.82)}
+.msheet{counter-reset:sec;border-radius:24px;background:var(--card);color:var(--ink2);padding:4px 22px;box-shadow:0 14px 34px rgba(16,40,64,.2)}
+.msheet .sec{counter-increment:sec;background:none;box-shadow:none;border:0;border-radius:0;padding:22px 0 20px;-webkit-backdrop-filter:none;backdrop-filter:none}
+.msheet .sec + .sec{border-top:1px solid rgba(35,65,92,.12)}
+.msheet .sec-h::before{content:counter(sec,decimal-leading-zero);display:block;margin-bottom:8px;font:500 11px/1 var(--f-text);letter-spacing:.22em;color:var(--alyi-l)}
+.msheet .sec h3{font-size:26px}
+.msheet .sec.lock h3{color:var(--ink3);font-size:21px}
+.msheet .sec.lock p{color:var(--ink3)}
+.msheet .sec.lock h3::before{content:none}
+.msheet .closed{padding:30px 4px}
+.msheet .closed .t{color:var(--alyi)}
+.msheet .closed .d{color:var(--ink3)}
+.msheet .fold .tw::after{content:"";position:absolute;left:0;right:0;bottom:0;height:2.6em;background:linear-gradient(180deg,rgba(248,241,231,0),var(--card));pointer-events:none;transition:opacity .3s}
+.msheet .fold.open .tw::after,.msheet .fold.short .tw::after{opacity:0}
+.content > .nextm{margin-top:6px}
+.content > .yseg{display:flex;width:100%;max-width:260px;margin:2px auto 6px;align-self:center;padding:3px;border:0;border-radius:20px;background:rgba(255,255,255,.14)}
+.content > .yseg button{flex:1;height:34px;border-radius:17px;font:400 17px/1 var(--f-serif);color:#fff;font-style:normal}
+.content > .yseg button.on{background:var(--card);color:var(--ink2);font-style:normal}
+.yseg button.on::after{display:none}
+.night .ytl{font-style:normal;font-size:44px;color:#fff}
+.night .ytl + .hph{text-align:center;margin:6px auto 0;color:rgba(255,255,255,.82)}
+.yq{font-size:26px;padding:4px 4px 4px}
+.ycards{grid-template-columns:1fr;gap:12px}
+.yc{height:132px;flex-direction:row;align-items:flex-end;justify-content:flex-start;gap:14px;padding:18px 20px}
+.yc svg{position:absolute;top:18px;right:18px}
+.yc .n{font-size:30px}
+.yc .d{font-size:13px}
+.yc.w{background:linear-gradient(90deg,rgba(35,65,92,.85),rgba(35,65,92,.15)),url(assets/rock.webp) 30% 40%/cover}
+.yc.l{background:linear-gradient(90deg,rgba(35,65,92,.85),rgba(35,65,92,.1)),url(assets/goat-sun.webp) 70% 45%/cover}
 </style>
 </head>
 <body>
@@ -1458,15 +1502,15 @@ main: () => {
   if (full) body = MONTH_TEXT.map(foldBlock).join('');
   else if (vis) body = MONTH_TEXT.map(b => b.w ? foldBlock(b) : shut(b)).join('');
   else body = `<div class="closed"><div class="t">Этот месяц откроется после оплаты</div><p class="d">${p.self ? 'Бесплатно открыта работа и деньги на январь и февраль.' : `Прогноз для ${esc(p.name)} откроется после оплаты.`}</p></div>`;
+  /* v62: крупное название месяца и весь текст месяца на одном светлом листе */
+  body = `<div class="mhero"><h2>${MONTHS[i]}</h2><p>${p.self ? 'Твой прогноз' : 'Прогноз'} действует с ${fmt(s)} по ${fmt(e)}</p></div><div class="msheet">${body}</div>`;
   if (i < 11 && canSee(p, i + 1) && (full || vis)) body += `<button class="nextm" onclick="setMonth(${i + 1})"><span>Дальше: ${MPREP[i + 1]}</span>${I.arrow}</button>`;
   if (p.access === 'months') body += `<div class="ybanner"><div class="k">Прогноз на год</div><div class="t">Главные повороты <em>2027 года</em>: общий и личный прогноз</div><button class="btn line" onclick="openTariffs(${S.active})">Открыть год за 400 грн</button></div>`;
   const cta = full ? '' : `<div class="bottom"><button class="btn primary split" onclick="openTariffs(${S.active})"><span>${p.self ? 'Открыть все 12 месяцев' : 'Открыть прогноз'}</span><span>${p.self ? '850 грн' : ''}</span></button></div>`;
   return `
   <div class="night">${top}
     ${p.self && !full ? `<div class="dpill">${I.gift}Бесплатно: работа на 2 ближайших месяца</div>` : ''}
-    <div class="carw"><div class="car">${MONTHS.map((_, k) => carCard(p, k)).join('')}</div></div>
-    <div class="cdots">${MONTHS.map((_, k) => `<i class="${k === i ? 'on' : ''}"></i>`).join('')}</div>
-    <p class="hph">${p.self ? 'Твой прогноз' : 'Прогноз'} на ${MPREP[i]} действует с ${fmt(s)} по ${fmt(e)}.</p>
+    <div class="mstrip" role="tablist" aria-label="Месяц">${MSHORT.ru.map((m, k) => `<button role="tab" data-k="${k}" class="${k === i ? 'on' : ''}${canSee(p, k) ? '' : ' lk'}" onclick="setMonth(${k})">${m}${canSee(p, k) ? '' : I.lock}</button>`).join('')}</div>
   </div>
   <div class="scroll"><div class="content">${body}</div></div>
   <div class="mcta">${cta}</div>`;
@@ -1515,7 +1559,7 @@ function yearView(p, top){
          <button class="yc w" onclick="setTopic('yW')">${I.bag}<span><span class="n">Общий прогноз</span><span class="d">Карьера, бизнес, финансы, самореализация</span></span></button>
          <button class="yc l" onclick="setTopic('yL')">${I.heart}<span><span class="n">Личный прогноз</span><span class="d">Любовь, отношения, эмоции, брак, дети, семья</span></span></button>
        </div>`
-    : `<div class="yseg">${['yW','yL'].map(x => `<button class="${x === k ? 'on' : ''}" onclick="setTopic('${x}')">${x === 'yW' ? 'Общий' : 'Личный'}</button>`).join('')}</div>${YEAR_TEXT[k].map(foldBlock).join('')}`;
+    : `<div class="yseg">${['yW','yL'].map(x => `<button class="${x === k ? 'on' : ''}" onclick="setTopic('${x}')">${x === 'yW' ? 'Общий' : 'Личный'}</button>`).join('')}</div><div class="msheet">${YEAR_TEXT[k].map(foldBlock).join('')}</div>`;
   return `
   <div class="night">${top}
     <h1 class="ytl">${p.self ? 'Твой год' : `Год ${esc(p.name)}`}</h1>
@@ -1548,9 +1592,10 @@ const AFTER = {
   main: el => {
     const car = el.querySelector('.car');
     if (car) fanInit(el, car);
+    stripTo(el, S.month, false);
     if (el.dataset.swipe) return; el.dataset.swipe = 1;
     let x0 = null, y0 = 0;
-    el.addEventListener('touchstart', e => { if (e.target.closest('.carw,.revs')) return; x0 = e.touches[0].clientX; y0 = e.touches[0].clientY; }, {passive: true});
+    el.addEventListener('touchstart', e => { if (e.target.closest('.carw,.revs,.mstrip')) return; x0 = e.touches[0].clientX; y0 = e.touches[0].clientY; }, {passive: true});
     el.addEventListener('touchend', e => {
       if (x0 == null) return; const dx = e.changedTouches[0].clientX - x0, dy = e.changedTouches[0].clientY - y0; x0 = null;
       if (S.tab === 'm' && Math.abs(dx) > 60 && Math.abs(dx) > Math.abs(dy) * 1.5) setMonth(S.month + (dx < 0 ? 1 : -1));
@@ -1886,9 +1931,13 @@ function setMonth(k, fromFan){
   const tmp = document.createElement('div'); tmp.innerHTML = SCREENS.main();
   ['.hph', '.content', '.mcta'].forEach(s => { const a = el.querySelector(s), b = tmp.querySelector(s); if (a && b) a.replaceWith(b); });
   if (!fromFan && el._carTo) el._carTo(k); else { const car = el.querySelector('.car'); if (car) fanLayout(car, k); }
+  el.querySelectorAll('.mstrip button').forEach(b => b.classList.toggle('on', +b.dataset.k === k)); stripTo(el, k, true);
   swapContent(dir); hap('select');
   setTimeout(() => initRead(el), 0);
 }
+/* лента месяцев: выбранный месяц выезжает ближе к середине */
+function stripTo(el, k, smooth){ const st = el.querySelector('.mstrip'), b = st && st.querySelector(`[data-k="${k}"]`); if (!b) return;
+  const x = b.offsetLeft - (st.clientWidth - b.offsetWidth) / 2; st.scrollTo({left: Math.max(0, x), behavior: smooth && !RM ? 'smooth' : 'auto'}); }
 function setTab(t){ if (S.tab === t) return; S.tab = t; rerender(); swapContent(t === 'y' ? 1 : -1); }
 function setTopic(k){ const was = S.ytopic; if (was === k) return; S.ytopic = k; rerender(); swapContent(was && k === 'yW' ? -1 : 1); hap('select'); }
 function switchTo(k){ S.active = k; S.month = 0; S.tab = 'm'; S.ytopic = null; S.hist = []; S.cur = null; go('main', false); }
