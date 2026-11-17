@@ -909,6 +909,10 @@ body{background:var(--sea)}
 .kg b{font-size:9px}
 @media (max-height:700px){ .keep{padding:14px 16px} .keep h4{font-size:21px;margin-top:8px} .kg{margin-top:10px} .kg i{aspect-ratio:.85} .keep .lockchip{margin-top:10px;height:26px} }
 @media (prefers-reduced-motion: reduce){ .plans .plan.p2.hot,.plans .plan.p2.hot::after{animation:none} .kg i{opacity:1} }
+/* v55: годовая прогностика на тарифах: короткая подпись и крупный замок; условия покупки в окне по нажатию */
+.plans .plan.p3 .p{gap:10px}
+.plans .plan.p3 .p .lk{display:grid;place-items:center;width:38px;height:38px;border-radius:50%;background:rgba(255,255,255,.16);border:1px solid rgba(255,255,255,.55)}
+.plans .plan.p3 .p .lk svg{width:19px;height:19px;color:#fff}
 </style>
 </head>
 <body>
@@ -1323,14 +1327,13 @@ tariffs: () => {
       <h1 class="h1">${other ? 'Выбери <em>формат</em>' : `${esc(p.name)}, <em>твой прогноз готов</em>`}</h1>
       ${other ? `<p class="lead" style="margin-top:10px">Прогноз будет здесь, в твоём профиле: «Чей прогноз смотреть». ${esc(p.name)} ничего не получит, читать его будешь ты.</p>` : ''}
       ${mDone || other ? (mDone || !other ? '' : `<div class="urg">${I.clock}<span>Январь в этом прогнозе начинается ${fmt(s0)}.</span></div>`) : `<h2 class="ptitle">Выбери <em>формат доступа</em></h2>`}
-      ${mDone ? '' : `<div class="forever">${I.check}<span><b>Доступ навсегда.</b> Платишь один раз, без подписки. Прогноз останется в приложении.</span></div>`}
     </div>
     <div class="plans">
-      ${mDone ? '' : `<button class="plan p1" onclick="paySheet('all')"><span><span class="badge">Выгоднее всего</span><span class="n">Всё вместе</span><span class="s">12 месяцев и главные повороты года. Экономия 150 грн</span></span>${uah(1100)}</button>`}
+      ${mDone ? '' : `<button class="plan p1" onclick="paySheet('all')"><span><span class="badge">Выгоднее всего</span><span class="n">Всё вместе</span><span class="s">12 месяцев и годовая прогностика. Экономия 150 грн</span></span>${uah(1100)}</button>`}
       ${mDone ? done('12 месяцев 2027') : `<button class="plan p2${other ? '' : ' hot'}" onclick="paySheet('months')"><span>${other ? '' : '<span class="badge">Популярный выбор</span>'}<span class="n">${other ? '12 месяцев 2027' : 'Твои 12 месяцев 2027'}</span><span class="s">71 грн за месяц</span></span>${uah(850)}</button>`}
-      ${all ? done('Главные повороты года') : mDone
-        ? `<button class="plan p1" onclick="paySheet('year')"><span><span class="n">Главные повороты года</span><span class="s">Общий и личный прогноз, от дня рождения до дня рождения</span></span>${uah(400)}</button>`
-        : `<button class="plan p3" onclick="yearLockSheet()"><span><span class="n">Главные повороты года</span><span class="s">Общий и личный прогноз, от дня рождения до дня рождения. Можно купить только после покупки 12 месяцев</span></span><span class="p">${I.lock}400<small>грн</small></span></button>`}
+      ${all ? done('Годовая прогностика') : mDone
+        ? `<button class="plan p1" onclick="paySheet('year')"><span><span class="n">Годовая прогностика</span><span class="s">Главные повороты года: общий и личный прогноз</span></span>${uah(400)}</button>`
+        : `<button class="plan p3" onclick="yearLockSheet()"><span><span class="n">Годовая прогностика</span><span class="s">Главные повороты года: общий и личный прогноз</span></span><span class="p"><span class="lk">${I.lock}</span>400<small>грн</small></span></button>`}
     </div>
     ${S.promo && !mDone ? `<p class="promo-ok">Промокод принят. Прогноз на год в подарок.</p>` : ''}
     <div class="extra">
@@ -1352,7 +1355,7 @@ fail: () => `
 success: () => {
   const p = S.profiles[S.forIdx];
   const L = S.lastPlan, gift = L === 'months' && S.promo;
-  const what = L === 'year' ? 'Главные повороты года открыты' : L === 'all' || gift ? '12 месяцев и главные повороты года открыты' : '12 месяцев открыты';
+  const what = L === 'year' ? 'Годовая прогностика открыта' : L === 'all' || gift ? '12 месяцев и годовая прогностика открыты' : '12 месяцев открыты';
   const txt = p.self
     ? (L === 'year' ? `${what}: работа и личная жизнь. Они во вкладке «Год».` : `${what}. Начни с января и читай по порядку.${L === 'all' || gift ? ' Год во вкладке «Год».' : ''}`)
     : `${what} для ${esc(p.name)}. Найти прогноз можно в профиле, в списке «Чей прогноз смотреть».`;
@@ -1413,7 +1416,7 @@ profile: () => {
     </div>
     <div class="group"><span class="eyebrow">Мои прогнозы</span><div class="list">
       <div class="item"><span>Твои 12 месяцев 2027</span>${me.access === 'none' ? buy(0) : ok}</div>
-      <div class="item"><span>Главные повороты года</span>${me.access === 'all' ? ok : buy(0)}</div>
+      <div class="item"><span>Годовая прогностика</span>${me.access === 'all' ? ok : buy(0)}</div>
     </div></div>
     <div class="group"><span class="eyebrow">Чей прогноз смотреть</span><div class="list">
       <button class="item" onclick="switchTo(0)"><span class="who"><span class="dot ${S.active === 0 ? 'on' : ''}">${S.active === 0 ? I.check : ''}</span>Мой прогноз</span></button>
@@ -1804,7 +1807,7 @@ function closeSheet(now){ app.querySelectorAll('.ov,.sheet').forEach(x => { if (
 function paySheet(plan){
   S.lastTry = plan;
   const sum = {months: 850, year: 400, all: 1100}[plan];
-  const name = {months: '12 месяцев 2027', year: 'Главные повороты года', all: 'Всё вместе: 12 месяцев и год'}[plan];
+  const name = {months: '12 месяцев 2027', year: 'Годовая прогностика', all: 'Всё вместе: 12 месяцев и год'}[plan];
   const fp = S.profiles[S.forIdx];
   sheet('Оплата', `
     <p>${name}${fp.self ? '' : '. Для близкого: ' + esc(fp.name)}</p>
@@ -1821,7 +1824,7 @@ function paid(plan){
   S.lastPlan = plan; closeSheet(); S.hist = []; S.cur = null; go('success', false, 'fade');
 }
 function retryPay(){ S.hist = []; S.cur = null; go('tariffs', false); setTimeout(() => paySheet(S.lastTry || 'months'), 350); }
-function yearLockSheet(){ sheet('Главные повороты года', `<p>Прогноз на год открывается после 12 месяцев. Возьми всё вместе, так выгоднее на 150 грн.</p><div style="height:20px"></div>
+function yearLockSheet(){ sheet('Годовая прогностика', `<p>Годовую прогностику можно купить после покупки 12 месяцев. Или возьми всё вместе, так выгоднее на 150 грн.</p><div style="height:20px"></div>
   <div style="display:flex;flex-direction:column;gap:10px">
     <button class="btn primary split" onclick="closeSheet();setTimeout(()=>paySheet('all'),200)"><span>Всё вместе</span><span>1100 грн</span></button>
     <button class="btn secondary split" onclick="closeSheet();setTimeout(()=>paySheet('months'),200)"><span>Только месяцы</span><span>850 грн</span></button>
