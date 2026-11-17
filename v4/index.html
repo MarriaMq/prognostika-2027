@@ -898,14 +898,17 @@ body{background:var(--sea)}
 .forever svg{flex:0 0 22px;width:22px;height:22px;margin-top:-1px;color:#FFE3CF}
 .forever b{font-weight:500}
 .slide[data-k="3"] .ill{display:grid;place-items:center}
-.inf{position:relative;width:min(72%,280px);text-align:center}
-.inf svg{width:100%;overflow:visible}
-.inf path{fill:none;stroke:#FFF4E8;stroke-width:5;stroke-linecap:round;stroke-dasharray:1 1;stroke-dashoffset:1;filter:drop-shadow(0 4px 14px rgba(20,40,70,.35))}
-.slide.seen .inf path{animation:infdraw 2.2s cubic-bezier(.5,0,.2,1) .2s forwards}
-@keyframes infdraw{to{stroke-dashoffset:0}}
-.inf span{display:block;margin-top:14px;font:italic 400 30px/1 var(--f-serif);color:#FFE3CF;text-shadow:0 2px 14px rgba(20,40,70,.4);opacity:0}
-.slide.seen .inf span{animation:softin 1s ease 1.4s forwards}
-@media (prefers-reduced-motion: reduce){ .plans .plan.p2.hot,.plans .plan.p2.hot::after{animation:none} .inf path{stroke-dashoffset:0} .inf span{opacity:1} }
+.keep h4{margin-top:10px}
+.kg{display:grid;grid-template-columns:repeat(6,1fr);gap:5px;margin-top:14px}
+.kg i{position:relative;aspect-ratio:.72;border-radius:8px;overflow:hidden;box-shadow:0 0 0 1px rgba(255,255,255,.7),0 3px 8px rgba(16,40,64,.18);opacity:0}
+.kg img{position:absolute;inset:0;width:100%;height:100%;object-fit:cover}
+.kg i::after{content:"";position:absolute;inset:auto 0 0 0;height:50%;background:linear-gradient(180deg,rgba(20,40,64,0),rgba(20,40,64,.6))}
+.kg b{position:absolute;z-index:1;left:0;right:0;bottom:4px;text-align:center;font:500 9.5px/1 var(--f-text);color:#fff;letter-spacing:.02em}
+.slide.seen .kg i{animation:softin .5s ease both;animation-delay:calc(.45s + var(--k) * 60ms)}
+.keep .lockchip svg{width:14px;height:14px}
+.kg b{font-size:9px}
+@media (max-height:700px){ .keep{padding:14px 16px} .keep h4{font-size:21px;margin-top:8px} .kg{margin-top:10px} .kg i{aspect-ratio:.85} .keep .lockchip{margin-top:10px;height:26px} }
+@media (prefers-reduced-motion: reduce){ .plans .plan.p2.hot,.plans .plan.p2.hot::after{animation:none} .kg i{opacity:1} }
 </style>
 </head>
 <body>
@@ -1235,7 +1238,9 @@ onb: () => {
         <div class="stat">Больше 2000 человек прочитали свой прогноз на 2026 год</div></div></div>
     </div>
     <div class="slide" data-k="3">
-      <div class="ill"><div class="inf"><svg viewBox="0 0 240 120" aria-hidden="true"><path pathLength="1" d="M120 60C96 28 78 16 60 16a44 44 0 0 0 0 88c18 0 36-12 60-44c24-32 42-44 60-44a44 44 0 0 1 0 88c-18 0-36-12-60-44z"/></svg><span>навсегда</span></div></div>
+      <div class="ill"><div class="peek keep"><div class="pm">Мой прогноз 2027</div><h4>Открыт навсегда</h4>
+        <div class="kg">${MSHORT.ru.map((n, k) => `<i style="--k:${k}"><img src="assets/land/${pad(k + 1)}.webp" alt="" draggable="false"><b>${n}</b></i>`).join('')}</div>
+        <span class="lockchip">${I.check}Без подписки и списаний</span></div></div>
       <div class="otx"><h2>Прогноз остаётся <em>с тобой навсегда</em></h2>
         <p>Платишь один раз, без подписки и списаний. Открывай любой месяц, когда захочешь, и перечитывай перед важными решениями.</p></div>
     </div>
@@ -1318,7 +1323,7 @@ tariffs: () => {
       <h1 class="h1">${other ? 'Выбери <em>формат</em>' : `${esc(p.name)}, <em>твой прогноз готов</em>`}</h1>
       ${other ? `<p class="lead" style="margin-top:10px">Прогноз будет здесь, в твоём профиле: «Чей прогноз смотреть». ${esc(p.name)} ничего не получит, читать его будешь ты.</p>` : ''}
       ${mDone || other ? (mDone || !other ? '' : `<div class="urg">${I.clock}<span>Январь в этом прогнозе начинается ${fmt(s0)}.</span></div>`) : `<h2 class="ptitle">Выбери <em>формат доступа</em></h2>`}
-      ${mDone ? '' : `<div class="forever">${I.inf}<span><b>Доступ навсегда.</b> Платишь один раз, без подписки. Прогноз останется в приложении.</span></div>`}
+      ${mDone ? '' : `<div class="forever">${I.check}<span><b>Доступ навсегда.</b> Платишь один раз, без подписки. Прогноз останется в приложении.</span></div>`}
     </div>
     <div class="plans">
       ${mDone ? '' : `<button class="plan p1" onclick="paySheet('all')"><span><span class="badge">Выгоднее всего</span><span class="n">Всё вместе</span><span class="s">12 месяцев и главные повороты года. Экономия 150 грн</span></span>${uah(1100)}</button>`}
@@ -1613,9 +1618,9 @@ function onbInit(el){
     const W = vp.clientWidth || 1, pos = S.onbI - dx / W;
     pg.style.transform = `translateX(${-pos * 100}%)`;
     slides.forEach((s, k) => { const p = k - pos; s.style.setProperty('--p', p.toFixed(3)); s.style.setProperty('--o', Math.max(0, 1 - Math.abs(p) * 1.3).toFixed(3)); });
-    ogl.style.transform = `translateX(${-pos * 14}%)`;
+    ogl.style.transform = `translateX(${-pos * 10}%)`;
     if (obg) obg.style.opacity = Math.max(0, 1 - Math.abs(pos) * 1.15).toFixed(3);
-    const sf = el.querySelector('.sfog'); if (sf){ sf.style.transition = anim ? 'transform .75s var(--spring)' : 'none'; } if (sf) sf.style.transform = `translateX(${(-pos * 7).toFixed(2)}%)`;
+    const sf = el.querySelector('.sfog'); if (sf){ sf.style.transition = anim ? 'transform .75s var(--spring)' : 'none'; } if (sf) sf.style.transform = `translateX(${(-pos * 4.2).toFixed(2)}%)`;
     dots.forEach((d, k) => d.classList.toggle('on', k === S.onbI));
     el.classList.toggle('last', S.onbI === 3);
     slides[S.onbI].classList.add('seen');
