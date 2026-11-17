@@ -4,6 +4,7 @@
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover, maximum-scale=1">
 <title>Прогностика 2027</title>
+<link rel="preload" as="image" href="assets/veronika.webp">
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:ital,wght@0,300;0,400;0,500;0,600;1,400;1,500&family=Inter:wght@300;400;500&display=swap" rel="stylesheet">
@@ -718,6 +719,10 @@ body{background:var(--sea)}
 .slide[data-k="2"] .ill{flex:0 0 auto;min-height:0;height:170px}
 .ofan{height:170px;margin-top:0}
 .ofan .sc{--a:calc((var(--k) - 5.5) * 6deg) !important;top:56px}
+/* v27: арка видна сразу вместе с экраном; фото автора */
+.slide .arch,.slide.seen .arch{animation:none;opacity:1;transform:none}
+.author .av.ph{width:56px;height:56px;background:url(assets/veronika.webp) center/cover;box-shadow:0 0 0 2px var(--alyi-l),0 6px 16px rgba(16,40,64,.3)}
+.screen.lang.fade{transition:opacity .35s ease}
 @media (max-height:700px){ .slide[data-k="2"] .ill{height:130px} .ofan{height:130px} .ofan .sc{top:30px;width:40px;height:60px;margin-left:-20px} }
 </style>
 </head>
@@ -986,9 +991,9 @@ onb: () => {
       <div class="ill"><div class="ofan">${MONTHS.map((_, k) => fanCard({d: 1, access: 'all', self: true}, k, true).replace('class="sc ', k === 0 ? 'class="sc hi ' : 'class="sc ')).join('')}</div></div>
       <div class="otx"><h2>Твой год <em>как один маршрут</em></h2>
         <p>Каждый месяц продолжает предыдущий. Читай по порядку, и год сложится в одну картину. Нужны только имя и дата рождения.</p>
-        <div class="author"><span class="av">В</span><span><span class="t">Вероника Леончикова-Штепа</span><span class="d">Автор прогностики, нумеролог, [N] лет практики</span></span></div>
-        <div class="stat">Уже [N] человек прочитали свой прогноз на 2026 год</div>
-        <div class="revs"><div class="rev">Февраль совпал до мелочей.<b>[Имя]</b></div><div class="rev">Перестала планировать важное на «минусовые» месяцы.<b>[Имя]</b></div><div class="rev">Читаю каждый месяц, как письмо себе.<b>[Имя]</b></div></div></div>
+        <div class="author"><span class="av ph"></span><span><span class="t">Вероника Леончикова-Штепа</span><span class="d">Автор прогностики, нумеролог, 10 лет практики</span></span></div>
+        <div class="stat">Уже больше 2000 человек прочитали свой прогноз</div>
+        <div class="revs"><div class="rev">Февраль совпал до мелочей.<b>Владислав</b></div><div class="rev">Перестала планировать важное на «минусовые» месяцы.<b>Мария</b></div><div class="rev">Читаю каждый месяц, как письмо себе.<b>Анатолий</b></div></div></div>
     </div>
   </div></div>
   <div class="bottom">
@@ -1223,7 +1228,7 @@ const AFTER = {
 /* Пролёт: три слоя фото (небо и море, скала с дверью, коза) приближаются с разной скоростью к двери */
 /* Заставка (анимация клиентки, перенесена без GSAP):
    камера экспоненциально приближается к двери, дверь плавно едет к центру, туман дрейфует бесшовно. */
-const DOOR = {x: 703 / 941, y: 810 / 1672}, ZOOM = 16, FLY = 2000, START = 900;
+const DOOR = {x: 703 / 941, y: 810 / 1672}, ZOOM = 16, FLY = 1500, START = 650;
 let FOG_TEX = null;
 function fogTexture(seed, W = 256, H = 96){
   let s = seed; const rnd = () => (s = (s * 16807) % 2147483647) / 2147483647;
@@ -1258,14 +1263,16 @@ function introInit(el){
   const apply = () => { const s = Math.exp(Math.log(ZOOM) * p), m = sineOut(Math.min(1, p * 1.25));
     const dx = P.x + (C.x - P.x) * m, dy = P.y + (C.y - P.y) * m;
     scene.style.transform = `translate3d(${dx - s * P.x}px,${dy - s * P.y}px,0) scale(${s})`; };
-  const frame = now => { if (S.cur !== 'intro') return; const k = Math.min(1, (now - t0) / (RM ? 1000 : FLY));
-    p = k * k; apply(); fade.style.opacity = Math.max(0, Math.min(1, (k - .62) / .26));
-    if (k < .9) requestAnimationFrame(frame); else go('lang', false, 'fade'); };
+  let handed = false; /* экран языка проявляется прямо поверх влёта в дверь, без паузы на пустом фоне */
+  const frame = now => { if (!el.isConnected) return; const k = Math.min(1, (now - t0) / (RM ? 1000 : FLY));
+    p = k * k; apply();
+    if (!handed && k >= .55){ handed = true; go('lang', false, 'fade'); }
+    if (k < 1) requestAnimationFrame(frame); };
   const fly = () => { if (state !== 'home' || S.cur !== 'intro') return; state = 'door'; el.classList.add('fly'); hap('soft');
     el.querySelectorAll('.fA,.fC').forEach(b => b.style.opacity = Math.min(.9, +b.style.opacity * 1.35));
     t0 = performance.now(); requestAnimationFrame(frame); };
   el._layout = layout;
-  el.addEventListener('click', () => state === 'home' ? fly() : go('lang', false, 'fade'));
+  el.addEventListener('click', () => state === 'home' ? fly() : (S.cur === 'intro' && go('lang', false, 'fade')));
   const ready = img.decode ? img.decode().catch(() => {}) : Promise.resolve();
   layout();
   const QP = new URLSearchParams(location.search).get('p'); /* для скриншотов: ?demo=intro&hold&p=0.6 */
