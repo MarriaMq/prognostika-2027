@@ -9,7 +9,7 @@
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:ital,wght@0,300;0,400;0,500;0,600;1,400;1,500&family=Inter:wght@300;400;500&display=swap" rel="stylesheet">
 <link rel="preload" as="image" href="assets/goat-sun.webp">
-<link rel="preload" as="image" href="assets/rock.webp">
+<link rel="preload" as="image" href="assets/sky-bg.webp">
 <script src="https://telegram.org/js/telegram-web-app.js"></script>
 <style>
 /* Прогностика 2027, v3: атмосферная тёмная тема.
@@ -825,6 +825,9 @@ body{background:var(--sea)}
 .screen.under{z-index:1;opacity:1;transform:none;transition:none}
 .screen.under .lfog{animation:lfog 2.6s ease .1s both}
 .screen.under .rise{animation-delay:calc(var(--i, 0) * 80ms + 150ms)}
+/* v41: на онбординге и экранах регистрации — фото моря на закате вместо синего фона с размытой скалой */
+.rockbg{left:0;right:0;top:0;bottom:0;height:auto;background:url(assets/sky-bg.webp) center bottom/cover;opacity:1;filter:none;-webkit-mask-image:none;mask-image:none}
+.rockbg::after{content:"";position:absolute;inset:0;background:linear-gradient(180deg,rgba(28,52,82,.18) 0%,rgba(28,52,82,0) 22%,rgba(28,52,82,.12) 50%,rgba(28,52,82,.38) 80%,rgba(28,52,82,.2) 100%)}
 </style>
 </head>
 <body>
