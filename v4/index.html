@@ -865,6 +865,10 @@ body{background:var(--sea)}
 .slide .ypath{opacity:0}
 .slide.seen .ypath{animation:softin 1.2s ease .15s both}
 @media (max-height:700px){ .yroute{gap:8px 6px;max-width:250px;margin:0 auto} .ycard b{font-size:10px} .slide[data-k="2"] .ill{padding:0 0 10px} .slide[data-k="2"] .author{margin-top:10px} }
+/* v47: на тарифах крупный призыв выбрать формат доступа */
+.screen.tariffs .form .h1{font-size:27px}
+.ptitle{margin-top:18px;font:500 34px/1.1 var(--f-serif);color:#fff;text-shadow:0 1px 14px rgba(20,45,70,.35)}
+.ptitle em{color:#FFD9BF}
 </style>
 </head>
 <body>
@@ -1256,7 +1260,7 @@ tariffs: () => {
       ${other ? `<div class="eyebrow" style="color:var(--scarlet);margin-bottom:12px">Для близкого: ${esc(p.name)}</div>` : ''}
       <h1 class="h1">${other ? 'Выбери <em>формат</em>' : `${esc(p.name)}, <em>твой прогноз готов</em>`}</h1>
       ${other ? `<p class="lead" style="margin-top:10px">Прогноз будет здесь, в твоём профиле: «Чей прогноз смотреть». ${esc(p.name)} ничего не получит, читать его будешь ты.</p>` : ''}
-      ${mDone ? '' : `<div class="urg">${I.clock}<span>${other ? `Январь в этом прогнозе начинается ${fmt(s0)}.` : `Твой январь начинается ${fmt(s0)}. Прочитай заранее.`}</span></div>`}
+      ${mDone || other ? (mDone || !other ? '' : `<div class="urg">${I.clock}<span>Январь в этом прогнозе начинается ${fmt(s0)}.</span></div>`) : `<h2 class="ptitle">Выбери <em>формат доступа</em></h2>`}
     </div>
     <div class="plans">
       ${mDone ? '' : `<button class="plan p1" onclick="paySheet('all')"><span><span class="badge">Выгоднее всего</span><span class="n">Всё вместе</span><span class="s">12 месяцев и главные повороты года. Экономия 150 грн</span></span>${uah(1100)}</button>`}
