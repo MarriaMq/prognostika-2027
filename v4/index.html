@@ -825,7 +825,7 @@ body{background:var(--sea)}
 .ajamb{position:absolute;display:block}
 .screen.intro{z-index:3}
 .screen.under{z-index:1;opacity:1;transform:none;transition:none}
-.screen.under .lfog{animation:lfog 2s ease .05s both}
+.screen.under .lfog{animation:lfog 2.6s ease .1s both}
 .screen.under .rise{animation-delay:calc(var(--i, 0) * 80ms + 150ms)}
 /* v41: на онбординге и экранах регистрации — фото моря на закате вместо синего фона с размытой скалой */
 .rockbg{left:0;right:0;top:0;bottom:0;height:auto;background:url(assets/sky-bg.webp) center bottom/cover;opacity:1;filter:none;-webkit-mask-image:none;mask-image:none}
@@ -869,6 +869,27 @@ body{background:var(--sea)}
 .slide .ypath{opacity:0}
 .slide.seen .ypath{animation:softin 1.2s ease .15s both}
 @media (max-height:700px){ .yroute{gap:8px 6px;max-width:250px;margin:0 auto} .ycard b{font-size:10px} .slide[data-k="2"] .ill{padding:0 0 10px} .slide[data-k="2"] .author{margin-top:10px} }
+/* v59: волна года вместо картинок месяцев */
+.wave{position:relative;width:100%;max-width:400px;margin:34px auto 0}
+.wave svg{display:block;width:100%;height:auto;overflow:visible}
+.wbase{stroke:rgba(255,248,238,.35);stroke-width:1;stroke-dasharray:2 5}
+.wline{fill:none;stroke:#FFF4E6;stroke-width:2.6;stroke-linecap:round;stroke-dasharray:1;stroke-dashoffset:1;filter:drop-shadow(0 2px 6px rgba(20,40,70,.25))}
+.warea{opacity:0}
+.wdot{fill:#FFF4E6;opacity:0}
+.wm{font:italic 500 12px var(--f-serif);fill:#FFF8EE;opacity:0}
+.wmark{fill:var(--alyi-l,#E8452C);stroke:#fff;stroke-width:2;opacity:0}
+.wtag{position:absolute;transform:translate(-50%,calc(-100% - 14px));padding:5px 10px;border-radius:12px;white-space:nowrap;font:500 12px/1 var(--f-text);letter-spacing:.02em;color:#FFF8EE;background:rgba(255,255,255,.16);border:1px solid rgba(255,248,238,.4);-webkit-backdrop-filter:blur(6px);backdrop-filter:blur(6px);opacity:0}
+.wtag.calm{transform:translate(-50%,12px);color:#E3EEFA;background:rgba(30,60,100,.28)}
+.wtag.best{color:#3A1C10;background:#FFE1C4;border-color:#FFE1C4}
+.slide.seen .wline{animation:wdraw 2.4s cubic-bezier(.45,0,.25,1) .3s forwards}
+.slide.seen .warea{animation:softin 1.2s ease 1.6s forwards}
+.slide.seen .wdot,.slide.seen .wm{animation:softin .4s ease forwards;animation-delay:calc(.3s + var(--k) * 200ms)}
+.slide.seen .wmark{animation:softin .3s ease .3s forwards}
+.slide.seen .wtag{animation:tagin .5s var(--spring) forwards;animation-delay:calc(.55s + var(--k) * 200ms)}
+@keyframes wdraw{to{stroke-dashoffset:0}}
+@keyframes tagin{from{opacity:0;scale:.8}to{opacity:1;scale:1}}
+@media (prefers-reduced-motion:reduce){ .wline{stroke-dashoffset:0} .warea,.wdot,.wm,.wtag,.wmark{opacity:1} }
+@media (max-height:700px){ .wave{max-width:240px;margin-top:26px} .wm{font-size:14px} .wtag{font-size:11px;padding:4px 8px} }
 /* v47: на тарифах крупный призыв выбрать формат доступа */
 .screen.tariffs .form .h1{font-size:27px}
 .ptitle{margin-top:18px;font:500 34px/1.1 var(--f-serif);color:#fff;text-shadow:0 1px 14px rgba(20,45,70,.35)}
@@ -888,7 +909,7 @@ body{background:var(--sea)}
 .otx .fine{color:#fff;font-size:15px;text-shadow:0 1px 10px rgba(20,45,70,.55)}
 .otx h2{text-shadow:0 1px 16px rgba(20,45,70,.45)}
 /* v51: заголовок и кнопки экрана языка проявляются одним целым, а не по очереди */
-.lang .rise{animation:softin .7s cubic-bezier(.4,0,.2,1) .1s both}
+.lang .rise{animation:softin 1.1s cubic-bezier(.4,0,.2,1) .25s both}
 /* v53: тариф «Твои 12 месяцев» мягко пульсирует светом; доступ навсегда на тарифах и в онбординге */
 .plans .plan.p2.hot{box-shadow:0 0 0 2px rgba(255,214,160,.95),0 12px 30px rgba(16,40,64,.22);animation:hot 2.6s ease-in-out infinite}
 @keyframes hot{0%,100%{box-shadow:0 0 0 2px rgba(255,214,160,.95),0 0 0 0 rgba(255,200,140,.55),0 12px 30px rgba(16,40,64,.22);transform:scale(1)}50%{box-shadow:0 0 0 2px rgba(255,214,160,1),0 0 0 9px rgba(255,200,140,0),0 14px 34px rgba(16,40,64,.28);transform:scale(1.015)}}
@@ -1254,7 +1275,7 @@ onb: () => {
         <p class="fine">Без прикрас: и возможности, и риски. Чтобы знать, где подстелить себе соломку.</p></div>
     </div>
     <div class="slide" data-k="2">
-      <div class="ill"><div class="yroute"><svg class="ypath" viewBox="0 0 100 100" preserveAspectRatio="none" aria-hidden="true"><path d="M7.9 24 L87.9 24 C99 24 99 76 87.9 76 L7.9 76"/></svg>${MSHORT[UA_READY && S.lang === 'uk' ? 'uk' : 'ru'].map((n, k) => `<div class="ycard" style="--k:${k};grid-row:${k < 6 ? 1 : 2};grid-column:${k < 6 ? k + 1 : 12 - k}"><img src="assets/land/${pad(k + 1)}.webp" alt="" draggable="false"><b>${n}</b></div>`).join('')}</div></div>
+      <div class="ill">${yearWave()}</div>
       <div class="otx"><h2>Твой год <em>как один маршрут</em></h2>
         <p>Каждый месяц продолжает предыдущий. Читай по порядку, и год сложится в одну картину. Нужны только имя и дата рождения.</p>
         <div class="acard"><div class="author"><span class="av ph"></span><span><span class="t">Вероника Леончикова-Штепа</span><span class="d">Автор прогностики, нумеролог, 10 лет практики</span></span></div>
@@ -1519,7 +1540,7 @@ const AFTER = {
 /* Пролёт: три слоя фото (небо и море, скала с дверью, коза) приближаются с разной скоростью к двери */
 /* Заставка (анимация клиентки, перенесена без GSAP):
    камера экспоненциально приближается к двери, дверь плавно едет к центру, туман дрейфует бесшовно. */
-const DOOR = {x: 703 / 941, y: 810 / 1672}, ZOOM = 16, FLY = 1750, START = 300;
+const DOOR = {x: 703 / 941, y: 810 / 1672}, ZOOM = 16, FLY = 2300, START = 650;
 let FOG_TEX = null;
 function fogTexture(seed, W = 256, H = 96){
   let s = seed; const rnd = () => (s = (s * 16807) % 2147483647) / 2147483647;
@@ -1629,6 +1650,26 @@ function introInit(el){
   dec(view).then(() => { const k = document.createElement('canvas').getContext('2d'); k.drawImage(view, 0, 0, 2, 2); k.drawImage(goat, 0, 0, 2, 2); draw(); }); /* заранее готовим картинку, чтобы на середине полёта не было паузы */
 }
 
+/* Слайд «Твой год как один маршрут»: волна года, подъёмы и спады. Это условный пример, а не чей-то прогноз */
+function yearWave(){
+  const VW = 340, VH = 200, Y = [108, 84, 62, 86, 122, 134, 108, 70, 40, 60, 110, 90];
+  const P = Y.map((y, k) => [16 + k * 28, y]);
+  let d = `M${P[0][0]} ${P[0][1]}`;
+  for (let i = 0; i < P.length - 1; i++){ const p0 = P[i - 1] || P[i], p1 = P[i], p2 = P[i + 1], p3 = P[i + 2] || p2; /* плавная кривая через все точки */
+    d += ` C${(p1[0] + (p2[0] - p0[0]) / 6).toFixed(1)} ${(p1[1] + (p2[1] - p0[1]) / 6).toFixed(1)} ${(p2[0] - (p3[0] - p1[0]) / 6).toFixed(1)} ${(p2[1] - (p3[1] - p1[1]) / 6).toFixed(1)} ${p2[0]} ${p2[1]}`; }
+  const area = `${d} L${P[11][0]} 166 L${P[0][0]} 166 Z`;
+  const ms = MSHORT[UA_READY && S.lang === 'uk' ? 'uk' : 'ru'];
+  const tags = [[2, 'действовать', ''], [5, 'переждать', 'calm'], [8, 'побеждать', 'best']];
+  return `<div class="wave"><svg viewBox="0 0 ${VW} ${VH}" aria-hidden="true">
+    <defs><linearGradient id="wvf" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#FFF4E6" stop-opacity=".34"/><stop offset="1" stop-color="#FFF4E6" stop-opacity="0"/></linearGradient></defs>
+    <line class="wbase" x1="8" y1="104" x2="${VW - 8}" y2="104"/>
+    <path class="warea" d="${area}" fill="url(#wvf)"/>
+    <path class="wline" d="${d}" pathLength="1"/>
+    ${P.map(([x, y], k) => `<circle class="wdot" cx="${x}" cy="${y}" r="${k === 0 ? 4.2 : 3}" style="--k:${k}"/><text class="wm" x="${x}" y="${VH - 6}" text-anchor="middle" style="--k:${k}">${ms[k]}</text>`).join('')}
+    <circle class="wmark" r="7"><animateMotion dur="2.4s" fill="freeze" begin="indefinite" calcMode="spline" keyTimes="0;1" keySplines=".45 0 .25 1" path="${d}"/></circle>
+  </svg>${tags.map(([k, t, c]) => `<span class="wtag ${c}" style="left:${(P[k][0] / VW * 100).toFixed(2)}%;top:${(P[k][1] / VH * 100).toFixed(2)}%;--k:${k}">${t}</span>`).join('')}</div>`;
+}
+
 /* Онбординг: листание пальцем, у картинки и текста разная скорость (параллакс) */
 function onbInit(el){
   const vp = el.querySelector('.ovp'), pg = el.querySelector('.pager'), slides = [...el.querySelectorAll('.slide')], ogl = el.querySelector('.ogl');
@@ -1658,6 +1699,7 @@ function onbInit(el){
     dots.forEach((d, k) => d.classList.toggle('on', k === S.onbI));
     el.classList.toggle('last', S.onbI === 3);
     slides[S.onbI].classList.add('seen');
+    { const am = slides[S.onbI].querySelector('animateMotion'); if (am && !am._run && !RM){ am._run = 1; setTimeout(() => { try { am.beginElement(); } catch (_) {} }, 300); } } /* огонёк едет по волне года */
   };
   el._onbGo = k => { S.onbI = Math.max(0, Math.min(3, k)); dx = 0; render(!RM); hap('select'); };
   vp.addEventListener('touchstart', e => { if (e.target.closest('.revs')) return; x0 = e.touches[0].clientX; y0 = e.touches[0].clientY; lock = null; }, {passive: true});
