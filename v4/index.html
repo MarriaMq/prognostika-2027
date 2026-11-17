@@ -870,32 +870,35 @@ body{background:var(--sea)}
 .slide.seen .ypath{animation:softin 1.2s ease .15s both}
 @media (max-height:700px){ .yroute{gap:8px 6px;max-width:250px;margin:0 auto} .ycard b{font-size:10px} .slide[data-k="2"] .ill{padding:0 0 10px} .slide[data-k="2"] .author{margin-top:10px} }
 /* v59: волна года вместо картинок месяцев */
-.wave{position:relative;width:100%;max-width:min(400px,36vh);margin:28px auto 0}
+.wave{position:relative;width:100%;margin:34px 0 0}
+.wplot{position:relative;height:clamp(104px,19vh,168px)}
+.wplot svg{position:absolute;inset:0;width:100%;height:100%;overflow:visible}
+.wbase{stroke:rgba(255,248,238,.35);stroke-width:1;stroke-dasharray:2 5;vector-effect:non-scaling-stroke}
+.wline{fill:none;stroke:#FFF4E6;stroke-width:2.6;stroke-linecap:round;vector-effect:non-scaling-stroke;filter:drop-shadow(0 2px 6px rgba(20,40,70,.25))}
+.warea{opacity:0}
+.wdot{position:absolute;width:6px;height:6px;margin:-3px 0 0 -3px;border-radius:50%;background:#FFF4E6;opacity:0}
+.wdot.first{width:9px;height:9px;margin:-4.5px 0 0 -4.5px}
+.wmark{position:absolute;left:0;top:0;width:14px;height:14px;margin:-7px 0 0 -7px;border-radius:50%;background:var(--alyi-l,#E8452C);border:2px solid #fff;box-shadow:0 2px 8px rgba(120,20,10,.35);opacity:0}
+.wms{position:relative;height:14px;margin-top:16px}
+.wms span{position:absolute;top:0;transform:translateX(-50%);font:italic 500 12px/1 var(--f-serif);color:#FFF8EE;opacity:0;white-space:nowrap}
+.wms span:first-child{transform:none}
+.wms span:last-child{transform:translateX(-100%)}
+.wtag{position:absolute;transform:translate(-50%,calc(-100% - 12px));padding:5px 10px;border-radius:12px;white-space:nowrap;font:500 12px/1 var(--f-text);letter-spacing:.02em;color:#FFF8EE;background:rgba(255,255,255,.16);border:1px solid rgba(255,248,238,.4);-webkit-backdrop-filter:blur(6px);backdrop-filter:blur(6px);opacity:0}
+.wtag.calm{transform:translate(-50%,12px);color:#E3EEFA;background:rgba(30,60,100,.28)}
+.wtag.best{color:#3A1C10;background:#FFE1C4;border-color:#FFE1C4}
+.slide.seen .warea{animation:softin 1.2s ease 1.6s forwards}
+.slide.seen .wdot,.slide.seen .wms span{animation:softin .4s ease forwards;animation-delay:calc(.3s + var(--k) * 200ms)}
+.slide.seen .wmark{animation:softin .3s ease .3s forwards}
+.slide.seen .wtag{animation:tagin .5s var(--spring) forwards;animation-delay:calc(.55s + var(--k) * 200ms)}
+@keyframes tagin{from{opacity:0;scale:.8}to{opacity:1;scale:1}}
+@media (prefers-reduced-motion:reduce){ .warea,.wdot,.wms span,.wtag,.wmark{opacity:1} }
+@media (max-height:700px){ .wave{margin-top:28px} .wplot{height:92px} .wms{margin-top:10px} .wms span{font-size:11px} .wtag{font-size:11px;padding:4px 8px} }
 .slide[data-k="2"] .ill{flex:0 0 auto;place-items:start center;padding:0 0 18px}
 .slide[data-k="2"] .otx > *{opacity:0}
 .slide[data-k="2"].seen .otx > *{animation:softin .6s ease both;animation-delay:calc(.75s + var(--j,0) * 120ms)} /* сначала рисуется волна, потом появляется текст */
 .slide[data-k="2"] .otx > :nth-child(2){--j:1}
 .slide[data-k="2"] .otx > :nth-child(3){--j:2}
-@media (max-height:800px) and (min-height:701px){ .wave{margin-top:22px} .slide[data-k="2"] .ill{padding-bottom:10px} .slide[data-k="2"] .otx p{font-size:15px;line-height:1.45} .slide[data-k="2"] .acard{margin-top:12px;padding:12px 14px} }
-.wave svg{display:block;width:100%;height:auto;overflow:visible}
-.wbase{stroke:rgba(255,248,238,.35);stroke-width:1;stroke-dasharray:2 5}
-.wline{fill:none;stroke:#FFF4E6;stroke-width:2.6;stroke-linecap:round;stroke-dasharray:1;stroke-dashoffset:1;filter:drop-shadow(0 2px 6px rgba(20,40,70,.25))}
-.warea{opacity:0}
-.wdot{fill:#FFF4E6;opacity:0}
-.wm{font:italic 500 12px var(--f-serif);fill:#FFF8EE;opacity:0}
-.wmark{fill:var(--alyi-l,#E8452C);stroke:#fff;stroke-width:2;opacity:0}
-.wtag{position:absolute;transform:translate(-50%,calc(-100% - 14px));padding:5px 10px;border-radius:12px;white-space:nowrap;font:500 12px/1 var(--f-text);letter-spacing:.02em;color:#FFF8EE;background:rgba(255,255,255,.16);border:1px solid rgba(255,248,238,.4);-webkit-backdrop-filter:blur(6px);backdrop-filter:blur(6px);opacity:0}
-.wtag.calm{transform:translate(-50%,12px);color:#E3EEFA;background:rgba(30,60,100,.28)}
-.wtag.best{color:#3A1C10;background:#FFE1C4;border-color:#FFE1C4}
-.slide.seen .wline{animation:wdraw 2.4s cubic-bezier(.45,0,.25,1) .3s forwards}
-.slide.seen .warea{animation:softin 1.2s ease 1.6s forwards}
-.slide.seen .wdot,.slide.seen .wm{animation:softin .4s ease forwards;animation-delay:calc(.3s + var(--k) * 200ms)}
-.slide.seen .wmark{animation:softin .3s ease .3s forwards}
-.slide.seen .wtag{animation:tagin .5s var(--spring) forwards;animation-delay:calc(.55s + var(--k) * 200ms)}
-@keyframes wdraw{to{stroke-dashoffset:0}}
-@keyframes tagin{from{opacity:0;scale:.8}to{opacity:1;scale:1}}
-@media (prefers-reduced-motion:reduce){ .wline{stroke-dashoffset:0} .warea,.wdot,.wm,.wtag,.wmark{opacity:1} }
-@media (max-height:700px){ .wave{max-width:240px;margin-top:24px} .wm{font-size:14px} .wtag{font-size:11px;padding:4px 8px} }
+@media (max-height:800px) and (min-height:701px){ .wave{margin-top:30px} .slide[data-k="2"] .ill{padding-bottom:10px} .slide[data-k="2"] .otx p{font-size:15px;line-height:1.45} .slide[data-k="2"] .acard{margin-top:12px;padding:12px 14px} }
 /* v47: на тарифах крупный призыв выбрать формат доступа */
 .screen.tariffs .form .h1{font-size:27px}
 .ptitle{margin-top:18px;font:500 34px/1.1 var(--f-serif);color:#fff;text-shadow:0 1px 14px rgba(20,45,70,.35)}
@@ -948,12 +951,12 @@ body{background:var(--sea)}
 .okimg{position:absolute;left:0;bottom:-13%;width:100%;aspect-ratio:941/1670;transform-origin:50% 100%;animation:okzoom 2.4s cubic-bezier(.3,.6,.2,1) both}
 .okimg img{position:absolute;inset:0;width:100%;height:100%;-webkit-mask-image:linear-gradient(180deg,transparent 0,#000 12%);mask-image:linear-gradient(180deg,transparent 0,#000 12%)}
 /* солнечные лучи: медленно вращаются вокруг солнца на фото (58% / 20% картинки) */
-.oksun{position:absolute;left:58%;top:20%;width:170%;aspect-ratio:1;translate:-50% -50%;border-radius:50%;background:repeating-conic-gradient(from 0deg,rgba(255,232,196,0) 0deg,rgba(255,232,196,.2) 4deg,rgba(255,232,196,0) 9deg,rgba(255,232,196,0) 17deg);-webkit-mask-image:radial-gradient(closest-side,#000 6%,rgba(0,0,0,.55) 30%,transparent 72%);mask-image:radial-gradient(closest-side,#000 6%,rgba(0,0,0,.55) 30%,transparent 72%);mix-blend-mode:screen;opacity:0;animation:softin 2s ease .6s forwards,okspin 70s linear infinite}
-.okglow{position:absolute;left:58%;top:20%;width:46%;aspect-ratio:1;translate:-50% -50%;border-radius:50%;background:radial-gradient(closest-side,rgba(255,244,222,.75),rgba(255,214,170,.28) 45%,rgba(255,214,170,0));mix-blend-mode:screen;animation:okpulse2 4.5s ease-in-out infinite}
-.okgl b{position:absolute;width:10px;height:10px;translate:-50% -50%;background:radial-gradient(closest-side,#fff,rgba(255,240,210,0));clip-path:polygon(50% 0,58% 42%,100% 50%,58% 58%,50% 100%,42% 58%,0 50%,42% 42%);opacity:0;animation:okglint 3.6s ease-in-out infinite;animation-delay:var(--d)}
+.oksun{position:absolute;left:58%;top:20%;width:120%;aspect-ratio:1;translate:-50% -50%;border-radius:50%;background:repeating-conic-gradient(from 0deg,rgba(255,232,196,0) 0deg,rgba(255,232,196,.11) 4deg,rgba(255,232,196,0) 9deg,rgba(255,232,196,0) 17deg);-webkit-mask-image:radial-gradient(closest-side,#000 6%,rgba(0,0,0,.45) 28%,transparent 62%);mask-image:radial-gradient(closest-side,#000 6%,rgba(0,0,0,.45) 28%,transparent 62%);mix-blend-mode:screen;opacity:0;animation:softin 2s ease .6s forwards,okspin 70s linear infinite}
+.okglow{position:absolute;left:58%;top:20%;width:30%;aspect-ratio:1;translate:-50% -50%;border-radius:50%;background:radial-gradient(closest-side,rgba(255,244,222,.5),rgba(255,214,170,.16) 45%,rgba(255,214,170,0));mix-blend-mode:screen;animation:okpulse2 4.5s ease-in-out infinite}
+.okgl b{position:absolute;width:7px;height:7px;translate:-50% -50%;background:radial-gradient(closest-side,#fff,rgba(255,240,210,0));clip-path:polygon(50% 0,58% 42%,100% 50%,58% 58%,50% 100%,42% 58%,0 50%,42% 42%);opacity:0;animation:okglint 3.6s ease-in-out infinite;animation-delay:var(--d)}
 @keyframes okspin{to{rotate:360deg}}
-@keyframes okpulse2{0%,100%{opacity:.75;scale:1}50%{opacity:1;scale:1.12}}
-@keyframes okglint{0%,100%{opacity:0;scale:.4}45%{opacity:.95;scale:1}60%{opacity:0;scale:.5}}
+@keyframes okpulse2{0%,100%{opacity:.7;scale:1}50%{opacity:1;scale:1.06}}
+@keyframes okglint{0%,100%{opacity:0;scale:.4}45%{opacity:.7;scale:1}60%{opacity:0;scale:.5}}
 .okbg::after{content:"";position:absolute;inset:0;background:linear-gradient(180deg,rgba(24,34,66,.78) 0%,rgba(30,42,78,.55) 26%,rgba(40,50,90,.12) 44%,rgba(0,0,0,0) 56%,rgba(60,10,8,0) 78%,rgba(60,10,8,.35) 100%)}
 @keyframes okzoom{from{transform:scale(1.08)}to{transform:none}}
 .okw{position:relative;z-index:1;text-align:center;padding:calc(var(--safe-t) + 9vh) 28px 0}
@@ -1432,7 +1435,7 @@ success: () => {
     b: both ? 'Выбери прогноз' : L === 'year' ? 'Открыть прогноз на год' : 'Открыть прогноз'
   };
   return `
-  <div class="okbg"><div class="okimg"><img src="assets/success-bg.webp" alt="" draggable="false"><i class="oksun"></i><i class="okglow"></i><span class="okgl"><b style="left:55%;top:41%;--d:0s"></b><b style="left:60%;top:42.5%;--d:0.9s"></b><b style="left:57%;top:44%;--d:1.7s"></b><b style="left:62%;top:45.5%;--d:0.4s"></b><b style="left:53%;top:43%;--d:2.3s"></b><b style="left:59%;top:47%;--d:1.2s"></b><b style="left:64%;top:42%;--d:2.8s"></b><b style="left:56%;top:48.5%;--d:3.3s"></b></span></div></div>
+  <div class="okbg"><div class="okimg"><img src="assets/success-bg.webp" alt="" draggable="false"><i class="oksun"></i><i class="okglow"></i><span class="okgl"><b style="left:56%;top:42%;--d:0s"></b><b style="left:61%;top:44%;--d:1.4s"></b><b style="left:58%;top:46.5%;--d:2.6s"></b><b style="left:54%;top:44.5%;--d:0.7s"></b><b style="left:63%;top:43%;--d:2s"></b></span></div></div>
   <div class="okw">
     <h1>${T.h}</h1>
     <p class="okk">${T.k}</p>
@@ -1672,22 +1675,36 @@ function introInit(el){
 
 /* Слайд «Твой год как один маршрут»: волна года, подъёмы и спады. Это условный пример, а не чей-то прогноз */
 function yearWave(){
-  const VW = 340, VH = 200, Y = [108, 84, 62, 86, 122, 134, 108, 70, 40, 60, 110, 90];
-  const P = Y.map((y, k) => [16 + k * 28, y]);
+  /* волна растянута на ширину текста: от буквы «Т» в заголовке до правого края. Рисуется в долях, поэтому подходит к любой ширине */
+  const Y = [108, 84, 62, 86, 122, 134, 108, 70, 40, 60, 110, 90].map(y => (y - 30) / 110 * 80); /* снизу остаётся место под подпись «переждать» */
+  const P = Y.map((y, k) => [k * 1000 / 11, y]);
   let d = `M${P[0][0]} ${P[0][1]}`;
   for (let i = 0; i < P.length - 1; i++){ const p0 = P[i - 1] || P[i], p1 = P[i], p2 = P[i + 1], p3 = P[i + 2] || p2; /* плавная кривая через все точки */
-    d += ` C${(p1[0] + (p2[0] - p0[0]) / 6).toFixed(1)} ${(p1[1] + (p2[1] - p0[1]) / 6).toFixed(1)} ${(p2[0] - (p3[0] - p1[0]) / 6).toFixed(1)} ${(p2[1] - (p3[1] - p1[1]) / 6).toFixed(1)} ${p2[0]} ${p2[1]}`; }
-  const area = `${d} L${P[11][0]} 166 L${P[0][0]} 166 Z`;
+    d += ` C${(p1[0] + (p2[0] - p0[0]) / 6).toFixed(1)} ${(p1[1] + (p2[1] - p0[1]) / 6).toFixed(1)} ${(p2[0] - (p3[0] - p1[0]) / 6).toFixed(1)} ${(p2[1] - (p3[1] - p1[1]) / 6).toFixed(1)} ${p2[0].toFixed(1)} ${p2[1].toFixed(1)}`; }
   const ms = MSHORT[UA_READY && S.lang === 'uk' ? 'uk' : 'ru'];
   const tags = [[2, 'действовать', ''], [5, 'переждать', 'calm'], [8, 'побеждать', 'best']];
-  return `<div class="wave"><svg viewBox="0 0 ${VW} ${VH}" aria-hidden="true">
-    <defs><linearGradient id="wvf" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#FFF4E6" stop-opacity=".34"/><stop offset="1" stop-color="#FFF4E6" stop-opacity="0"/></linearGradient></defs>
-    <line class="wbase" x1="8" y1="104" x2="${VW - 8}" y2="104"/>
-    <path class="warea" d="${area}" fill="url(#wvf)"/>
-    <path class="wline" d="${d}" pathLength="1"/>
-    ${P.map(([x, y], k) => `<circle class="wdot" cx="${x}" cy="${y}" r="${k === 0 ? 4.2 : 3}" style="--k:${k}"/><text class="wm" x="${x}" y="${VH - 6}" text-anchor="middle" style="--k:${k}">${ms[k]}</text>`).join('')}
-    <circle class="wmark" r="7"><animateMotion dur="2.4s" fill="freeze" begin="indefinite" calcMode="spline" keyTimes="0;1" keySplines=".45 0 .25 1" path="${d}"/></circle>
-  </svg>${tags.map(([k, t, c]) => `<span class="wtag ${c}" style="left:${(P[k][0] / VW * 100).toFixed(2)}%;top:${(P[k][1] / VH * 100).toFixed(2)}%;--k:${k}">${t}</span>`).join('')}</div>`;
+  const at = (x, y) => `left:${(x / 10).toFixed(2)}%;top:${y.toFixed(2)}%`;
+  return `<div class="wave"><div class="wplot"><svg viewBox="0 0 1000 100" preserveAspectRatio="none" aria-hidden="true">
+    <defs><linearGradient id="wvf" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#FFF4E6" stop-opacity=".34"/><stop offset="1" stop-color="#FFF4E6" stop-opacity="0"/></linearGradient>
+    <clipPath id="wclip"><rect class="wclip" x="-20" y="-20" width="0" height="140"/></clipPath></defs>
+    <line class="wbase" x1="0" y1="54" x2="1000" y2="54"/>
+    <path class="warea" d="${d} L1000 125 L0 125 Z" fill="url(#wvf)"/>
+    <path class="wline" d="${d}" clip-path="url(#wclip)"/>
+  </svg>${P.map(([x, y], k) => `<i class="wdot${k === 0 ? ' first' : ''}" style="${at(x, y)};--k:${k}"></i>`).join('')}
+  ${tags.map(([k, t, c]) => `<span class="wtag ${c}" style="${at(P[k][0], P[k][1])};--k:${k}">${t}</span>`).join('')}<i class="wmark"></i></div>
+  <div class="wms">${ms.map((m, k) => `<span style="left:${(P[k][0] / 10).toFixed(2)}%;--k:${k}">${m}</span>`).join('')}</div></div>`;
+}
+/* линия рисуется слева направо, огонёк едет по ней */
+function waveRun(slide){
+  const w = slide.querySelector('.wave'); if (!w || w._run) return; w._run = 1;
+  const line = w.querySelector('.wline'), rect = w.querySelector('.wclip'), mk = w.querySelector('.wmark');
+  const L = line.getTotalLength(), pts = []; for (let i = 0; i <= 240; i++){ const q = line.getPointAtLength(L * i / 240); pts.push([q.x, q.y]); }
+  const yAt = x => { let j = 1; while (j < pts.length - 1 && pts[j][0] < x) j++; const a = pts[j - 1], b = pts[j], t = b[0] === a[0] ? 0 : (x - a[0]) / (b[0] - a[0]); return a[1] + (b[1] - a[1]) * Math.max(0, Math.min(1, t)); };
+  const set = x => { rect.setAttribute('width', x + 20); mk.style.left = (x / 10) + '%'; mk.style.top = yAt(x) + '%'; };
+  if (RM){ set(1000); return; }
+  set(0); const ease = t => t < .5 ? 4 * t * t * t : 1 - Math.pow(-2 * t + 2, 3) / 2, t0 = performance.now() + 300;
+  const fr = now => { const t = Math.max(0, Math.min(1, (now - t0) / 2400)); set(1000 * ease(t)); if (t < 1 && w.isConnected) requestAnimationFrame(fr); };
+  requestAnimationFrame(fr);
 }
 
 /* Онбординг: листание пальцем, у картинки и текста разная скорость (параллакс) */
@@ -1719,7 +1736,7 @@ function onbInit(el){
     dots.forEach((d, k) => d.classList.toggle('on', k === S.onbI));
     el.classList.toggle('last', S.onbI === 3);
     slides[S.onbI].classList.add('seen');
-    { const am = slides[S.onbI].querySelector('animateMotion'); if (am && !am._run && !RM){ am._run = 1; setTimeout(() => { try { am.beginElement(); } catch (_) {} }, 300); } } /* огонёк едет по волне года */
+    waveRun(slides[S.onbI]);
   };
   el._onbGo = k => { S.onbI = Math.max(0, Math.min(3, k)); dx = 0; render(!RM); hap('select'); };
   vp.addEventListener('touchstart', e => { if (e.target.closest('.revs')) return; x0 = e.touches[0].clientX; y0 = e.touches[0].clientY; lock = null; }, {passive: true});
