@@ -724,6 +724,33 @@ body{background:var(--sea)}
 .author .av.ph{width:56px;height:56px;background:url(assets/veronika.webp) center/cover;box-shadow:0 0 0 2px var(--alyi-l),0 6px 16px rgba(16,40,64,.3)}
 .screen.lang.fade{transition:opacity .35s ease}
 @media (max-height:700px){ .slide[data-k="2"] .ill{height:130px} .ofan{height:130px} .ofan .sc{top:30px;width:40px;height:60px;margin-left:-20px} }
+/* v28: карусель месяцев как на референсе: большая карта в центре, соседние меньше по бокам */
+.night .mtop{justify-content:space-between;gap:8px;height:auto;min-height:52px;padding-top:4px}
+.mtop .tsp{width:38px;flex-shrink:0}
+.mttl{flex:1;text-align:center;font:400 calc(26px - 6px * var(--c,0))/1.08 var(--f-serif);color:#fff;text-wrap:balance}
+.mttl em{color:#FFD9BF}
+.prof.ico{width:38px;height:38px;padding:0;justify-content:center;border-radius:50%;margin-right:0;flex-shrink:0;background:rgba(248,241,231,.16);border-color:rgba(248,241,231,.55)}
+.carw{position:relative;z-index:2;height:calc(262px - 150px * var(--c,0));margin:8px calc(var(--g) * -1) 0;touch-action:pan-y;-webkit-user-select:none;user-select:none;cursor:grab;overflow:hidden}
+.car{position:absolute;inset:0;transform:scale(calc(1 - .5 * var(--c,0)));transform-origin:50% 0}
+.cc{position:absolute;left:50%;top:6px;width:min(170px,44vw);aspect-ratio:.7;margin-left:calc(min(170px,44vw) / -2);border-radius:20px;overflow:hidden;box-shadow:0 0 0 1px rgba(255,255,255,.75),0 18px 40px rgba(16,40,64,.32);will-change:transform,opacity;display:flex;flex-direction:column;align-items:center;justify-content:center;opacity:0}
+.car.ready .cc{transition:none}
+.car.snap .cc{transition:transform .6s var(--spring),opacity .4s ease,filter .4s ease}
+.ci{position:absolute;inset:0;background:#A9C5DA center/cover}
+.cc::after{content:"";position:absolute;inset:0;background:linear-gradient(180deg,rgba(248,241,231,.08),rgba(248,241,231,0) 40%,rgba(23,52,80,.18));pointer-events:none}
+.cm{position:relative;z-index:1;font:italic 500 30px/1 var(--f-serif);color:#1E3A55;text-shadow:0 1px 14px rgba(255,248,236,.95)}
+.cd{position:relative;z-index:1;margin-top:8px;font:500 11px/1 var(--f-text);letter-spacing:.08em;color:#23415C;text-shadow:0 1px 8px rgba(255,248,236,.9);opacity:0;transition:opacity .3s}
+.cc.cur .cd{opacity:1}
+.cc:not(.cur) .cm{font-size:24px}
+.cc.cur{box-shadow:0 0 0 2px var(--alyi-l),0 22px 48px rgba(16,40,64,.38)}
+.cc.lk .ci{filter:saturate(.55) brightness(.92)}
+.clk{position:absolute;z-index:1;bottom:12px;left:50%;margin-left:-15px;width:30px;height:30px;border-radius:50%;display:grid;place-items:center;background:rgba(248,241,231,.92);color:var(--alyi)}
+.clk svg{width:14px;height:14px}
+.cdots{position:relative;z-index:2;display:flex;justify-content:center;gap:7px;margin-top:calc(6px - 6px * var(--c,0));opacity:calc(1 - 1.6 * var(--c,0));height:calc(8px * (1 - var(--c,0)))}
+.cdots i{width:5px;height:5px;border-radius:50%;background:rgba(248,241,231,.55);transition:all .3s}
+.cdots i.on{width:8px;height:8px;margin-top:-1.5px;background:var(--alyi-l)}
+.main .dpill{margin-top:6px}
+@media (max-width:380px){ .main .dpill{letter-spacing:.04em;font-size:9.5px;padding-left:12px;padding-right:12px;gap:6px} }
+@media (max-height:700px){ .carw{height:calc(212px - 110px * var(--c,0))} .cc{width:min(136px,38vw);margin-left:calc(min(136px,38vw) / -2)} .mttl{font-size:calc(22px - 4px * var(--c,0))} }
 </style>
 </head>
 <body>
@@ -944,6 +971,13 @@ const fanCard = (p, k, small) => { const [s] = monthRange(p, k);
     <div class="fb">${I.star}${small ? '' : `<span class="lkm">${I.lock}</span>`}</div>
   </div></div>`; };
 
+/* Карта месяца для карусели: своё фото неба и моря на каждый месяц (позже заменить на сгенерированные) */
+const MIMG = k => `assets/m/${pad(k + 1)}.webp`;
+const carCard = (p, k) => { const [s] = monthRange(p, k), open = canSee(p, k);
+  return `<div class="cc${open ? '' : ' lk'}" data-k="${k}"><div class="ci" style="background-image:url(${MIMG(k)})"></div>
+    <span class="cm">${MONTHS[k]}</span><span class="cd">с ${fmt(s)}</span>${open ? '' : `<span class="clk">${I.lock}</span>`}</div>`; };
+MONTHS.forEach((_, k) => { const im = new Image(); im.src = MIMG(k); }); /* грузим заранее, чтобы карты не мигали */
+
 /* ---------- Экраны ---------- */
 const SCREENS = {
 intro: () => `
@@ -1017,7 +1051,7 @@ gender: () => {
   return `
   <header class="bar">${backBtn}${stepBar(2)}</header>
   <div class="scroll"><div class="form">
-    <h1 class="h1">${S.mode === 'self' ? `${nm}, выбери свой вариант текстов` : `Вариант текстов для ${nm}`}</h1>
+    <h1 class="h1">${S.mode === 'self' ? `${nm}, выбери свой пол` : `Выбери пол для ${nm}`}</h1>
     <p class="lead">Для женщин и мужчин прогноз звучит по-разному.</p>
     <div class="field gbig">${[['f','Женщина'],['m','Мужчина']].map(([g, l]) => `<button class="${S.draft.gender === g ? 'on' : ''}" onclick="setGender('${g}')"><span>${l}</span>${I.right}</button>`).join('')}</div>
   </div></div>`;
@@ -1115,8 +1149,8 @@ success: () => {
 
 main: () => {
   const p = prof(), yOpen = p.access === 'all', tab = yOpen ? S.tab : 'm';
-  const brand = p.self ? 'Прогностика 2027' : `Прогноз: ${esc(p.name)}`;
-  const top = `${dust(18, 'stars')}<div class="top"><span class="brand">${brand}</span><button class="prof" onclick="go('profile')">${I.user}Профиль</button></div>
+  const brand = p.self ? (tab === 'y' ? 'Прогностика <em>2027</em>' : 'Месячная прогностика <em>2027</em>') : `Прогноз: ${esc(p.name)}`;
+  const top = `${dust(18, 'stars')}<div class="top mtop"><span class="tsp"></span><h1 class="mttl">${brand}</h1><button class="prof ico" onclick="go('profile')" aria-label="Профиль">${I.user}</button></div>
     ${yOpen ? `<div class="mtabs" role="tablist"><button role="tab" class="${tab === 'm' ? 'on' : ''}" onclick="setTab('m')">Месяцы</button><button role="tab" class="${tab === 'y' ? 'on' : ''}" onclick="setTab('y')">Год</button></div>` : ''}`;
   if (tab === 'y') return yearView(p, top);
   if (S.month == null) S.month = 0;
@@ -1132,7 +1166,8 @@ main: () => {
   return `
   <div class="night">${top}
     ${p.self && !full ? `<div class="dpill">${I.gift}Бесплатно: работа на 2 ближайших месяца</div>` : ''}
-    <div class="fanwrap"><div class="fan">${MONTHS.map((_, k) => fanCard(p, k)).join('')}</div></div>
+    <div class="carw"><div class="car">${MONTHS.map((_, k) => carCard(p, k)).join('')}</div></div>
+    <div class="cdots">${MONTHS.map((_, k) => `<i class="${k === i ? 'on' : ''}"></i>`).join('')}</div>
     <p class="hph">${p.self ? 'Твой прогноз' : 'Прогноз'} на ${MPREP[i]} действует с ${fmt(s)} по ${fmt(e)}.</p>
   </div>
   <div class="scroll"><div class="content">${body}</div></div>
@@ -1212,11 +1247,11 @@ const AFTER = {
   },
   dob: el => wheelsInit(el),
   main: el => {
-    const fan = el.querySelector('.fan');
-    if (fan) fanInit(el, fan);
+    const car = el.querySelector('.car');
+    if (car) fanInit(el, car);
     if (el.dataset.swipe) return; el.dataset.swipe = 1;
     let x0 = null, y0 = 0;
-    el.addEventListener('touchstart', e => { if (e.target.closest('.fanwrap,.revs')) return; x0 = e.touches[0].clientX; y0 = e.touches[0].clientY; }, {passive: true});
+    el.addEventListener('touchstart', e => { if (e.target.closest('.carw,.revs')) return; x0 = e.touches[0].clientX; y0 = e.touches[0].clientY; }, {passive: true});
     el.addEventListener('touchend', e => {
       if (x0 == null) return; const dx = e.changedTouches[0].clientX - x0, dy = e.changedTouches[0].clientY - y0; x0 = null;
       if (S.tab === 'm' && Math.abs(dx) > 60 && Math.abs(dx) > Math.abs(dy) * 1.5) setMonth(S.month + (dx < 0 ? 1 : -1));
@@ -1337,39 +1372,44 @@ function wheelsInit(el){
 }
 
 /* Веер карт месяцев: тянешь пальцем, карты поворачиваются по дуге, ближайшая встаёт в центр */
-function fanLayout(fan, pos){
-  fan.querySelectorAll('.fc').forEach(c => {
-    const k = +c.dataset.k, off = k - pos, a = Math.abs(off);
-    c.style.transform = `rotate(${(off * 7.2).toFixed(2)}deg) translateY(${(-12 * Math.max(0, 1 - a)).toFixed(1)}px) scale(${(1 - Math.min(a, 4) * .05).toFixed(3)})`;
-    c.style.opacity = a > 3.6 ? 0 : Math.max(0, 1 - Math.max(0, a - .6) * .3).toFixed(2);
-    c.style.filter = a > .5 ? `brightness(${(1 - Math.min(a, 3) * .12).toFixed(2)})` : '';
+function fanLayout(car, pos){
+  const W = car.clientWidth || 360, cw = Math.min(170, W * .44);
+  car.querySelectorAll('.cc').forEach(c => {
+    const k = +c.dataset.k, off = k - pos, a = Math.abs(off), sg = Math.sign(off);
+    const x = sg * (a <= 1 ? a * cw * .78 : cw * .78 + (a - 1) * cw * .34);
+    c.style.transform = `translateX(${x.toFixed(1)}px) scale(${(1 - Math.min(a, 2.2) * .17).toFixed(3)})`;
+    c.style.opacity = a > 2.4 ? 0 : (1 - Math.max(0, a - 1.4)).toFixed(2);
     c.style.zIndex = 100 - Math.round(a * 10);
     c.classList.toggle('cur', Math.round(pos) === k);
   });
+  const d = car.closest('.night') && car.closest('.night').querySelectorAll('.cdots i');
+  if (d) d.forEach((x, k) => x.classList.toggle('on', k === Math.max(0, Math.min(11, Math.round(pos)))));
 }
-function fanInit(el, fan){
-  const wrap = el.querySelector('.fanwrap');
-  let pos = S.fanFrom != null ? S.fanFrom : S.month; S.fanFrom = null;
-  fanLayout(fan, pos);
-  if (pos !== S.month){ void fan.offsetWidth; fan.classList.add('snap'); pos = S.month; fanLayout(fan, pos); }
+function fanInit(el, car){
+  const wrap = el.querySelector('.carw');
+  let pos = S.month;
+  fanLayout(car, pos);
+  requestAnimationFrame(() => car.classList.add('ready'));
   let x0 = null, p0 = 0, moved = 0, lastX = 0, lastT = 0, vel = 0, tgt = null;
-  wrap.addEventListener('pointerdown', e => { x0 = e.clientX; p0 = pos; moved = 0; vel = 0; lastX = e.clientX; lastT = performance.now(); tgt = e.target.closest('.fc'); fan.classList.remove('snap'); try { wrap.setPointerCapture(e.pointerId); } catch (_) {} });
+  const step = () => Math.min(170, (car.clientWidth || 360) * .44) * .78;
+  wrap.addEventListener('pointerdown', e => { x0 = e.clientX; p0 = pos; moved = 0; vel = 0; lastX = e.clientX; lastT = performance.now(); tgt = e.target.closest('.cc'); car.classList.remove('snap'); try { wrap.setPointerCapture(e.pointerId); } catch (_) {} });
   wrap.addEventListener('pointermove', e => {
     if (x0 == null) return; const dx = e.clientX - x0; moved = Math.max(moved, Math.abs(dx));
     const now = performance.now(); vel = (e.clientX - lastX) / Math.max(1, now - lastT); lastX = e.clientX; lastT = now;
-    const np = Math.max(-.45, Math.min(11.45, p0 - dx / 62));
+    const np = Math.max(-.4, Math.min(11.4, p0 - dx / step()));
     if (Math.round(np) !== Math.round(pos)) hap('select');
-    pos = np; fanLayout(fan, pos);
+    pos = np; fanLayout(car, pos);
   });
   const up = () => {
     if (x0 == null) return; x0 = null;
-    if (performance.now() - lastT > 90) vel = 0; /* палец остановился: без броска */
-    let k = moved < 6 && tgt ? +tgt.dataset.k : Math.round(pos - Math.max(-1.2, Math.min(1.2, vel)) * 1.6);
+    if (performance.now() - lastT > 90) vel = 0;
+    let k = moved < 6 && tgt ? +tgt.dataset.k : Math.round(pos - Math.max(-1.2, Math.min(1.2, vel)) * 1.2);
     k = Math.max(0, Math.min(11, k));
-    fan.classList.add('snap'); pos = k; fanLayout(fan, k);
+    car.classList.add('snap'); pos = k; fanLayout(car, k);
     if (k !== S.month) setMonth(k, true);
   };
   wrap.addEventListener('pointerup', up); wrap.addEventListener('pointercancel', up);
+  el._carTo = k => { pos = k; car.classList.add('snap'); fanLayout(car, k); };
 }
 
 function pickLang(l){ S.lang = l; document.documentElement.lang = l; S.onbI = 0; S.onbFrom = null; go('onb', true, 'fade'); }
@@ -1379,9 +1419,9 @@ function confirmData(){
   const p = {name: cap(D.name), gender: D.gender || 'f', d: D.d, m: D.m, y: D.y, access: 'none', self: S.mode === 'self'};
   /* API: сохранить профиль на сервере */
   if (p.self){ S.profiles = [p]; S.active = 0; S.forIdx = 0; }
-  else { S.profiles.push(p); S.forIdx = S.profiles.length - 1; }
-  S.hist = []; S.cur = null;
-  if (p.self && S.wantDemo){ S.wantDemo = false; startDemo(); } else go('tariffs');
+  else if (D.pidx != null && S.profiles[D.pidx]){ S.profiles[D.pidx] = p; S.forIdx = D.pidx; } /* вернулись «Назад» и подтвердили снова */
+  else { S.profiles.push(p); S.forIdx = D.pidx = S.profiles.length - 1; }
+  if (p.self && S.wantDemo){ S.wantDemo = false; startDemo(); } else go('tariffs'); /* история сохраняется: «Назад» на тарифах ведёт к проверке данных */
 }
 function openTariffs(k){ S.forIdx = k; go('tariffs'); }
 function toMain(){ S.active = S.forIdx; S.month = 0; S.tab = 'm'; S.ytopic = null; S.hist = []; S.cur = null; go('main', false, 'fade'); }
@@ -1401,7 +1441,7 @@ function setMonth(k, fromFan){
   S.month = k;
   const tmp = document.createElement('div'); tmp.innerHTML = SCREENS.main();
   ['.hph', '.content', '.mcta'].forEach(s => { const a = el.querySelector(s), b = tmp.querySelector(s); if (a && b) a.replaceWith(b); });
-  if (!fromFan){ const fan = el.querySelector('.fan'); if (fan){ fan.classList.add('snap'); fanLayout(fan, k); } }
+  if (!fromFan && el._carTo) el._carTo(k); else { const car = el.querySelector('.car'); if (car) fanLayout(car, k); }
   swapContent(dir); hap('select');
   setTimeout(() => initRead(el), 0);
 }
