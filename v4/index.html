@@ -836,6 +836,16 @@ body{background:var(--sea)}
 .lfog,.screen.portal .lfog,.screen.under .lfog{opacity:1;animation:none}
 .sfog{left:-20% !important;right:-20% !important;opacity:.85}
 .screen.intro{background:#718094}
+/* v44: тариф года ярче; пояснение к покупке для близкого */
+.plans .plan.p3{border-color:rgba(255,255,255,.85);background:rgba(255,255,255,.08);color:#fff}
+.plans .plan.p3 .n{color:#fff}
+.plans .plan.p3 .s{color:rgba(255,255,255,.92)}
+.plans .plan.p3 .p{color:rgba(255,255,255,.9)}
+.item .it{display:flex;flex-direction:column;align-items:flex-start;text-align:left}
+.item.act svg{flex-shrink:0}
+.item.act:has(.it){align-items:flex-start;padding-top:16px;padding-bottom:16px}
+.item.act:has(.it) svg{margin-top:3px}
+.item .it .d{display:block;margin-top:4px;font:300 13px/1.4 var(--f-text);color:var(--ink3);letter-spacing:0}
 </style>
 </head>
 <body>
@@ -1225,9 +1235,10 @@ tariffs: () => {
   <header class="bar">${backBtn}<span class="spacer"></span></header>
   <div class="scroll">
     <div class="form" style="padding-top:6px">
-      ${other ? `<div class="eyebrow" style="color:var(--scarlet);margin-bottom:12px">Подарок для ${esc(p.name)}</div>` : ''}
+      ${other ? `<div class="eyebrow" style="color:var(--scarlet);margin-bottom:12px">Для близкого: ${esc(p.name)}</div>` : ''}
       <h1 class="h1">${other ? 'Выбери <em>формат</em>' : `${esc(p.name)}, <em>твой прогноз готов</em>`}</h1>
-      ${mDone ? '' : `<div class="urg">${I.clock}<span>${other ? `Январь ${esc(p.name)} начинается ${fmt(s0)}.` : `Твой январь начинается ${fmt(s0)}. Прочитай заранее.`}</span></div>`}
+      ${other ? `<p class="lead" style="margin-top:10px">Прогноз будет здесь, в твоём профиле: «Чей прогноз смотреть». ${esc(p.name)} ничего не получит, читать его будешь ты.</p>` : ''}
+      ${mDone ? '' : `<div class="urg">${I.clock}<span>${other ? `Январь в этом прогнозе начинается ${fmt(s0)}.` : `Твой январь начинается ${fmt(s0)}. Прочитай заранее.`}</span></div>`}
     </div>
     <div class="plans">
       ${mDone ? '' : `<button class="plan p1" onclick="paySheet('all')"><span><span class="badge">Выгоднее всего</span><span class="n">Всё вместе</span><span class="s">12 месяцев и главные повороты года. Экономия 150 грн</span></span>${uah(1100)}</button>`}
@@ -1324,7 +1335,7 @@ profile: () => {
       ${others.map(([p, k]) => `<div class="item" role="button" tabindex="0" onclick="switchTo(${k})"><span class="who"><span class="dot ${k === S.active ? 'on' : ''}">${k === S.active ? I.check : ''}</span>${esc(p.name)}</span>${p.access === 'none' ? buy(k) : ok}</div>`).join('')}
     </div></div>
     <div class="group"><div class="list">
-      <button class="item act" onclick="addPerson()">${I.gift}Подарить прогноз близкому</button>
+      <button class="item act" onclick="addPerson()">${I.heart}<span class="it"><span>Купить прогноз для близкого</span><span class="d">Прогноз откроется здесь, в твоём приложении. Близкому ничего не придёт, читать его будешь ты.</span></span></button>
       <button class="item act ink" onclick="support()">${I.chat}Написать в поддержку</button>
     </div></div>
     <button class="linkb" onclick="openOnbFromProfile()">Что такое прогностика</button>
@@ -1657,7 +1668,9 @@ function setTopic(k){ const was = S.ytopic; if (was === k) return; S.ytopic = k;
 function switchTo(k){ S.active = k; S.month = 0; S.tab = 'm'; S.ytopic = null; S.hist = []; S.cur = null; go('main', false); }
 function addPerson(){ S.mode = 'other'; S.draft = {name:'', gender:'', d:1, m:0, y:1990}; go('name'); }
 function setLang(l){ S.lang = l; document.documentElement.lang = l; rerender(); if (l === 'uk') toast('Украинские тексты добавим следующим шагом'); }
-function support(){ /* API: ссылка на поддержку, например t.me/аккаунт */ toast('Здесь откроется чат с поддержкой'); }
+const SUPPORT_URL = 'https://t.me/tvoya_turbota';
+function support(){ /* поддержка: Telegram @tvoya_turbota */
+  if (tg && tg.initData && tg.openTelegramLink) tg.openTelegramLink(SUPPORT_URL); else window.open(SUPPORT_URL, '_blank', 'noopener'); }
 function toast(msg){
   const t = document.createElement('div');
   t.style.cssText = 'position:absolute;left:24px;right:24px;bottom:calc(96px + var(--safe-b));z-index:30;padding:14px 18px;border-radius:16px;background:#315A7C;border:1px solid var(--hair);color:var(--cream);font:400 14px/1.4 var(--f-text);text-align:center;opacity:0;transform:translateY(10px);transition:opacity .3s,transform .4s var(--spring)';
@@ -1681,7 +1694,7 @@ function paySheet(plan){
   const name = {months: '12 месяцев 2027', year: 'Главные повороты года', all: 'Всё вместе: 12 месяцев и год'}[plan];
   const fp = S.profiles[S.forIdx];
   sheet('Оплата', `
-    <p>${name}${fp.self ? '' : ', подарок для ' + esc(fp.name)}</p>
+    <p>${name}${fp.self ? '' : '. Для близкого: ' + esc(fp.name)}</p>
     <div class="amount">${sum}<small>грн</small></div>
     ${plan === 'months' && S.promo ? `<p style="color:var(--ok);margin:-6px 0 12px">+ прогноз на год в подарок</p>` : ''}
     <div class="paynote">${I.card}<span>Сейчас откроется страница оплаты monobank. Можно оплатить картой любого банка, Apple Pay или Google Pay. После оплаты ты вернёшься сюда, и прогноз откроется.</span></div>
