@@ -788,16 +788,17 @@ body{background:var(--sea)}
 .slide[data-k="0"] .ill{transform:none}
 .ring{position:absolute;left:50%;top:50%;width:var(--D,320px);height:var(--D,320px);margin:calc(var(--D,320px) / -2) 0 0 calc(var(--D,320px) / -2)}
 .rsway{position:absolute;inset:0;transform:rotate(var(--sw));animation:rsway 16s ease-in-out 2.6s infinite}
-@keyframes rsway{0%,100%{--sw:0deg}30%{--sw:4deg}70%{--sw:-3deg}}
 .rc,.rl{position:absolute;left:50%;top:50%;--ang:var(--a);opacity:0}
-.rc{width:calc(var(--bw) * var(--u,1) * 1px);height:calc(var(--bh) * var(--u,1) * 1px);margin:calc(var(--bh) * var(--u,1) * -.5px) 0 0 calc(var(--bw) * var(--u,1) * -.5px);
-  transform:rotate(var(--ang)) translateY(calc(var(--R) * -1 * var(--rr))) rotate(calc(-1 * (var(--ang) + var(--sw)))) scale(calc(.5 + .5 * var(--rr)));
-  filter:drop-shadow(0 0 4px rgba(255,240,224,.95)) drop-shadow(0 8px 14px rgba(20,45,70,.25))}
+.rc{width:var(--cw);height:var(--ch);margin:calc(var(--ch) / -2) 0 0 calc(var(--cw) / -2);
+  transform:rotate(var(--ang)) translateY(calc(var(--R) * -1 * var(--rr))) scale(calc(.35 + .65 * var(--rr)))}
 .rc img{display:block;width:100%;height:100%}
-.rl{width:64px;margin:-.5em 0 0 -32px;text-align:center;font:italic 500 calc(var(--D,320px) * .05)/1 var(--f-serif);color:#fff;text-shadow:0 1px 6px rgba(20,45,70,.65),0 0 2px rgba(20,45,70,.4);pointer-events:none;
-  transform:rotate(var(--ang)) translateY(calc((var(--R) + var(--ch) * .27) * -1 * var(--rr))) rotate(calc(-1 * (var(--ang) + var(--sw))))}
-.slide.seen .rc,.slide.seen .rl{animation:rfan 1.7s var(--ease) both;animation-delay:calc(.35s + var(--k) * 40ms)}
-@keyframes rfan{from{--ang:0deg;--rr:.2;opacity:0}25%{opacity:1}to{--ang:var(--a);--rr:1;opacity:1}}
+.rl{width:64px;margin:-.5em 0 0 -32px;text-align:center;font:italic 500 calc(var(--D,320px) * .048)/1 var(--f-serif);color:#fff;text-shadow:0 1px 3px rgba(20,45,70,.55);pointer-events:none;
+  transform:rotate(var(--ang)) translateY(calc((var(--R) + var(--ch) * .3) * -1 * var(--rr))) rotate(calc(-1 * (var(--ang) + var(--sw))))}
+.slide.seen .rc,.slide.seen .rl{animation:rfan 1.8s var(--ease) both;animation-delay:calc(.3s + var(--k) * 35ms)}
+@keyframes rfan{from{--ang:0deg;--rr:0;opacity:0}20%{opacity:1}to{--ang:var(--a);--rr:1;opacity:1}}
+.rsway{animation:rsway 18s ease-in-out 2.4s infinite}
+@keyframes rsway{0%,100%{--sw:0deg}30%{--sw:1.6deg}70%{--sw:-1.4deg}}
+.obg img{animation:none}
 @media (max-height:700px){ .oshade{background:linear-gradient(180deg,rgba(42,83,121,.28) 0%,rgba(42,83,121,0) 14%,rgba(42,83,121,0) 40%,rgba(42,83,121,.8) 54%,rgba(36,74,110,.9) 80%,rgba(36,74,110,.75) 100%)} }
 @media (prefers-reduced-motion: reduce){ .rc,.rl{opacity:1} .rsway{animation:none} }
 </style>
@@ -1029,8 +1030,8 @@ const carCard = (p, k) => { const [s] = monthRange(p, k), open = canSee(p, k);
     <span class="cm">${MONTHS[k]}</span><span class="cd">с ${fmt(s)}</span>${open ? '' : `<span class="clk">${I.lock}</span>`}</div>`; };
 MONTHS.forEach((_, k) => { const im = new Image(); im.src = MIMG(k); }); /* грузим заранее, чтобы карты не мигали */
 
-/* Размеры карт кольца: каждая карта заранее вырезана в форму под своим углом, картинка внутри стоит ровно */
-const RINGD = [[143,211],[195,227],[227,194],[211,143],[227,195],[194,227],[143,211],[195,227],[227,194],[211,143],[227,195],[194,227]];
+/* Короткие названия месяцев для кольца на первом экране онбординга */
+const MSHORT = {ru: ['Янв','Фев','Мар','Апр','Май','Июн','Июл','Авг','Сен','Окт','Ноя','Дек'], uk: ['Січ','Лют','Бер','Кві','Тра','Чер','Лип','Сер','Вер','Жов','Лис','Гру']};
 
 /* ---------- Экраны ---------- */
 const SCREENS = {
@@ -1058,12 +1059,12 @@ onb: () => {
   const P = [[20,120],[50,92],[82,104],[112,70],[146,84],[176,52],[206,66],[236,36],[262,58],[288,26],[312,42],[336,14]];
   const route = `<svg class="route" viewBox="0 0 356 140" aria-hidden="true"><path d="M${P.map(p => p.join(' ')).join(' L')}"/>${P.map(([x, y], k) => `<circle cx="${x}" cy="${y}" r="${k === 0 || k === 11 ? 4 : 2.6}" style="--k:${k}"/><text x="${x}" y="${y + 18}" text-anchor="middle" style="--k:${k}">${MONTHS[k].slice(0,3)}</text>`).join('')}</svg>`;
   return `
-  <div class="obg"><img src="assets/ring/bg.webp" alt="" draggable="false"><div class="fog oF1"><div class="tile"></div></div><div class="fog oF2"><div class="tile"></div></div><div class="oshade"></div></div>
+  <div class="obg"><img src="assets/cards/bg.webp" alt="" draggable="false"><div class="oshade"></div></div>
   <div class="ogl"><div class="glow a"></div><div class="glow b"></div></div>${dust(26)}
   <div class="top"><span class="brand">Прогностика 2027</span><button class="skip" onclick="finishOnb()">Пропустить</button></div>
   <div class="ovp"><div class="pager">
     <div class="slide" data-k="0">
-      <div class="ill"><div class="ring"><div class="rsway">${['Янв','Фев','Мар','Апр','Май','Июн','Июл','Авг','Сен','Окт','Ноя','Дек'].map((n, k) => `<div class="rc" style="--a:${k * 30}deg;--k:${k};--bw:${RINGD[k][0]};--bh:${RINGD[k][1]}"><img src="assets/ring/${pad(k + 1)}.webp" alt="" draggable="false"></div><b class="rl" style="--a:${k * 30}deg;--k:${k}">${n}</b>`).join('')}</div></div></div>
+      <div class="ill"><div class="ring"><div class="rsway">${MSHORT[S.lang === 'uk' ? 'uk' : 'ru'].map((n, k) => `<div class="rc" style="--a:${k * 30}deg;--k:${k}"><img src="assets/cards/${pad(k + 1)}.webp" alt="" draggable="false"></div><b class="rl" style="--a:${k * 30}deg;--k:${k}">${n}</b>`).join('')}</div></div></div>
       <div class="otx"><h2>Знай заранее, <em>когда действовать</em>, а когда переждать</h2>
         <p>Прогностика по дате рождения показывает, что ждёт тебя каждый месяц 2027 года: в деньгах, отношениях и здоровье.</p></div>
     </div>
@@ -1382,19 +1383,17 @@ function onbInit(el){
   let x0 = null, y0 = 0, dx = 0, lock = null;
   /* Кольцо карт: размер под экран, солнце фона ровно в центре кольца */
   const obg = el.querySelector('.obg'), bimg = obg && obg.querySelector('img'), ring = el.querySelector('.ring');
-  const SUN = {x: 237 / 449, y: 338 / 830}, BR = 449 / 830;
+  const SUN = {x: 478 / 941, y: 588 / 1671};
   const layoutRing = () => { if (!ring) return;
-    const ill = ring.parentElement, D = Math.max(200, Math.min(ill.clientHeight - 6, vp.clientWidth - 22, 380));
-    const cw = D * .205, ch = D * .285;
-    Object.entries({'--D': D, '--ch': ch, '--R': D / 2 - ch / 2, '--u': cw / 160}).forEach(([k, v]) => ring.style.setProperty(k, k === '--u' ? v.toFixed(4) : v.toFixed(1) + 'px'));
+    const ill = ring.parentElement, D = Math.max(200, Math.min(ill.clientHeight - 14, vp.clientWidth - 44, 370));
+    const cw = D * .18, ch = cw * 358 / 246; /* карточки в своих пропорциях 246×358 */
+    Object.entries({'--D': D, '--cw': cw, '--ch': ch, '--R': D / 2 - ch / 2}).forEach(([k, v]) => ring.style.setProperty(k, v.toFixed(1) + 'px'));
     const W = el.clientWidth, H = el.clientHeight, er = el.getBoundingClientRect(), rr = ring.getBoundingClientRect();
     const cx = rr.left + rr.width / 2 - er.left + (S.onbI ? 0 : 0), cy = rr.top + rr.height / 2 - er.top;
-    const IW = 449, IH = 830;
+    const IW = 941, IH = 1671;
     const sc = Math.max(W / IW, H / IH, cy / (SUN.y * IH), (H - cy) / ((1 - SUN.y) * IH), cx / (SUN.x * IW), (W - cx) / ((1 - SUN.x) * IW));
     Object.assign(bimg.style, {width: IW * sc + 'px', height: IH * sc + 'px', left: cx - SUN.x * IW * sc + 'px', top: cy - SUN.y * IH * sc + 'px'}); };
-  if (obg){ const tex = FOG_TEX || [fogTexture(11), fogTexture(29)];
-    [['.oF1', 0, .5, 26, -1], ['.oF2', 1, .38, 34, 1]].forEach(([sel, t, op, dur, dir]) => { const b = obg.querySelector(sel), tl = b.querySelector('.tile');
-      tl.style.backgroundImage = `url(${tex[t]})`; b.style.opacity = op; b.style.setProperty('--dur', dur + 's'); b.style.setProperty('--dir', dir < 0 ? 'normal' : 'reverse'); b.style.setProperty('--bob', '7s'); });
+  if (obg){
     layoutRing(); requestAnimationFrame(layoutRing); if (document.fonts) document.fonts.ready.then(layoutRing); el._layout = layoutRing; }
   const render = anim => {
     pg.classList.toggle('anim', !!anim);
@@ -1634,7 +1633,7 @@ function restart(){ closeSheet(true); S.mode = 'self'; S.profiles = []; S.promo 
 /* Быстрый вход для просмотра:
    ?demo=intro | lang | onb | name | gender | dob | confirm | tariffs | main | year | profile | success | fail
    &access=none|months|all, &people, &slide=0..2, &hold (заставка без перехода), &still (без анимаций) */
-const Q = new URLSearchParams(location.search);
+const Q = new URLSearchParams(location.search); if (Q.get('lang') === 'uk') S.lang = 'uk'; /* для скриншотов: &lang=uk */
 if (Q.has('demo')){
   S.profiles = [{name:'Мария', gender: Q.get('g') || 'f', d:25, m:7, y:1992, access: Q.get('access') || 'none', self:true}];
   if (Q.has('people')) S.profiles.push({name:'Андрей', gender:'m', d:3, m:2, y:1990, access:'none', self:false}, {name:'Елена', gender:'f', d:17, m:10, y:1965, access:'all', self:false});
