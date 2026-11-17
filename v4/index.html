@@ -68,8 +68,8 @@ input{font:inherit;color:inherit}
 .screen.fade.in{transform:none}
 .screen > *{position:relative;z-index:1}
 .rockbg{position:absolute !important;z-index:0 !important;left:-10%;right:-10%;bottom:-2%;height:34%;background:url(assets/rock.webp) center 30%/cover;opacity:.15;-webkit-mask-image:linear-gradient(180deg,transparent 0%,#000 70%);mask-image:linear-gradient(180deg,transparent 0%,#000 70%);pointer-events:none;filter:saturate(1.1)}
-.rise{animation:rise .8s var(--ease) both;animation-delay:calc(var(--i, 0) * 70ms + 80ms)}
-@keyframes rise{from{opacity:0;transform:translateY(22px);filter:blur(4px)}to{opacity:1;transform:none;filter:none}}
+.rise{animation:rise .45s var(--ease) both;animation-delay:calc(var(--i, 0) * 35ms + 20ms)}
+@keyframes rise{from{opacity:0;transform:translateY(12px)}to{opacity:1;transform:none}}
 @media (prefers-reduced-motion: reduce){
   *,*::before,*::after{animation-duration:.01ms !important;animation-delay:0s !important;transition-duration:.01ms !important}
 }
@@ -142,12 +142,12 @@ input{font:inherit;color:inherit}
 .slide::-webkit-scrollbar{display:none}
 .ill{position:relative;flex:1;min-height:180px;display:grid;place-items:center;transform:translateX(calc(var(--p,0) * -55%))}
 .otx{transform:translateX(calc(var(--p,0) * 22%));opacity:var(--o,1);padding-bottom:8px}
-.pager.anim,.pager.anim .ill,.pager.anim .otx{transition:transform .75s var(--spring),opacity .5s ease}
+.pager.anim,.pager.anim .ill,.pager.anim .otx{transition:transform .55s var(--spring),opacity .4s ease}
 .otx h2{font:400 clamp(30px,9vw,36px)/1.08 var(--f-serif);color:var(--scarlet)}
 .otx h2 em{font-style:italic;color:var(--cream)}
 .otx p{font:300 16px/1.6 var(--f-text);color:var(--cream-2);margin-top:14px}
 .otx .fine{font-size:14px;color:var(--cream-3);margin-top:14px}
-.ogl{position:absolute !important;z-index:0 !important;top:0;right:0;bottom:0;left:0;pointer-events:none;transition:transform .75s var(--spring)}
+.ogl{position:absolute !important;z-index:0 !important;top:0;right:0;bottom:0;left:0;pointer-events:none;transition:transform .55s var(--spring)}
 .onb .bottom{z-index:3}
 .dots{display:flex;gap:8px;justify-content:center;height:20px;align-items:center}
 .dots i{width:5px;height:5px;border-radius:3px;background:rgba(242,237,229,.25);transition:width .45s var(--spring),background .3s}
@@ -207,7 +207,8 @@ input{font:inherit;color:inherit}
 /* ---------- Кнопки ---------- */
 .bottom{padding:16px var(--g) calc(18px + var(--safe-b));flex-shrink:0;display:flex;flex-direction:column;gap:6px}
 .btn{height:56px;border-radius:28px;width:100%;display:flex;align-items:center;justify-content:center;gap:12px;font:500 15px/1 var(--f-text);letter-spacing:.02em;transition:transform .15s ease,background .25s,border-color .25s}
-.btn:active{transform:scale(.98)}
+.btn:active{transform:scale(.97);transition-duration:.05s}
+button,[role=button],a{touch-action:manipulation;-webkit-tap-highlight-color:transparent}
 .btn.primary{background:var(--red-grad);color:#fff;box-shadow:0 12px 34px rgba(206,46,27,.35),inset 0 1px 0 rgba(255,255,255,.18)}
 .btn.primary:disabled{background:var(--glass);color:var(--cream-3);box-shadow:none;transform:none;cursor:default}
 .btn.white,.btn.line{background:rgba(12,6,7,.25);border:1px solid rgba(242,237,229,.55);color:var(--cream);font:400 19px/1 var(--f-serif);letter-spacing:.02em}
@@ -762,10 +763,10 @@ body{background:var(--sea)}
 .wh:focus-visible{box-shadow:inset 0 0 0 1px rgba(245,235,221,.5);border-radius:10px}
 .wheels::before{z-index:0;border-radius:12px;background:rgba(245,235,221,.16);border:1px solid var(--alyi-l);box-shadow:0 0 0 1px rgba(211,58,40,.15),0 6px 18px rgba(16,40,64,.18)}
 /* v30: экраны не накладываются; приглушённый тариф года; карусель свайпается в бок */
-.screen{transform:translateX(18px);transition:opacity .26s ease .05s,transform .42s var(--spring)}
+.screen{transform:translateX(14px);transition:opacity .2s ease,transform .32s var(--spring)}
 .screen.back{transform:translateX(-18px)}
-.screen.out{opacity:0 !important;transition:opacity .12s ease !important;pointer-events:none}
-.screen.fade{transition:opacity .3s ease .05s}
+.screen.out{opacity:0 !important;transition:opacity .1s ease !important;pointer-events:none}
+.screen.fade{transition:opacity .25s ease}
 .carw{touch-action:none}
 .car.snap .cc{transition:transform .45s var(--spring),opacity .3s ease}
 .plans .plan.p3{opacity:1;background:transparent;border:1.5px dashed rgba(245,235,221,.55);box-shadow:none;color:rgba(245,235,221,.78)}
@@ -824,7 +825,7 @@ body{background:var(--sea)}
 .ajamb{position:absolute;display:block}
 .screen.intro{z-index:3}
 .screen.under{z-index:1;opacity:1;transform:none;transition:none}
-.screen.under .lfog{animation:lfog 2.6s ease .1s both}
+.screen.under .lfog{animation:lfog 2s ease .05s both}
 .screen.under .rise{animation-delay:calc(var(--i, 0) * 80ms + 150ms)}
 /* v41: на онбординге и экранах регистрации — фото моря на закате вместо синего фона с размытой скалой */
 .rockbg{left:0;right:0;top:0;bottom:0;height:auto;background:url(assets/sky-bg.webp) center bottom/cover;opacity:1;filter:none;-webkit-mask-image:none;mask-image:none}
@@ -835,7 +836,7 @@ body{background:var(--sea)}
 .fog.fA{top:56%;height:32%}
 .fog.fC{top:72%;height:30%}
 .lfog,.screen.portal .lfog,.screen.under .lfog{opacity:1;animation:none}
-.sfog{left:-20% !important;right:-20% !important;opacity:.85}
+.sfog{left:-20% !important;right:-20% !important;opacity:.78}
 .screen.intro{background:#718094}
 /* v51: заставка в одном canvas, без отдельных слоёв, которые дрожали относительно друг друга */
 .icv{position:absolute !important;z-index:0 !important;inset:0;width:100%;height:100%;display:block}
@@ -887,7 +888,7 @@ body{background:var(--sea)}
 .otx .fine{color:#fff;font-size:15px;text-shadow:0 1px 10px rgba(20,45,70,.55)}
 .otx h2{text-shadow:0 1px 16px rgba(20,45,70,.45)}
 /* v51: заголовок и кнопки экрана языка проявляются одним целым, а не по очереди */
-.lang .rise{animation:softin 1.1s cubic-bezier(.4,0,.2,1) .25s both}
+.lang .rise{animation:softin .7s cubic-bezier(.4,0,.2,1) .1s both}
 /* v53: тариф «Твои 12 месяцев» мягко пульсирует светом; доступ навсегда на тарифах и в онбординге */
 .plans .plan.p2.hot{box-shadow:0 0 0 2px rgba(255,214,160,.95),0 12px 30px rgba(16,40,64,.22);animation:hot 2.6s ease-in-out infinite}
 @keyframes hot{0%,100%{box-shadow:0 0 0 2px rgba(255,214,160,.95),0 0 0 0 rgba(255,200,140,.55),0 12px 30px rgba(16,40,64,.22);transform:scale(1)}50%{box-shadow:0 0 0 2px rgba(255,214,160,1),0 0 0 9px rgba(255,200,140,0),0 14px 34px rgba(16,40,64,.28);transform:scale(1.015)}}
@@ -1072,6 +1073,7 @@ const dust = (n, cls = '') => `<div class="dust ${cls}">${Array.from({length: n}
 
 /* ---------- Навигация ---------- */
 const app = document.getElementById('app');
+document.addEventListener('touchstart', () => {}, {passive: true}); /* чтобы нажатие на iPhone подсвечивалось сразу */
 function go(name, push = true, how = ''){
   if (push && S.cur) S.hist.push(S.cur);
   S.cur = name;
@@ -1517,7 +1519,7 @@ const AFTER = {
 /* Пролёт: три слоя фото (небо и море, скала с дверью, коза) приближаются с разной скоростью к двери */
 /* Заставка (анимация клиентки, перенесена без GSAP):
    камера экспоненциально приближается к двери, дверь плавно едет к центру, туман дрейфует бесшовно. */
-const DOOR = {x: 703 / 941, y: 810 / 1672}, ZOOM = 16, FLY = 2300, START = 650;
+const DOOR = {x: 703 / 941, y: 810 / 1672}, ZOOM = 16, FLY = 1750, START = 300;
 let FOG_TEX = null;
 function fogTexture(seed, W = 256, H = 96){
   let s = seed; const rnd = () => (s = (s * 16807) % 2147483647) / 2147483647;
@@ -1535,7 +1537,7 @@ function fogTexture(seed, W = 256, H = 96){
   }
   ctx.putImageData(id, 0, 0); return c.toDataURL('image/png');
 }
-const FOGS = [['.fA', 11, .62, 16, -1], ['.fB', 29, .45, 22, 1], ['.fC', 47, .68, 12, -1]];
+const FOGS = [['.fA', 11, .56, 21, -1], ['.fB', 29, .4, 29, 1], ['.fC', 47, .6, 16, -1]];
 const FOG_T0 = performance.now();
 function setFog(el){ /* золотистый туман: один и тот же на всех экранах и идёт по общим часам,
      поэтому на новом экране он продолжается ровно с того места, где был на прошлом */
@@ -1652,7 +1654,7 @@ function onbInit(el){
     slides.forEach((s, k) => { const p = k - pos; s.style.setProperty('--p', p.toFixed(3)); s.style.setProperty('--o', Math.max(0, 1 - Math.abs(p) * 1.3).toFixed(3)); });
     ogl.style.transform = `translateX(${-pos * 10}%)`;
     if (obg) obg.style.opacity = Math.max(0, 1 - Math.abs(pos) * 1.15).toFixed(3);
-    const sf = el.querySelector('.sfog'); if (sf){ sf.style.transition = anim ? 'transform .75s var(--spring)' : 'none'; } if (sf) sf.style.transform = `translateX(${(-pos * 4.2).toFixed(2)}%)`;
+    const sf = el.querySelector('.sfog'); if (sf){ sf.style.transition = anim ? 'transform .55s var(--spring)' : 'none'; } if (sf) sf.style.transform = `translateX(${(-pos * 4.2).toFixed(2)}%)`;
     dots.forEach((d, k) => d.classList.toggle('on', k === S.onbI));
     el.classList.toggle('last', S.onbI === 3);
     slides[S.onbI].classList.add('seen');
@@ -1685,7 +1687,7 @@ function wheelsInit(el){
   el.querySelectorAll('.wh').forEach((w, col) => {
     const k = w.dataset.k, list = w.querySelector('.wl'), items = [...w.querySelectorAll('.wi')], n = items.length;
     list.style.transform = `translateZ(${-R.toFixed(1)}px)`;
-    let pos = Math.max(0, items.findIndex(x => x.dataset.v === String(S.draft[k]))), raf = 0, lastTick = Math.round(pos);
+    let pos = Math.max(0, items.findIndex(x => x.dataset.v === String(S.draft[k]))), raf = 0, lastTick = Math.round(pos), lastHap = 0;
     const paint = () => {
       const c = pos < 0 ? pos * .35 : pos > n - 1 ? n - 1 + (pos - n + 1) * .35 : pos; /* упругий край */
       const r = Math.round(c);
@@ -1695,7 +1697,7 @@ function wheelsInit(el){
         it.style.transform = `rotateX(${(-d * STEP).toFixed(2)}deg) translateZ(${R.toFixed(1)}px)`;
         it.style.opacity = Math.max(.12, Math.cos(d * STEP * Math.PI / 180) ** 1.6).toFixed(2);
         it.classList.toggle('on', j === r); });
-      if (r !== lastTick && r >= 0 && r < n){ lastTick = r; hap('select'); }
+      if (r !== lastTick && r >= 0 && r < n){ lastTick = r; const t = performance.now(); if (t - lastHap > 60){ lastHap = t; hap('select'); } }
     };
     const commit = () => { const j = Math.max(0, Math.min(n - 1, Math.round(pos))), v = +items[j].dataset.v;
       if (S.draft[k] !== v) S.draft[k] = v;
@@ -1706,7 +1708,7 @@ function wheelsInit(el){
     /* плавный доезд до значения: замедление в конце, как у колеса */
     const to = (target, dur) => { cancelAnimationFrame(raf); target = Math.max(0, Math.min(n - 1, target));
       const from = pos, dist = Math.abs(target - from); if (RM || dist < .001){ pos = target; paint(); commit(); return; }
-      dur = dur || Math.min(1100, 260 + Math.sqrt(dist) * 170); const t0 = performance.now();
+      dur = dur || Math.min(1250, 220 + Math.sqrt(dist) * 150); const t0 = performance.now();
       const ease = t => 1 - Math.pow(1 - t, 3.2);
       const fr = now => { const t = Math.min(1, (now - t0) / dur); pos = from + (target - from) * ease(t); paint(); if (t < 1) raf = requestAnimationFrame(fr); else { pos = target; paint(); commit(); } };
       raf = requestAnimationFrame(fr); };
@@ -1721,15 +1723,15 @@ function wheelsInit(el){
         return to(Math.round(pos) + Math.max(-3, Math.min(3, Math.round(off * 1.15)))); }
       const now = performance.now(), last = samples[samples.length - 1], old = samples.find(s => now - s[1] < 100) || samples[0];
       const v = last[1] > old[1] && now - last[1] < 80 ? (last[0] - old[0]) / (last[1] - old[1]) : 0; /* px/ms */
-      const proj = -v * 220 / IH; /* куда бы докатилось колесо */
-      to(Math.round(pos + Math.max(-14, Math.min(14, proj)))); };
+      const proj = -v * (240 + 300 * Math.abs(v)) / IH; /* куда бы докатилось колесо: чем резче бросок, тем дальше */
+      to(Math.round(pos + Math.max(-45, Math.min(45, proj)))); };
     w.addEventListener('pointerup', up); w.addEventListener('pointercancel', up);
     let wacc = 0, wt; w.addEventListener('wheel', e => { e.preventDefault(); wacc += e.deltaY; clearTimeout(wt);
       if (Math.abs(wacc) >= 30){ const st = Math.sign(wacc); wacc = 0; to(Math.round(pos) + st, 260); }
       wt = setTimeout(() => wacc = 0, 160); }, {passive: false});
     w.tabIndex = 0; w.addEventListener('keydown', e => { if (e.key === 'ArrowDown' || e.key === 'ArrowUp'){ e.preventDefault(); to(Math.round(pos) + (e.key === 'ArrowDown' ? 1 : -1), 240); } });
     /* вход экрана: барабаны раскручиваются и встают на сохранённую дату */
-    const final = pos; if (!RM){ pos = Math.max(0, Math.min(n - 1, final + (col % 2 ? -5 : 5))); lastTick = Math.round(pos); paint(); setTimeout(() => to(final, 900 + col * 160), 250 + col * 90); } else paint();
+    const final = pos; if (!RM){ pos = Math.max(0, Math.min(n - 1, final + (col % 2 ? -5 : 5))); lastTick = Math.round(pos); paint(); setTimeout(() => to(final, 600 + col * 100), 120 + col * 60); } else paint();
   });
   if (W.d) W.d.mark(dim(S.draft.y, S.draft.m));
 }
@@ -1776,7 +1778,7 @@ function fanInit(el, car){
 }
 
 function pickLang(l){ S.lang = l; document.documentElement.lang = l; S.onbI = 0; S.onbFrom = null; go('onb', true, 'fade'); }
-function setGender(g){ S.draft.gender = g; rerender(); setTimeout(() => S.cur === 'gender' && go('dob'), 260); }
+function setGender(g){ S.draft.gender = g; rerender(); setTimeout(() => S.cur === 'gender' && go('dob'), 120); }
 function confirmData(){
   const D = S.draft; D.d = Math.min(D.d, dim(D.y, D.m));
   const p = {name: cap(D.name), gender: D.gender || 'f', d: D.d, m: D.m, y: D.y, access: 'none', self: S.mode === 'self'};
@@ -1855,8 +1857,8 @@ function paid(plan){
 function retryPay(){ S.hist = []; S.cur = null; go('tariffs', false); setTimeout(() => paySheet(S.lastTry || 'months'), 350); }
 function yearLockSheet(){ sheet('Годовая прогностика', `<p>Годовую прогностику можно купить после покупки 12 месяцев. Или возьми всё вместе, так выгоднее на 150 грн.</p><div style="height:20px"></div>
   <div style="display:flex;flex-direction:column;gap:10px">
-    <button class="btn primary split" onclick="closeSheet();setTimeout(()=>paySheet('all'),200)"><span>Всё вместе</span><span>1100 грн</span></button>
-    <button class="btn secondary split" onclick="closeSheet();setTimeout(()=>paySheet('months'),200)"><span>Только месяцы</span><span>850 грн</span></button>
+    <button class="btn primary split" onclick="closeSheet();setTimeout(()=>paySheet('all'),120)"><span>Всё вместе</span><span>1100 грн</span></button>
+    <button class="btn secondary split" onclick="closeSheet();setTimeout(()=>paySheet('months'),120)"><span>Только месяцы</span><span>850 грн</span></button>
   </div>`); }
 function promoSheet(){
   const sh = sheet('Введи промокод', `
