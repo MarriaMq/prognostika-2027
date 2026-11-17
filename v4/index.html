@@ -869,6 +869,16 @@ body{background:var(--sea)}
 .screen.tariffs .form .h1{font-size:27px}
 .ptitle{margin-top:18px;font:500 34px/1.1 var(--f-serif);color:#fff;text-shadow:0 1px 14px rgba(20,45,70,.35)}
 .ptitle em{color:#FFD9BF}
+/* v48: автор и цифра на молочной карточке, подписи месяцев на маршруте крупнее */
+.acard{margin-top:16px;padding:14px 16px;border-radius:18px;background:var(--card);box-shadow:0 10px 28px rgba(16,40,64,.18)}
+.acard .author{margin-top:0}
+.acard .author .t{color:var(--ink2);text-shadow:none}
+.acard .author .d{color:var(--ink3)}
+.acard .stat{margin-top:12px;padding-top:12px;border-top:1px solid rgba(35,65,92,.12);font:italic 500 17px/1.35 var(--f-serif);color:var(--alyi);text-shadow:none}
+.otx p{color:#fff;text-shadow:0 1px 10px rgba(20,45,70,.35)}
+.ycard::after{height:55%;background:linear-gradient(180deg,rgba(20,40,64,0),rgba(20,40,64,.75))}
+.ycard b{font:600 12px/1 var(--f-text);letter-spacing:.02em;font-style:normal;bottom:6px}
+@media (max-height:700px){ .ycard b{font-size:10px} .acard{padding:10px 12px;margin-top:10px} .acard .stat{font-size:15px;margin-top:8px;padding-top:8px} }
 </style>
 </head>
 <body>
@@ -1127,6 +1137,7 @@ function ringSVG(){
   return `<svg class="rsvg" viewBox="0 0 1000 1000" aria-hidden="true"><defs>${defs}</defs>${body}</svg>`;
 }
 /* Короткие названия месяцев для кольца на первом экране онбординга */
+const UA_READY = false; /* украинские тексты ещё не готовы: пока всё, включая названия месяцев, на русском */
 const MSHORT = {ru: ['Янв','Фев','Мар','Апр','Май','Июн','Июл','Авг','Сен','Окт','Ноя','Дек'], uk: ['Січ','Лют','Бер','Кві','Тра','Чер','Лип','Сер','Вер','Жов','Лис','Гру']};
 
 /* ---------- Экраны ---------- */
@@ -1161,7 +1172,7 @@ onb: () => {
   <div class="top"><span class="brand">Прогностика 2027</span><button class="skip" onclick="finishOnb()">Пропустить</button></div>
   <div class="ovp"><div class="pager">
     <div class="slide" data-k="0">
-      <div class="ill"><div class="ring">${ringSVG()}${MSHORT[S.lang === 'uk' ? 'uk' : 'ru'].map((n, k) => { const a = k * Math.PI / 6, r = RG.lab;
+      <div class="ill"><div class="ring">${ringSVG()}${MSHORT[UA_READY && S.lang === 'uk' ? 'uk' : 'ru'].map((n, k) => { const a = k * Math.PI / 6, r = RG.lab;
         return `<b class="rl" style="--k:${k};left:${(50 + r * Math.sin(a) / 10).toFixed(2)}%;top:${(50 - r * Math.cos(a) / 10).toFixed(2)}%">${n}</b>`; }).join('')}</div></div>
       <div class="otx"><h2>Знай заранее, <em>когда действовать</em>, а когда переждать</h2>
         <p>Прогностика по дате рождения показывает, что ждёт тебя каждый месяц 2027 года: в деньгах, отношениях и здоровье.</p></div>
@@ -1176,11 +1187,11 @@ onb: () => {
         <p class="fine">Без прикрас: и возможности, и риски. Чтобы ты ${gx('знала','знал')}, где подстелить соломку.</p></div>
     </div>
     <div class="slide" data-k="2">
-      <div class="ill"><div class="yroute"><svg class="ypath" viewBox="0 0 100 100" preserveAspectRatio="none" aria-hidden="true"><path d="M7.9 24 L87.9 24 C99 24 99 76 87.9 76 L7.9 76"/></svg>${MSHORT[S.lang === 'uk' ? 'uk' : 'ru'].map((n, k) => `<div class="ycard" style="--k:${k};grid-row:${k < 6 ? 1 : 2};grid-column:${k < 6 ? k + 1 : 12 - k}"><img src="assets/land/${pad(k + 1)}.webp" alt="" draggable="false"><b>${n}</b></div>`).join('')}</div></div>
+      <div class="ill"><div class="yroute"><svg class="ypath" viewBox="0 0 100 100" preserveAspectRatio="none" aria-hidden="true"><path d="M7.9 24 L87.9 24 C99 24 99 76 87.9 76 L7.9 76"/></svg>${MSHORT[UA_READY && S.lang === 'uk' ? 'uk' : 'ru'].map((n, k) => `<div class="ycard" style="--k:${k};grid-row:${k < 6 ? 1 : 2};grid-column:${k < 6 ? k + 1 : 12 - k}"><img src="assets/land/${pad(k + 1)}.webp" alt="" draggable="false"><b>${n}</b></div>`).join('')}</div></div>
       <div class="otx"><h2>Твой год <em>как один маршрут</em></h2>
         <p>Каждый месяц продолжает предыдущий. Читай по порядку, и год сложится в одну картину. Нужны только имя и дата рождения.</p>
-        <div class="author"><span class="av ph"></span><span><span class="t">Вероника Леончикова-Штепа</span><span class="d">Автор прогностики, нумеролог, 10 лет практики</span></span></div>
-        <div class="stat">Уже больше 2000 человек прочитали свой прогноз</div></div>
+        <div class="acard"><div class="author"><span class="av ph"></span><span><span class="t">Вероника Леончикова-Штепа</span><span class="d">Автор прогностики, нумеролог, 10 лет практики</span></span></div>
+        <div class="stat">Больше 2000 человек прочитали свой прогноз на 2026 год</div></div></div>
     </div>
   </div></div>
   <div class="bottom">
