@@ -774,9 +774,6 @@ body{background:var(--sea)}
 .plans .plan.p3 .p small{color:inherit}
 .plans .plan.p3 .p svg{width:16px;height:16px}
 /* v31: экран после выбора языка: море с солнцем, 12 карт раскрываются веером вокруг солнца */
-@property --ang{syntax:'<angle>';inherits:true;initial-value:0deg}
-@property --sw{syntax:'<angle>';inherits:true;initial-value:0deg}
-@property --rr{syntax:'<number>';inherits:true;initial-value:1}
 .obg{position:absolute !important;inset:0;z-index:0 !important;overflow:hidden;pointer-events:none;animation:obgin 1s ease both}
 @keyframes obgin{from{opacity:0}}
 .obg img{position:absolute;max-width:none;animation:obgzoom 2.4s var(--ease) both}
@@ -787,20 +784,17 @@ body{background:var(--sea)}
 .onb .rockbg{z-index:0}
 .slide[data-k="0"] .ill{transform:none}
 .ring{position:absolute;left:50%;top:50%;width:var(--D,320px);height:var(--D,320px);margin:calc(var(--D,320px) / -2) 0 0 calc(var(--D,320px) / -2)}
-.rsway{position:absolute;inset:0;transform:rotate(var(--sw));animation:rsway 16s ease-in-out 2.6s infinite}
-.rc,.rl{position:absolute;left:50%;top:50%;--ang:var(--a);opacity:0}
-.rc{width:var(--cw);height:var(--ch);margin:calc(var(--ch) / -2) 0 0 calc(var(--cw) / -2);
-  transform:rotate(var(--ang)) translateY(calc(var(--R) * -1 * var(--rr))) scale(calc(.35 + .65 * var(--rr)))}
-.rc img{display:block;width:100%;height:100%}
-.rl{width:64px;margin:-.5em 0 0 -32px;text-align:center;font:italic 500 calc(var(--D,320px) * .048)/1 var(--f-serif);color:#fff;text-shadow:0 1px 3px rgba(20,45,70,.55);pointer-events:none;
-  transform:rotate(var(--ang)) translateY(calc((var(--R) + var(--ch) * .3) * -1 * var(--rr))) rotate(calc(-1 * (var(--ang) + var(--sw))))}
-.slide.seen .rc,.slide.seen .rl{animation:rfan 1.8s var(--ease) both;animation-delay:calc(.3s + var(--k) * 35ms)}
-@keyframes rfan{from{--ang:0deg;--rr:0;opacity:0}20%{opacity:1}to{--ang:var(--a);--rr:1;opacity:1}}
-.rsway{animation:rsway 18s ease-in-out 2.4s infinite}
-@keyframes rsway{0%,100%{--sw:0deg}30%{--sw:1.6deg}70%{--sw:-1.4deg}}
-.obg img{animation:none}
+.rsvg{position:absolute;inset:0;width:100%;height:100%;overflow:visible}
+.rcard{opacity:0}
+.rcard image{image-rendering:auto}
+.redge{fill:none;stroke:rgba(255,255,255,.6);stroke-width:2.2}
+.slide.seen .rcard{animation:rin .9s var(--ease) both;animation-delay:calc(.25s + var(--k) * 75ms)}
+@keyframes rin{from{opacity:0;transform:translate(var(--mx),var(--my))}to{opacity:1;transform:none}}
+.rl{position:absolute;transform:translate(-50%,-50%);font:italic 600 calc(var(--D,320px) * .056)/1 var(--f-serif);letter-spacing:.01em;color:#FFF8EE;text-shadow:0 1px 3px rgba(20,45,70,.7),0 0 1px rgba(20,45,70,.5);white-space:nowrap;pointer-events:none;opacity:0}
+.slide.seen .rl{animation:rlin .6s ease both;animation-delay:calc(.55s + var(--k) * 75ms)}
+@keyframes rlin{from{opacity:0}to{opacity:1}}
+@media (prefers-reduced-motion: reduce){ .rcard,.rl{opacity:1} }
 @media (max-height:700px){ .oshade{background:linear-gradient(180deg,rgba(42,83,121,.28) 0%,rgba(42,83,121,0) 14%,rgba(42,83,121,0) 40%,rgba(42,83,121,.8) 54%,rgba(36,74,110,.9) 80%,rgba(36,74,110,.75) 100%)} }
-@media (prefers-reduced-motion: reduce){ .rc,.rl{opacity:1} .rsway{animation:none} }
 </style>
 </head>
 <body>
@@ -1030,6 +1024,32 @@ const carCard = (p, k) => { const [s] = monthRange(p, k), open = canSee(p, k);
     <span class="cm">${MONTHS[k]}</span><span class="cd">с ${fmt(s)}</span>${open ? '' : `<span class="clk">${I.lock}</span>`}</div>`; };
 MONTHS.forEach((_, k) => { const im = new Image(); im.src = MIMG(k); }); /* грузим заранее, чтобы карты не мигали */
 
+/* Кольцо месяцев (SVG 1000×1000, центр в солнце).
+   Каждая карта: внешний слой — форма-трапеция, повёрнутая на свой угол (clipPath);
+   внутренний — пейзаж, который стоит ровно (поворот формы компенсирован) и покрывает её с запасом (slice);
+   подпись — отдельный HTML-слой, всегда горизонтальный. */
+const RG = {ro: 488, ri: 205, gap: 16, rad: 16, lab: 420};
+function ringSVG(){
+  const C = 500, {ro, ri, gap, rad} = RG, half = Math.PI / 12;
+  const wo = 2 * ro * Math.sin(half) - gap, wi = 2 * ri * Math.sin(half) - gap;
+  const yo = C - ro * Math.cos(Math.asin(wo / 2 / ro)), yi = C - ri;   /* внешний край касается окружности */
+  const P = [[C - wo / 2, yo], [C + wo / 2, yo], [C + wi / 2, yi], [C - wi / 2, yi]];
+  const rot = (x, y, t) => [C + (x - C) * Math.cos(t) - (y - C) * Math.sin(t), C + (x - C) * Math.sin(t) + (y - C) * Math.cos(t)];
+  const path = pts => { /* скруглённые углы */
+    let d = ''; pts.forEach((p, i) => { const a = pts[(i + pts.length - 1) % pts.length], b = pts[(i + 1) % pts.length];
+      const u = (q) => { const dx = q[0] - p[0], dy = q[1] - p[1], L = Math.hypot(dx, dy); return [p[0] + dx / L * rad, p[1] + dy / L * rad]; };
+      const s0 = u(a), s1 = u(b); d += (i ? 'L' : 'M') + s0.map(v => v.toFixed(1)).join(' ') + 'Q' + p.map(v => v.toFixed(1)).join(' ') + ' ' + s1.map(v => v.toFixed(1)).join(' '); });
+    return d + 'Z'; };
+  let defs = '', body = '';
+  for (let k = 0; k < 12; k++){
+    const t = k * Math.PI / 6, pts = P.map(([x, y]) => rot(x, y, t)), d = path(pts);
+    const xs = pts.map(p => p[0]), ys = pts.map(p => p[1]), x0 = Math.min(...xs) - 2, y0 = Math.min(...ys) - 2, w = Math.max(...xs) - x0 + 2, h = Math.max(...ys) - y0 + 2;
+    const mx = (Math.sin(t) * -50).toFixed(1), my = (Math.cos(t) * 50).toFixed(1);
+    defs += `<clipPath id="mclip${k}"><path d="${d}"/></clipPath>`;
+    body += `<g class="rcard" style="--k:${k};--mx:${mx}px;--my:${my}px"><image href="assets/land/${pad(k + 1)}.webp" x="${x0.toFixed(1)}" y="${y0.toFixed(1)}" width="${w.toFixed(1)}" height="${h.toFixed(1)}" preserveAspectRatio="xMidYMid slice" clip-path="url(#mclip${k})"/><path class="redge" d="${d}"/></g>`;
+  }
+  return `<svg class="rsvg" viewBox="0 0 1000 1000" aria-hidden="true"><defs>${defs}</defs>${body}</svg>`;
+}
 /* Короткие названия месяцев для кольца на первом экране онбординга */
 const MSHORT = {ru: ['Янв','Фев','Мар','Апр','Май','Июн','Июл','Авг','Сен','Окт','Ноя','Дек'], uk: ['Січ','Лют','Бер','Кві','Тра','Чер','Лип','Сер','Вер','Жов','Лис','Гру']};
 
@@ -1064,7 +1084,8 @@ onb: () => {
   <div class="top"><span class="brand">Прогностика 2027</span><button class="skip" onclick="finishOnb()">Пропустить</button></div>
   <div class="ovp"><div class="pager">
     <div class="slide" data-k="0">
-      <div class="ill"><div class="ring"><div class="rsway">${MSHORT[S.lang === 'uk' ? 'uk' : 'ru'].map((n, k) => `<div class="rc" style="--a:${k * 30}deg;--k:${k}"><img src="assets/cards/${pad(k + 1)}.webp" alt="" draggable="false"></div><b class="rl" style="--a:${k * 30}deg;--k:${k}">${n}</b>`).join('')}</div></div></div>
+      <div class="ill"><div class="ring">${ringSVG()}${MSHORT[S.lang === 'uk' ? 'uk' : 'ru'].map((n, k) => { const a = k * Math.PI / 6, r = RG.lab;
+        return `<b class="rl" style="--k:${k};left:${(50 + r * Math.sin(a) / 10).toFixed(2)}%;top:${(50 - r * Math.cos(a) / 10).toFixed(2)}%">${n}</b>`; }).join('')}</div></div>
       <div class="otx"><h2>Знай заранее, <em>когда действовать</em>, а когда переждать</h2>
         <p>Прогностика по дате рождения показывает, что ждёт тебя каждый месяц 2027 года: в деньгах, отношениях и здоровье.</p></div>
     </div>
@@ -1385,9 +1406,8 @@ function onbInit(el){
   const obg = el.querySelector('.obg'), bimg = obg && obg.querySelector('img'), ring = el.querySelector('.ring');
   const SUN = {x: 478 / 941, y: 588 / 1671};
   const layoutRing = () => { if (!ring) return;
-    const ill = ring.parentElement, D = Math.max(200, Math.min(ill.clientHeight - 14, vp.clientWidth - 44, 370));
-    const cw = D * .18, ch = cw * 358 / 246; /* карточки в своих пропорциях 246×358 */
-    Object.entries({'--D': D, '--cw': cw, '--ch': ch, '--R': D / 2 - ch / 2}).forEach(([k, v]) => ring.style.setProperty(k, v.toFixed(1) + 'px'));
+    const ill = ring.parentElement, D = Math.max(200, Math.min(ill.clientHeight - 12, vp.clientWidth - 28, 370));
+    ring.style.setProperty('--D', D.toFixed(1) + 'px');
     const W = el.clientWidth, H = el.clientHeight, er = el.getBoundingClientRect(), rr = ring.getBoundingClientRect();
     const cx = rr.left + rr.width / 2 - er.left + (S.onbI ? 0 : 0), cy = rr.top + rr.height / 2 - er.top;
     const IW = 941, IH = 1671;
