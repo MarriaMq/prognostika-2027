@@ -846,6 +846,9 @@ body{background:var(--sea)}
 .item.act:has(.it){align-items:flex-start;padding-top:16px;padding-bottom:16px}
 .item.act:has(.it) svg{margin-top:3px}
 .item .it .d{display:block;margin-top:4px;font:300 13px/1.4 var(--f-text);color:var(--ink3);letter-spacing:0}
+/* v45: экран языка появляется мягко, без рывков: только проявление, без сдвига и размытия */
+.lang .rise{animation:softin 1s ease both;animation-delay:calc(var(--i, 0) * 90ms + 200ms)}
+@keyframes softin{from{opacity:0}to{opacity:1}}
 </style>
 </head>
 <body>
@@ -1120,7 +1123,7 @@ lang: () => `
   <div class="lbg"><img src="assets/lang-bg2.webp" alt="" draggable="false"></div><div class="ifogs lfog"><div class="fog fB"><div class="tile"></div></div><div class="fog fA"><div class="tile"></div></div><div class="fog fC"><div class="tile"></div></div></div>
   <div class="lwrap">
     <div class="eyebrow">Прогностика 2027</div>
-    <h1 class="lq">Обери мову<span>Выбери язык</span></h1><span class="rule"></span>
+    <h1 class="lq">Обери мову<span>Выбери язык</span></h1>
     <div class="lchoices">
       <button class="dk-btn" onclick="pickLang('uk')"><span class="code">UA</span><span><span class="n">Українська</span><span class="d">Продовжити українською</span></span></button>
       <button class="dk-btn" onclick="pickLang('ru')"><span class="code">RU</span><span><span class="n">Русский</span><span class="d">Продолжить на русском</span></span></button>
@@ -1424,9 +1427,15 @@ function setFog(el){ /* золотистый туман: один и тот же
      поэтому на новом экране он продолжается ровно с того места, где был на прошлом */
   if (!FOG_TEX) return false;
   FOGS.forEach(([sel, , op, dur, dir], k) => { const box = el.querySelector(sel); if (!box) return; const tile = box.querySelector('.tile');
-    const sync = () => box.getAnimations({subtree: true}).forEach(a => { if (/^fog/.test(a.animationName)) a.currentTime = performance.now() - FOG_T0; });
-    requestAnimationFrame(sync); setTimeout(sync, 120); /* ставим туман на общие часы, когда браузер уже запустил анимацию */
     tile.style.backgroundImage = `url(${FOG_TEX[k]})`; box.style.opacity = op;
+    /* движение тумана задаём сами, с общей точкой отсчёта: с первого кадра он стоит где надо, без перескоков */
+    if (tile.animate && !RM){
+      tile.style.animation = box.style.animation = 'none';
+      const by = dir * 10, run = (node, kf, o) => { const a = node.animate(kf, Object.assign({iterations: Infinity}, o)); a.startTime = FOG_T0; };
+      run(tile, [{transform: 'translateX(0)'}, {transform: 'translateX(-50%)'}], {duration: dur * 1000, easing: 'linear', direction: dir < 0 ? 'normal' : 'reverse'});
+      run(tile, [{translate: '0 0'}, {translate: '0 -7%'}], {duration: (4 + dur / 6) * 1000, easing: 'ease-in-out', direction: 'alternate', composite: 'add'});
+      run(box, [{transform: 'none'}, {transform: `translateY(${by}px) scaleY(1.12)`}], {duration: (7 + dur / 20) * 1000, easing: 'ease-in-out', direction: 'alternate'});
+      return; }
     box.style.setProperty('--dur', dur + 's'); box.style.setProperty('--dir', dir < 0 ? 'normal' : 'reverse');
     box.style.setProperty('--bob', (4 + dur / 6) + 's'); box.style.setProperty('--br', (7 + dur / 20) + 's'); box.style.setProperty('--by', (dir * 10) + 'px'); });
   return true; }
