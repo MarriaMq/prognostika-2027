@@ -819,7 +819,6 @@ body{background:var(--sea)}
 @keyframes lfog{0%{opacity:1}35%{opacity:1}100%{opacity:0}}
 /* v38: пролёт сквозь проём двери, как у разработчика: вид пещеры живёт в проёме и вырастает до экрана */
 .iaper{position:absolute !important;inset:0;z-index:1 !important;pointer-events:none;overflow:hidden}
-.iaper{background:radial-gradient(ellipse at 50% 60%,#2a1712 0%,#140a08 70%)}
 .iaper img{position:absolute;max-width:none;display:block;opacity:0}
 .ajamb{position:absolute;display:block}
 .screen.intro{z-index:3}
@@ -1429,7 +1428,7 @@ function introInit(el){
     const IA = 986 / 1594, cov = bw / bh > IA ? [bw, bw / IA] : [bh * IA, bh];
     Object.assign(aimg.style, {width: cov[0] + 'px', height: cov[1] + 'px', left: cx - cov[0] / 2 + 'px', top: cy - cov[1] / 2 + 'px'});
     const v = Math.max(0, Math.min(1, (p - .22) / .5)); aimg.style.opacity = (v * v * (3 - 2 * v)).toFixed(3); /* сначала проём тёмный, вид проявляется по мере приближения */
-    jamb.style.opacity = Math.max(0, Math.min(1, (1.3 - (r - l) / W) / .3)).toFixed(3);
+    jamb.style.opacity = Math.min(v, Math.max(0, Math.min(1, (1.3 - (r - l) / W) / .3))).toFixed(3); /* на заставке проём как на фото, без затемнения */
     Object.assign(jamb.style, {left: l + 'px', top: t + 'px', width: r - l + 'px', height: b - t + 'px', boxShadow: `inset ${(r - l) * .09}px 0 ${(r - l) * .12}px rgba(40,14,8,.55), inset ${-(r - l) * .05}px 0 ${(r - l) * .08}px rgba(40,14,8,.35), inset 0 ${(r - l) * .1}px ${(r - l) * .14}px rgba(40,14,8,.4)`}); };
   const frame = now => { if (!el.isConnected || state !== 'door') return; const k = Math.min(1, (now - t0) / (RM ? 1000 : FLY));
     p = k < .5 ? 4 * k * k * k : 1 - Math.pow(-2 * k + 2, 3) / 2; apply(); /* плавный разгон и торможение камеры */
