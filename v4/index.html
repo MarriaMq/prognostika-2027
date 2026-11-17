@@ -990,17 +990,7 @@ body{background:var(--sea)}
 .mhero{padding:4px 6px 4px}
 .mhero h2{font:400 46px/1 var(--f-serif);color:#fff;text-shadow:0 2px 18px rgba(16,40,64,.25)}
 .mhero p{margin-top:8px;font:400 14px/1.4 var(--f-text);color:rgba(255,255,255,.82)}
-.msheet{counter-reset:sec;border-radius:24px;background:var(--card);color:var(--ink2);padding:4px 22px;box-shadow:0 14px 34px rgba(16,40,64,.2)}
-.msheet .sec{counter-increment:sec;background:none;box-shadow:none;border:0;border-radius:0;padding:22px 0 20px;-webkit-backdrop-filter:none;backdrop-filter:none}
-.msheet .sec + .sec{border-top:1px solid rgba(35,65,92,.12)}
-.msheet .sec-h::before{content:counter(sec,decimal-leading-zero);display:block;margin-bottom:8px;font:500 11px/1 var(--f-text);letter-spacing:.22em;color:var(--alyi-l)}
-.msheet .sec h3{font-size:26px}
-.msheet .sec.lock h3{color:var(--ink3);font-size:21px}
-.msheet .sec.lock p{color:var(--ink3)}
-.msheet .sec.lock h3::before{content:none}
-.msheet .closed{padding:30px 4px}
-.msheet .closed .t{color:var(--alyi)}
-.msheet .closed .d{color:var(--ink3)}
+.msheet{display:flex;flex-direction:column;gap:12px} /* v63: разделы снова отдельными карточками, без номеров */
 .msheet .fold .tw::after{content:"";position:absolute;left:0;right:0;bottom:0;height:2.6em;background:linear-gradient(180deg,rgba(248,241,231,0),var(--card));pointer-events:none;transition:opacity .3s}
 .msheet .fold.open .tw::after,.msheet .fold.short .tw::after{opacity:0}
 .content > .nextm{margin-top:6px}
