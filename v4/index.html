@@ -924,12 +924,12 @@ body{background:var(--sea)}
 .okw h1{font:400 clamp(38px,11vw,50px)/1.05 var(--f-serif);color:var(--cream);text-shadow:0 2px 20px rgba(10,20,45,.45);animation:softin 1s ease .2s both}
 .okk{margin-top:16px;font:400 12px/1 var(--f-text);letter-spacing:.42em;text-transform:uppercase;color:rgba(255,255,255,.88);animation:softin 1s ease .4s both}
 .okr{display:block;width:44px;height:1px;margin:22px auto 0;background:rgba(255,236,220,.75);animation:softin 1s ease .5s both}
-.okt{margin:20px auto 0;max-width:330px;font:400 18px/1.45 var(--f-serif);color:#fff;text-shadow:0 1px 14px rgba(10,20,45,.5);animation:softin 1s ease .6s both}
-.okh{margin:12px auto 0;max-width:300px;font:300 13px/1.45 var(--f-text);color:rgba(255,255,255,.8);text-shadow:0 1px 10px rgba(10,20,45,.5);animation:softin 1s ease .8s both}
+.okt{margin:20px auto 0;max-width:330px;font:400 20px/1.4 var(--f-serif);color:#fff;text-shadow:0 1px 14px rgba(10,20,45,.5);animation:softin 1s ease .6s both}
+.okh{margin:0 auto 12px;max-width:340px;padding:11px 18px;border-radius:16px;text-align:center;font:400 13.5px/1.45 var(--f-text);color:rgba(255,246,236,.95);background:rgba(40,8,8,.48);border:1px solid rgba(255,228,205,.22);-webkit-backdrop-filter:blur(10px) saturate(1.1);backdrop-filter:blur(10px) saturate(1.1);animation:softin 1s ease .8s both}
 .success .bottom{position:relative;z-index:1;margin-top:auto}
 .success .bottom .btn.okbtn{animation:softin 1s ease 1s both;background:linear-gradient(180deg,rgba(150,24,20,.72),rgba(110,12,12,.82));border:1px solid rgba(255,228,205,.75);color:#FFF4E8;font:400 22px/1 var(--f-serif);letter-spacing:.01em;-webkit-backdrop-filter:blur(8px);backdrop-filter:blur(8px);box-shadow:0 12px 30px rgba(70,8,8,.35)}
 .success .bottom .btn.okbtn svg{width:22px;height:22px}
-@media (max-height:700px){ .okw{padding-top:calc(var(--safe-t) + 5vh)} .okt{font-size:17px;margin-top:14px} .okr{margin-top:16px} }
+@media (max-height:700px){ .okw{padding-top:calc(var(--safe-t) + 5vh)} .okt{font-size:18px;margin-top:14px} .okr{margin-top:16px} }
 </style>
 </head>
 <body>
@@ -1375,17 +1375,17 @@ success: () => {
   const T = uk ? {
     h: 'Оплата успішна', k: 'Доступ відкрито',
     t: !p.self ? `Прогноз для ${esc(p.name)} уже чекає. Знайти його можна в профілі.`
-      : L === 'year' ? 'Річна прогностика вже чекає на тебе: загальний і особистий прогноз.'
-      : both ? 'Усі прогнози вже чекають на тебе. Обери свій місяць або річний прогноз і розпочни.'
-      : 'Усі 12 місяців уже чекають на тебе. Почни з січня й читай по черзі.',
+      : L === 'year' ? 'Річна прогностика вже чекає на тебе. Загальний і особистий прогноз.'
+      : both ? 'Усі прогнози вже чекають на тебе.'
+      : 'Усі 12 місяців уже чекають на тебе.',
     hint: 'Прогноз завжди в цьому боті. Натисни кнопку «Відкрити» внизу чату.',
     b: both ? 'Обери прогноз' : L === 'year' ? 'Відкрити прогноз на рік' : 'Відкрити прогноз'
   } : {
     h: 'Оплата успешна', k: 'Доступ открыт',
-    t: !p.self ? `Прогноз для ${esc(p.name)} уже ждёт. Найти его можно в профиле, в списке «Чей прогноз смотреть».`
-      : L === 'year' ? 'Годовая прогностика уже ждёт тебя: общий и личный прогноз во вкладке «Год».'
-      : both ? 'Все прогнозы уже ждут тебя. Выбери свой месяц или годовой прогноз и начни.'
-      : 'Все 12 месяцев уже ждут тебя. Начни с января и читай по порядку.',
+    t: !p.self ? `Прогноз для ${esc(p.name)} уже ждёт. Найти его можно в профиле.`
+      : L === 'year' ? 'Годовая прогностика уже ждёт тебя. Общий и личный прогноз.'
+      : both ? 'Все прогнозы уже ждут тебя.'
+      : 'Все 12 месяцев уже ждут тебя.',
     hint: 'Прогноз всегда в этом боте. Нажми кнопку «Открыть» внизу чата.',
     b: both ? 'Выбери прогноз' : L === 'year' ? 'Открыть прогноз на год' : 'Открыть прогноз'
   };
@@ -1396,9 +1396,8 @@ success: () => {
     <p class="okk">${T.k}</p>
     <i class="okr"></i>
     <p class="okt">${T.t}</p>
-    ${p.self ? `<p class="okh">${T.hint}</p>` : ''}
   </div>
-  <div class="bottom"><button class="btn okbtn" onclick="toMain('${L === 'year' ? 'y' : 'm'}')">${T.b} ${I.arrow}</button></div>`;
+  <div class="bottom">${p.self ? `<p class="okh">${T.hint}</p>` : ''}<button class="btn okbtn" onclick="toMain('${L === 'year' ? 'y' : 'm'}')">${T.b} ${I.arrow}</button></div>`;
 },
 
 main: () => {
