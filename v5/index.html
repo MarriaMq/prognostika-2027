@@ -8,7 +8,7 @@
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:ital,wght@0,300;0,400;0,500;0,600;1,400;1,500&family=Inter:wght@300;400;500&display=swap" rel="stylesheet">
-<link rel="preload" as="image" href="assets/goat-sun.webp">
+<link rel="preload" as="image" href="assets/intro-goat.webp"><link rel="preload" as="image" href="assets/lang-arch.webp">
 <link rel="preload" as="image" href="assets/sky-bg.webp">
 <link rel="preload" as="image" href="assets/month-bg.webp">
 <script src="https://telegram.org/js/telegram-web-app.js"></script>
@@ -1183,6 +1183,10 @@ body,#app{background:var(--nv)}
 .okw h1,.okt{text-shadow:0 2px 18px rgba(4,22,34,.6)}
 .success .bottom .btn.okbtn{background:var(--red-grad);border-color:rgba(227,200,146,.75)}
 .okh{background:rgba(11,26,82,.55);border-color:rgba(201,164,106,.3)}
+
+/* v84: заставка — коза у двери в красной скале, камера летит в эту дверь; экран языка — арка к морю */
+.screen.intro{background:#0E2440}
+.screen.lang{background:#13305C}
 </style>
 </head>
 <body>
@@ -1474,7 +1478,7 @@ intro: () => `
   <div class="ifade"></div>`,
 
 lang: () => `
-  <div class="lbg"><img src="assets/lang-bg2.webp" alt="" draggable="false"></div><div class="ifogs lfog"><div class="fog fB"><div class="tile"></div></div><div class="fog fA"><div class="tile"></div></div><div class="fog fC"><div class="tile"></div></div></div>
+  <div class="lbg"><img src="assets/lang-arch.webp" alt="" draggable="false"></div><div class="ifogs lfog"><div class="fog fB"><div class="tile"></div></div><div class="fog fA"><div class="tile"></div></div><div class="fog fC"><div class="tile"></div></div></div>
   <div class="lwrap">
     <div class="eyebrow">Прогностика 2027</div>
     <h1 class="lq">Обери мову<span>Выбери язык</span></h1>
@@ -1776,7 +1780,7 @@ const AFTER = {
 /* Пролёт: три слоя фото (небо и море, скала с дверью, коза) приближаются с разной скоростью к двери */
 /* Заставка (анимация клиентки, перенесена без GSAP):
    камера экспоненциально приближается к двери, дверь плавно едет к центру, туман дрейфует бесшовно. */
-const DOOR = {x: 703 / 941, y: 810 / 1672}, ZOOM = 16, FLY = 2300, START = 650;
+const DOOR = {x: 824 / 1086, y: 753 / 1448} /* v84: дверь в красной скале на новой картинке */, ZOOM = 16, FLY = 2300, START = 650;
 let FOG_TEX = null;
 function fogTexture(seed, W = 256, H = 96){
   let s = seed; const rnd = () => (s = (s * 16807) % 2147483647) / 2147483647;
@@ -1821,18 +1825,18 @@ function introInit(el){
   const cv = el.querySelector('.icv'), ctx = cv.getContext('2d');
   if (!FOG_TEX) FOG_TEX = FOGS.map(f => fogTexture(f[1]));
   setFog(el);
-  const goat = new Image(); goat.src = 'assets/goat-sun.webp';
-  const view = new Image(); view.src = 'assets/lang-bg2.webp'; if (view.decode) view.decode().catch(() => {});
-  const GW = 941, GH = 1672, VW = 986, VH = 1594;
+  const goat = new Image(); goat.src = 'assets/intro-goat.webp';
+  const view = new Image(); view.src = 'assets/lang-arch.webp'; if (view.decode) view.decode().catch(() => {});
+  const GW = 1086, GH = 1448, VW = 736, VH = 981; /* v84: проём двери 795–853 × 621–886 */
   let p = 0, t0 = 0, state = 'home', W = 0, H = 0, dpr = 1, w, h, ox, oy, P, C, ZE, SC, FH, H0;
   const layout = () => { W = el.clientWidth; H = el.clientHeight; dpr = Math.min(3, window.devicePixelRatio || 1);
     cv.width = Math.round(W * dpr); cv.height = Math.round(H * dpr);
     w = W; h = W * GH / GW; if (h < H){ h = H; w = H * GW / GH; }
-    ox = (W - w) / 2; oy = (H - h) / 2;
+    ox = Math.max(W - w, Math.min(0, W * .62 - DOOR.x * w)); oy = (H - h) / 2; /* v84: кадр сдвинут так, чтобы дверь с рамкой и коза были целиком */
     P = {x: ox + DOOR.x * w, y: oy + DOOR.y * h}; C = {x: W / 2, y: H / 2};
-    ZE = Math.max(3, W / (w * 61 / GW) * 1.35); /* в конце проём шире экрана: камера уже прошла сквозь дверь */
+    ZE = Math.max(3, W / (w * 58 / GW) * 1.35); /* в конце проём шире экрана: камера уже прошла сквозь дверь */
     /* камера доворачивает к двери не быстрее, чем дверь растёт: оба косяка всегда уходят наружу, без встречного движения */
-    const off = Math.max(Math.abs(P.x - C.x) / (30 / GW * w), Math.abs(P.y - C.y) / (130 / GH * h));
+    const off = Math.max(Math.abs(P.x - C.x) / (29 / GW * w), Math.abs(P.y - C.y) / (132 / GH * h));
     SC = Math.min(ZE, 1 + 1.7 * off);
     FH = Math.max(H, W * VH / VW); H0 = 265 / GH * h; /* высота вида из пещеры: в конце как фон экрана языка; в начале как проём */
     draw(); };
@@ -1852,9 +1856,9 @@ function introInit(el){
     const s = Math.exp(Math.log(ZE) * p), u = Math.min(1, (s - 1) / (SC - 1)), m = 1 - Math.pow(1 - u, 1.5);
     const dx = P.x + (C.x - P.x) * m, dy = P.y + (C.y - P.y) * m, tx = dx - s * P.x, ty = dy - s * P.y;
     ctx.setTransform(dpr, 0, 0, dpr, 0, 0);
-    ctx.fillStyle = '#718094'; ctx.fillRect(0, 0, W, H);
+    ctx.fillStyle = '#0E2440'; ctx.fillRect(0, 0, W, H);
     if (goat.complete && goat.naturalWidth) blit(goat, GW, GH, tx + s * ox, ty + s * oy, s * w, s * h);
-    const l = tx + s * (ox + 672 / GW * w), r = tx + s * (ox + 733 / GW * w), t = ty + s * (oy + 675 / GH * h), b = ty + s * (oy + 940 / GH * h);
+    const l = tx + s * (ox + 795 / GW * w), r = tx + s * (ox + 853 / GW * w), t = ty + s * (oy + 621 / GH * h), b = ty + s * (oy + 886 / GH * h);
     const v = smooth(.22, .72, p); /* сначала проём как на фото, вид из пещеры проявляется по мере приближения */
     if (v <= 0 || !(view.complete && view.naturalWidth)) return;
     /* размер вида плавно растёт от проёма до экрана и останавливается без рывка ровно тогда, когда проём закрыл экран по высоте */
@@ -2462,8 +2466,8 @@ if (Q.has('demo')){
 } else bootIntro();
 /* Первый кадр — сразу коза с дымкой: ждём, пока фото и туман готовы, и только тогда показываем заставку */
 function bootIntro(){
-  app.style.background = '#718094';
-  const im = new Image(); im.src = 'assets/goat-sun.webp';
+  app.style.background = '#0E2440';
+  const im = new Image(); im.src = 'assets/intro-goat.webp';
   const ready = Promise.race([(im.decode ? im.decode() : new Promise(r => im.onload = r)).catch(() => {}), new Promise(r => setTimeout(r, 2500))]);
   ready.then(() => { if (!FOG_TEX) FOG_TEX = FOGS.map(f => fogTexture(f[1])); go('intro', false); setTimeout(() => app.style.background = '', 900); });
 }
