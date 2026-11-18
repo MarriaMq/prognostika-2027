@@ -1289,6 +1289,28 @@ img.wait:not(.ok){visibility:hidden}
 .onb .otx p{margin-top:12px}
 @media (max-height:760px){ .onb .otx h2{font-size:29px} .onb .slide .ill{padding-bottom:14px !important} }
 .onb .rockbg,.onb .sfog{display:none !important}
+
+/* ===== v96: онбординг снова на весь экран. Фото показано целиком по высоте (отдалено, без сдвига вверх),
+   у каждого слайда своё затемнение снизу: у машины его нет — текст стоит на тёмной воде ===== */
+.obgs .bg{position:absolute;inset:0;opacity:0;will-change:opacity,transform;transform-origin:50% 50%}
+.obgs .bg img{position:absolute;inset:0;width:100%;height:100%;object-fit:cover;object-position:50% 50%;opacity:1;transform:none}
+.obgs .b3 img{object-position:72% 50%}
+.obgs .b2 img{object-position:62% 50%}
+.obgs .b1 img{object-position:50% 50%}
+.obgs .b4 img{object-position:60% 50%}
+.obgs .bg::after{content:"";position:absolute;inset:0;pointer-events:none}
+.obgs .b3::after{background:linear-gradient(180deg,rgba(34,57,88,0) 48%,rgba(34,57,88,.5) 64%,rgba(34,57,88,.82) 100%)}
+.obgs .b2::after{background:linear-gradient(180deg,rgba(34,57,88,0) 46%,rgba(34,57,88,.55) 62%,rgba(34,57,88,.85) 100%)}
+.obgs .b1::after{background:linear-gradient(180deg,rgba(34,57,88,0) 80%,rgba(34,57,88,.35) 100%)}
+.obgs .b4::after{background:linear-gradient(180deg,rgba(34,57,88,0) 48%,rgba(34,57,88,.5) 64%,rgba(34,57,88,.82) 100%)}
+.onb .slide .ill{padding:0 !important}
+.onb .otx h2{font-size:clamp(36px,10.6vw,44px);text-shadow:0 2px 20px rgba(12,22,38,.55)}
+.onb .otx p,.onb .otx .fine,.onb .author .d{text-shadow:0 1px 12px rgba(12,22,38,.6)}
+.onb .otx p{margin-top:14px}
+@media (max-height:760px){ .onb .otx h2{font-size:31px} }
+/* v96: у машины картинка чуть выше, чтобы текст стоял на тёмной воде, а не на отражении; низ продолжает цвет воды */
+.obgs .b1{background:#02171D}
+.obgs .b1 img{top:-6%}
 </style>
 </head>
 <body>
@@ -1605,28 +1627,29 @@ onb: () => {
   const P = [[20,120],[50,92],[82,104],[112,70],[146,84],[176,52],[206,66],[236,36],[262,58],[288,26],[312,42],[336,14]];
   const route = `<svg class="route" viewBox="0 0 356 140" aria-hidden="true"><path d="M${P.map(p => p.join(' ')).join(' L')}"/>${P.map(([x, y], k) => `<circle cx="${x}" cy="${y}" r="${k === 0 || k === 11 ? 4 : 2.6}" style="--k:${k}"/><text x="${x}" y="${y + 18}" text-anchor="middle" style="--k:${k}">${MONTHS[k].slice(0,3)}</text>`).join('')}</svg>`;
   return `
+  <div class="obgs" aria-hidden="true">${[3,2,1,4].map(n => `<div class="bg b${n}"><img src="assets/onb${n}.webp" alt="" draggable="false"></div>`).join('')}</div>
   <div class="top"><span class="brand">Прогностика 2027</span><button class="skip" onclick="finishOnb()">Пропустить</button></div>
   <div class="ovp"><div class="pager">
     <div class="slide" data-k="0">
-      <div class="ill"><div class="oimg o3"><img src="assets/onb3.webp" alt="" draggable="false"></div></div>
+      <div class="ill"></div>
       <div class="otx"><h2>Знай заранее, <em>когда действовать</em>, а когда переждать</h2>
         <p>Прогностика по дате рождения показывает, что ждёт тебя каждый месяц 2027 года: в деньгах, отношениях и здоровье.</p></div>
     </div>
     <div class="slide" data-k="1">
-      <div class="ill"><div class="oimg o2"><img src="assets/onb2.webp" alt="" draggable="false"></div></div>
+      <div class="ill"></div>
       <div class="otx"><h2>Что внутри <em>каждого месяца</em></h2>
         <div class="chips"><span>Работа и деньги</span><span>Отношения</span><span>Здоровье</span><span>Баланс</span><span>Сложные периоды</span></div>
         <p class="fine">Без прикрас: и возможности, и риски. Чтобы знать, где подстелить себе соломку.</p></div>
     </div>
     <div class="slide" data-k="2">
-      <div class="ill"><div class="oimg o1"><img src="assets/onb1.webp" alt="" draggable="false"></div></div>
+      <div class="ill"></div>
       <div class="otx"><h2>Твой год <em>как один маршрут</em></h2>
         <p>Каждый месяц продолжает предыдущий. Читай по порядку, и год сложится в одну картину. Нужны только имя и дата рождения.</p>
         <div class="author"><span class="av ph"></span><span><span class="t">Вероника Леончикова-Штепа</span><span class="d">Автор прогностики, нумеролог, 10 лет практики</span></span></div>
         <div class="stat">Больше 2000 человек прочитали свой прогноз на 2026 год</div></div>
     </div>
     <div class="slide" data-k="3">
-      <div class="ill"><div class="oimg o4"><img src="assets/onb4.webp" alt="" draggable="false"></div></div>
+      <div class="ill"></div>
       <div class="otx"><h2>Прогноз остаётся <em>с тобой навсегда</em></h2>
         <p>Платишь один раз, без подписки и списаний. Открывай любой месяц, когда захочешь, и перечитывай перед важными решениями.</p></div>
     </div>
@@ -2055,7 +2078,7 @@ function onbInit(el){
     if (ogl) ogl.style.transform = `translateX(${-pos * 10}%)`;
     if (obg) obg.style.opacity = Math.max(0, 1 - Math.abs(pos) * 1.15).toFixed(3);
     /* v92: фоны слайдов плавно сменяют друг друга вслед за пальцем */
-    el.querySelectorAll('.obgs img').forEach((im, k) => { const d = k - pos; im.style.opacity = Math.max(0, 1 - Math.abs(d)).toFixed(3); im.style.transform = `scale(${(1.06 - .06 * Math.max(0, 1 - Math.abs(d))).toFixed(4)}) translateX(${(-d * 4).toFixed(2)}%)`; });
+    el.querySelectorAll('.obgs .bg').forEach((im, k) => { const d = k - pos; im.style.opacity = Math.max(0, 1 - Math.abs(d)).toFixed(3); im.style.transform = `scale(${(1.06 - .06 * Math.max(0, 1 - Math.abs(d))).toFixed(4)}) translateX(${(-d * 4).toFixed(2)}%)`; });
     const sf = el.querySelector('.sfog'); if (sf){ sf.style.transition = anim ? 'transform .55s var(--spring)' : 'none'; } if (sf) sf.style.transform = `translateX(${(-pos * 4.2).toFixed(2)}%)`;
     dots.forEach((d, k) => d.classList.toggle('on', k === S.onbI));
     el.classList.toggle('last', S.onbI === 3);
