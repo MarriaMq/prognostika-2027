@@ -1325,6 +1325,17 @@ img.wait:not(.ok){visibility:hidden}
 .onb .slide[data-k="2"] .otx p{font-size:15px;line-height:1.5;margin-top:12px}
 .onb .slide[data-k="2"] .author{margin-top:14px;padding-top:12px}
 .onb .slide[data-k="2"] .stat{margin-top:8px;font-size:16px}
+
+/* v98: блок Вероники — отдельная полупрозрачная карточка с размытием и тенью, чтобы на него хотелось посмотреть */
+.onb .vcard{margin-top:16px;padding:14px 16px 14px;border-radius:20px;background:linear-gradient(160deg,rgba(255,255,255,.14),rgba(255,255,255,.05));
+  border:1px solid rgba(226,208,176,.35);-webkit-backdrop-filter:blur(14px) saturate(1.2);backdrop-filter:blur(14px) saturate(1.2);
+  box-shadow:0 18px 40px rgba(0,0,0,.4),inset 0 1px 0 rgba(255,255,255,.14)}
+.onb .vcard .author,.onb .slide[data-k="2"] .vcard .author{margin-top:0;padding-top:0;border-top:0}
+.onb .vcard .author .av.ph{width:54px;height:54px;box-shadow:0 0 0 2px var(--beige),0 6px 16px rgba(0,0,0,.35)}
+.onb .vcard .author .t{font-size:19px}
+.onb .vcard .stat,.onb .slide[data-k="2"] .vcard .stat{margin-top:12px;padding-top:11px;border-top:1px solid rgba(226,208,176,.22);font-size:16px}
+@media (max-height:760px){ .onb .vcard{margin-top:10px;padding:10px 12px} .onb .vcard .author .av.ph{width:44px;height:44px} .onb .vcard .stat{margin-top:8px;padding-top:8px;font-size:14.5px} }
+@media (max-height:700px){ .obgs .b1 img{top:-19%} }
 </style>
 </head>
 <body>
@@ -1659,8 +1670,8 @@ onb: () => {
       <div class="ill"></div>
       <div class="otx"><h2>Твой год <em>как один маршрут</em></h2>
         <p>Каждый месяц продолжает предыдущий. Читай по порядку, и год сложится в одну картину. Нужны только имя и дата рождения.</p>
-        <div class="author"><span class="av ph"></span><span><span class="t">Вероника Леончикова-Штепа</span><span class="d">Автор прогностики, нумеролог, 10 лет практики</span></span></div>
-        <div class="stat">Больше 2000 человек прочитали свой прогноз на 2026 год</div></div>
+        <div class="vcard"><div class="author"><span class="av ph"></span><span><span class="t">Вероника Леончикова-Штепа</span><span class="d">Автор прогностики, нумеролог, 10 лет практики</span></span></div>
+        <div class="stat">Больше 2000 человек прочитали свой прогноз на 2026 год</div></div></div>
     </div>
     <div class="slide" data-k="3">
       <div class="ill"></div>
