@@ -1352,6 +1352,27 @@ img.wait:not(.ok){visibility:hidden}
 .screen.tariffs .sfog,.screen.name .sfog,.screen.dob .sfog{display:none !important}
 .screen.dob .wheels{border-radius:22px;background:rgba(8,14,28,.5);-webkit-backdrop-filter:blur(12px);backdrop-filter:blur(12px);box-shadow:0 14px 34px rgba(0,0,0,.3)}
 .screen.dob .wlabs,.screen.dob .wlab{text-shadow:0 1px 8px rgba(0,0,0,.6)}
+
+/* ===== v101: карточки года на актуальных фото: «Общий» — синие лестницы вверх (карьера, рост), «Личный» — дом и красное дерево (семья) ===== */
+.yc.w{background:linear-gradient(90deg,rgba(3,6,12,.72),rgba(3,6,12,.08) 78%),url(assets/bg-name.webp) 50% 42%/cover}
+.yc.l{background:linear-gradient(90deg,rgba(3,6,12,.72),rgba(3,6,12,.08) 78%),url(assets/bg-dob.webp) 50% 62%/cover}
+.ybanner{background:linear-gradient(90deg,rgba(3,6,12,.82),rgba(3,6,12,.35)),url(assets/onb4.webp) 60% 40%/cover}
+
+/* профиль: фон — арка со второго экрана, аватар — спокойная заглушка с буквой */
+.screen.profile .rockbg{left:0;right:0;top:0;bottom:0;height:auto;opacity:1;filter:none;-webkit-mask-image:none;mask-image:none;
+  background:linear-gradient(180deg,rgba(3,6,12,.35) 0%,rgba(3,6,12,.15) 30%,rgba(3,6,12,.55) 100%),url(assets/lang-arch.webp) 50% 50%/cover #223958}
+.screen.profile .sfog{display:none !important}
+.ava{background:#2C4468;color:var(--beige);box-shadow:0 0 0 1.5px var(--beige)}
+
+/* ===== успешная оплата: картинка сверху открыта, весь текст собран внизу над кнопкой, слева, как в онбординге ===== */
+.success .okw{margin-top:auto;padding:0 var(--g);text-align:left}
+.success .okw h1{font-size:clamp(38px,11vw,46px);line-height:1.04;text-shadow:0 2px 20px rgba(0,0,0,.55)}
+.success .okk{margin-top:12px;letter-spacing:.32em;color:var(--beige);text-shadow:0 1px 10px rgba(0,0,0,.6)}
+.success .okt{margin:12px 0 0;max-width:none;font:300 16px/1.5 var(--f-text);color:rgba(244,233,214,.92);text-shadow:0 1px 12px rgba(0,0,0,.6)}
+.success .bottom{margin-top:20px}
+.success .okh{margin:0 0 14px;max-width:none;text-align:left;padding:12px 16px;border-radius:18px;background:rgba(8,14,28,.45);border:1px solid rgba(226,208,176,.25);color:rgba(244,233,214,.88)}
+.okbg::after{background:linear-gradient(180deg,rgba(3,6,12,.25) 0%,rgba(3,6,12,0) 14%,rgba(3,6,12,0) 44%,rgba(3,6,12,.5) 58%,rgba(3,6,12,.85) 78%,rgba(3,6,12,.92) 100%)}
+@media (max-height:700px){ .success .okw h1{font-size:34px} .success .okt{font-size:15px} }
 </style>
 </head>
 <body>
