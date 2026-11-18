@@ -1311,6 +1311,20 @@ img.wait:not(.ok){visibility:hidden}
 /* v96: у машины картинка чуть выше, чтобы текст стоял на тёмной воде, а не на отражении; низ продолжает цвет воды */
 .obgs .b1{background:#02171D}
 .obgs .b1 img{top:-6%}
+
+/* v97: затемнение снизу чёрное, а не синее — картинка глубже, без «выгоревшего» вида.
+   Машина ниже (облако целиком, с запасом), текст на этом слайде чуть компактнее */
+.obgs .b3::after{background:linear-gradient(180deg,rgba(0,0,0,0) 50%,rgba(3,6,12,.42) 66%,rgba(3,6,12,.78) 100%)}
+.obgs .b2::after{background:linear-gradient(180deg,rgba(0,0,0,0) 48%,rgba(3,6,12,.45) 64%,rgba(3,6,12,.8) 100%)}
+.obgs .b1::after{background:linear-gradient(180deg,rgba(0,0,0,0) 78%,rgba(3,6,12,.4) 100%)}
+.obgs .b4::after{background:linear-gradient(180deg,rgba(0,0,0,0) 50%,rgba(3,6,12,.42) 66%,rgba(3,6,12,.78) 100%)}
+.obgs .b1{background:linear-gradient(180deg,#022352 0,#022352 50%,#02171D 50%)}
+.obgs .b1 img{top:3%}
+.onb .otx h2,.onb .otx p,.onb .otx .fine,.onb .author .d{text-shadow:0 1px 14px rgba(0,0,0,.5)}
+.onb .slide[data-k="2"] .otx h2{font-size:clamp(34px,9.8vw,40px)}
+.onb .slide[data-k="2"] .otx p{font-size:15px;line-height:1.5;margin-top:12px}
+.onb .slide[data-k="2"] .author{margin-top:14px;padding-top:12px}
+.onb .slide[data-k="2"] .stat{margin-top:8px;font-size:16px}
 </style>
 </head>
 <body>
