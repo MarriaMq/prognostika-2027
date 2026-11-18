@@ -1192,6 +1192,11 @@ body,#app{background:var(--nv)}
 
 /* v88: на экране языка буквы UA / RU без круглой обводки */
 .dk-btn .code{border:0;width:30px;justify-items:start;font-size:13px;color:var(--gold)}
+
+/* v90: на заставке тумана нет; на экране языка он едва заметный, только чтобы картинка жила */
+.intro .ifogs{display:none}
+.screen.lang .lfog{opacity:.14}
+.screen.intro{background:#14456E}
 </style>
 </head>
 <body>
@@ -1837,7 +1842,8 @@ function introInit(el){
   const layout = () => { W = el.clientWidth; H = el.clientHeight; dpr = Math.min(3, window.devicePixelRatio || 1);
     cv.width = Math.round(W * dpr); cv.height = Math.round(H * dpr);
     w = W; h = W * GH / GW; if (h < H){ h = H; w = H * GW / GH; }
-    ox = Math.max(W - w, Math.min(0, W * .62 - DOOR.x * w)); oy = (H - h) / 2; /* v84: кадр сдвинут так, чтобы дверь с рамкой и коза были целиком */
+    const K = Math.max(.8, W / w); w *= K; h *= K; /* v90: коза меньше и ниже, будто дальше; сверху продолжается небо */
+    ox = Math.max(W - w, Math.min(0, W * .62 - DOOR.x * w)); oy = H - h; /* v84: кадр сдвинут так, чтобы дверь с рамкой и коза были целиком */
     P = {x: ox + DOOR.x * w, y: oy + DOOR.y * h}; C = {x: W / 2, y: H / 2};
     ZE = Math.max(3, W / (w * 58 / GW) * 1.35); /* в конце проём шире экрана: камера уже прошла сквозь дверь */
     /* камера доворачивает к двери не быстрее, чем дверь растёт: оба косяка всегда уходят наружу, без встречного движения */
@@ -1861,7 +1867,7 @@ function introInit(el){
     const s = Math.exp(Math.log(ZE) * p), u = Math.min(1, (s - 1) / (SC - 1)), m = 1 - Math.pow(1 - u, 1.5);
     const dx = P.x + (C.x - P.x) * m, dy = P.y + (C.y - P.y) * m, tx = dx - s * P.x, ty = dy - s * P.y;
     ctx.setTransform(dpr, 0, 0, dpr, 0, 0);
-    ctx.fillStyle = '#223958'; ctx.fillRect(0, 0, W, H);
+    ctx.fillStyle = '#14456E'; ctx.fillRect(0, 0, W, H); /* цвет неба с верхнего края картинки */
     if (goat.complete && goat.naturalWidth) blit(goat, GW, GH, tx + s * ox, ty + s * oy, s * w, s * h);
     /* v89: в проёме ничего не вставляем и створок нет. Камера влетает в тёмный проём двери,
        и поверх плавно проявляется экран языка: в последнем кадре арка стоит ровно как фон экрана языка (cover по центру) */
@@ -2461,7 +2467,7 @@ if (Q.has('demo')){
 } else bootIntro();
 /* Первый кадр — сразу коза с дымкой: ждём, пока фото и туман готовы, и только тогда показываем заставку */
 function bootIntro(){
-  app.style.background = '#223958';
+  app.style.background = '#14456E';
   const im = new Image(); im.src = 'assets/intro-goat.webp';
   const ready = Promise.race([(im.decode ? im.decode() : new Promise(r => im.onload = r)).catch(() => {}), new Promise(r => setTimeout(r, 2500))]);
   ready.then(() => { if (!FOG_TEX) FOG_TEX = FOGS.map(f => fogTexture(f[1])); go('intro', false); setTimeout(() => app.style.background = '', 900); });
