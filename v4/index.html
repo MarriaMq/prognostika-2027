@@ -1009,6 +1009,28 @@ body{background:var(--sea)}
 .yc .d{font-size:13px}
 .yc.w{background:linear-gradient(90deg,rgba(35,65,92,.85),rgba(35,65,92,.15)),url(assets/rock.webp) 30% 40%/cover}
 .yc.l{background:linear-gradient(90deg,rgba(35,65,92,.85),rgba(35,65,92,.1)),url(assets/goat-sun.webp) 70% 45%/cover}
+
+/* v65: шапка прогноза. Заголовок подстраивается под ширину экрана и вырез, меньше отступ до месяца, плашка месяца переезжает плавно */
+.night .mtop{align-items:flex-start}
+.mtop .tsp,.mtop .prof.ico{margin-top:2px}
+.mttl{font-size:calc(clamp(21px, 6.3vw, 26px) - 5px * var(--c,0));line-height:1.08;padding-top:2px;overflow-wrap:normal}
+@media (max-width:350px){ .mttl{font-size:calc(19px - 3px * var(--c,0))} }
+.main .night{padding-bottom:6px}
+.main .content{padding-top:8px}
+.mhero{padding:0 6px 6px}
+.mhero h2{font-size:clamp(38px, 11vw, 46px)}
+.mstrip{margin-top:10px}
+.mstrip button{position:relative;z-index:1;transition:color .35s ease,border-color .35s ease,transform .15s}
+.mstrip button.on{background:transparent;border-color:transparent;box-shadow:none}
+.mind{position:absolute;z-index:0;top:2px;left:0;height:36px;width:0;border-radius:18px;background:var(--red-grad);opacity:0;pointer-events:none;overflow:hidden;
+  transition:transform .5s cubic-bezier(.32,.72,0,1),width .5s cubic-bezier(.32,.72,0,1),opacity .3s ease}
+.mind.ready{opacity:1}
+.mind i{position:absolute;left:12px;right:12px;bottom:4px;height:2px;border-radius:1px;background:rgba(255,236,222,.95);transform-origin:left;transform:scaleX(0);opacity:0;transition:opacity .4s ease}
+.mind.reading i{opacity:1}
+.mind::after{content:"";position:absolute;left:12px;right:12px;bottom:4px;height:2px;border-radius:1px;background:rgba(255,255,255,.22);opacity:0;transition:opacity .4s ease}
+.mind.reading::after{opacity:1}
+.rprog{display:none}
+@media (max-width:350px){ .mhero p{font-size:13px} }
 </style>
 </head>
 <body>
@@ -1199,9 +1221,8 @@ function initRead(el){
   if (!sc || !head || !el.querySelector('.content')) return;
   fitFolds(el);
   if (document.fonts && document.fonts.status !== 'loaded') document.fonts.ready.then(() => fitFolds(el));
-  if (!head.querySelector('.rprog')) head.insertAdjacentHTML('beforeend', '<div class="rprog"><i></i></div>');
-  const bar = head.querySelector('.rprog i');
-  const upd = () => { const max = sc.scrollHeight - sc.clientHeight; bar.style.transform = `scaleX(${max > 0 ? Math.min(1, sc.scrollTop / max) : 0})`; if (!RM) head.style.setProperty('--c', Math.min(1, sc.scrollTop / 160).toFixed(3)); };
+  const upd = () => { const bar = head.querySelector('.mind i'), max = sc.scrollHeight - sc.clientHeight; /* v65: отдельной полоски больше нет, прогресс внутри плашки месяца */
+    if (bar){ const k = max > 0 ? Math.min(1, sc.scrollTop / max) : 0; bar.style.transform = `scaleX(${k})`; bar.parentNode.classList.toggle('reading', sc.scrollTop > 24); } if (!RM) head.style.setProperty('--c', Math.min(1, sc.scrollTop / 160).toFixed(3)); };
   if (!sc.dataset.rp){ sc.dataset.rp = 1; sc.addEventListener('scroll', upd, {passive: true}); }
   upd();
   if (RM || !('IntersectionObserver' in window)) return;
@@ -1482,7 +1503,7 @@ success: () => {
 
 main: () => {
   const p = prof(), yOpen = p.access === 'all', tab = yOpen ? S.tab : 'm';
-  const brand = p.self ? (tab === 'y' ? 'Прогностика <em>2027</em>' : 'Месячная прогностика <em>2027</em>') : `Прогноз: ${esc(p.name)}`;
+  const brand = p.self ? (tab === 'y' ? 'Прогностика <em>2027</em>' : 'Месячная<br>прогностика <em>2027</em>') : `Прогноз: ${esc(p.name)}`;
   const top = `${dust(18, 'stars')}<div class="top mtop"><span class="tsp"></span><h1 class="mttl">${brand}</h1><button class="prof ico" onclick="go('profile')" aria-label="Профиль">${I.user}</button></div>
     ${yOpen ? `<div class="mtabs" role="tablist"><button role="tab" class="${tab === 'm' ? 'on' : ''}" onclick="setTab('m')">Месяцы</button><button role="tab" class="${tab === 'y' ? 'on' : ''}" onclick="setTab('y')">Год</button></div>` : ''}`;
   if (tab === 'y') return yearView(p, top);
@@ -1501,7 +1522,7 @@ main: () => {
   return `
   <div class="night">${top}
     ${p.self && !full ? `<div class="dpill">${I.gift}Бесплатно: работа на 2 ближайших месяца</div>` : ''}
-    <div class="mstrip" role="tablist" aria-label="Месяц">${MSHORT.ru.map((m, k) => `<button role="tab" data-k="${k}" class="${k === i ? 'on' : ''}${canSee(p, k) ? '' : ' lk'}" onclick="setMonth(${k})">${m}${canSee(p, k) ? '' : I.lock}</button>`).join('')}</div>
+    <div class="mstrip" role="tablist" aria-label="Месяц"><span class="mind" aria-hidden="true"><i></i></span>${MSHORT.ru.map((m, k) => `<button role="tab" data-k="${k}" class="${k === i ? 'on' : ''}${canSee(p, k) ? '' : ' lk'}" onclick="setMonth(${k})">${m}${canSee(p, k) ? '' : I.lock}</button>`).join('')}</div>
   </div>
   <div class="scroll"><div class="content">${body}</div></div>
   <div class="mcta">${cta}</div>`;
@@ -1583,7 +1604,8 @@ const AFTER = {
   main: el => {
     const car = el.querySelector('.car');
     if (car) fanInit(el, car);
-    stripTo(el, S.month, false);
+    stripTo(el, S.month, false); indTo(el, false);
+    if (document.fonts) document.fonts.ready.then(() => { indTo(el, false); stripTo(el, S.month, false); }); /* шрифт меняет ширину кнопок */
     if (el.dataset.swipe) return; el.dataset.swipe = 1;
     let x0 = null, y0 = 0;
     el.addEventListener('touchstart', e => { if (e.target.closest('.carw,.revs,.mstrip')) return; x0 = e.touches[0].clientX; y0 = e.touches[0].clientY; }, {passive: true});
@@ -1932,11 +1954,16 @@ function setMonth(k, fromFan){
   const tmp = document.createElement('div'); tmp.innerHTML = SCREENS.main();
   ['.hph', '.content', '.mcta'].forEach(s => { const a = el.querySelector(s), b = tmp.querySelector(s); if (a && b) a.replaceWith(b); });
   if (!fromFan && el._carTo) el._carTo(k); else { const car = el.querySelector('.car'); if (car) fanLayout(car, k); }
-  el.querySelectorAll('.mstrip button').forEach(b => b.classList.toggle('on', +b.dataset.k === k)); stripTo(el, k, true);
+  el.querySelectorAll('.mstrip button').forEach(b => b.classList.toggle('on', +b.dataset.k === k)); stripTo(el, k, true); indTo(el, true);
   swapContent(dir); hap('select');
   setTimeout(() => initRead(el), 0);
 }
 /* лента месяцев: выбранный месяц выезжает ближе к середине */
+/* v65: выбранный месяц подсвечивает одна плашка, она плавно переезжает к новому месяцу. Внутри неё тонкая линия: сколько месяца уже прочитано */
+function indTo(el, anim){ const st = el.querySelector('.mstrip'), m = st && st.querySelector('.mind'), b = st && st.querySelector('button.on'); if (!m || !b) return;
+  if (!anim || RM) m.style.transition = 'none';
+  m.style.width = b.offsetWidth + 'px'; m.style.transform = `translateX(${b.offsetLeft}px)`; m.classList.add('ready');
+  if (!anim || RM){ void m.offsetWidth; m.style.transition = ''; } }
 function stripTo(el, k, smooth){ const st = el.querySelector('.mstrip'), b = st && st.querySelector(`[data-k="${k}"]`); if (!b) return;
   const x = b.offsetLeft - (st.clientWidth - b.offsetWidth) / 2; st.scrollTo({left: Math.max(0, x), behavior: smooth && !RM ? 'smooth' : 'auto'}); }
 function setTab(t){ if (S.tab === t) return; S.tab = t; rerender(); swapContent(t === 'y' ? 1 : -1); }
