@@ -1861,7 +1861,8 @@ function introInit(el){
     ctx.fillStyle = '#223958'; ctx.fillRect(0, 0, W, H);
     if (goat.complete && goat.naturalWidth) blit(goat, GW, GH, tx + s * ox, ty + s * oy, s * w, s * h);
     const l = tx + s * (ox + 795 / GW * w), r = tx + s * (ox + 853 / GW * w), t = ty + s * (oy + 621 / GH * h), b = ty + s * (oy + 886 / GH * h);
-    const v = smooth(.22, .72, p); /* сначала проём как на фото, вид из пещеры проявляется по мере приближения */
+    /* v87: проём — две створки, как двери лифта: разъезжаются в стороны, за ними арка экрана языка */
+    const op = smooth(.18, .6, p), v = op > 0 ? 1 : 0;
     if (v <= 0 || !(view.complete && view.naturalWidth)) return;
     /* размер вида плавно растёт от проёма до экрана и останавливается без рывка ровно тогда, когда проём закрыл экран по высоте */
     const x0 = Math.log(H0 / FH), x = Math.min(0, Math.log((b - t) / FH)), y = -x * x / Math.abs(x0);
@@ -1869,6 +1870,19 @@ function introInit(el){
     const cx = (l + r) / 2 + (W / 2 - (l + r) / 2) * e, cy = (t + b) / 2 + (H / 2 - (t + b) / 2) * e;
     ctx.save(); ctx.beginPath(); ctx.rect(l, t, r - l, b - t); ctx.clip();
     ctx.globalAlpha = v; blit(view, VW, VH, cx - iw / 2, cy - ih / 2, iw, ih);
+    if (op < 1){ const dw = r - l, hw = dw / 2, sh = hw * op, ease = op;
+      ctx.globalAlpha = 1;
+      ctx.drawImage(goat, 795, 621, 29, 265, l - sh, t, hw, b - t);          /* левая створка уезжает влево */
+      ctx.drawImage(goat, 824, 621, 29, 265, l + hw + sh, t, hw, b - t);     /* правая — вправо */
+      /* тонкий свет в щели между створками, гаснет, когда двери открылись */
+      const gl = ctx.createLinearGradient(l + hw - sh - 6, 0, l + hw + sh + 6, 0), ga = .55 * (1 - ease);
+      gl.addColorStop(0, 'rgba(255,240,210,0)'); gl.addColorStop(.5, `rgba(255,244,222,${ga})`); gl.addColorStop(1, 'rgba(255,240,210,0)');
+      ctx.fillStyle = gl; ctx.fillRect(l + hw - sh - 6, t, sh * 2 + 12, b - t);
+      /* тень на внутренних кромках створок */
+      const e1 = ctx.createLinearGradient(l + hw - sh - dw * .08, 0, l + hw - sh, 0); e1.addColorStop(0, 'rgba(0,0,0,0)'); e1.addColorStop(1, 'rgba(0,0,0,.35)');
+      ctx.fillStyle = e1; ctx.fillRect(l + hw - sh - dw * .08, t, dw * .08, b - t);
+      const e2 = ctx.createLinearGradient(l + hw + sh, 0, l + hw + sh + dw * .08, 0); e2.addColorStop(0, 'rgba(0,0,0,.35)'); e2.addColorStop(1, 'rgba(0,0,0,0)');
+      ctx.fillStyle = e2; ctx.fillRect(l + hw + sh, t, dw * .08, b - t); }
     const ja = Math.min(v, smooth(1.3, 1, (r - l) / W)); /* мягкая тень по краям проёма, пока он меньше экрана */
     if (ja > 0){ const dw = r - l, sh = (a0, a1, b0, b1, c) => { const g = ctx.createLinearGradient(a0, a1, b0, b1); g.addColorStop(0, c); g.addColorStop(1, 'rgba(40,14,8,0)'); return g; };
       ctx.globalAlpha = ja;
