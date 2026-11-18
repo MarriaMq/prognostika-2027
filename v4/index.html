@@ -1040,6 +1040,13 @@ body{background:var(--sea)}
 
 /* v67: фон экрана прогноза — море с солнцем у горизонта. Звёзды в шапке остаются */
 .screen.main{background:#5C86B0 url(assets/month-bg.webp) center top/cover no-repeat}
+
+/* v68: «Дальше: …» заметнее, подписи на светлом фоне ярче */
+.content > .nextm{background:rgba(255,255,255,.2);border:1px solid rgba(255,255,255,.78);-webkit-backdrop-filter:blur(10px);backdrop-filter:blur(10px);color:#fff;text-shadow:0 1px 12px rgba(30,60,95,.35);box-shadow:0 10px 26px rgba(30,60,95,.18)}
+.content > .nextm svg{width:34px;height:34px;padding:7px;margin-right:-12px;border-radius:50%;background:var(--red-grad);color:#fff}
+.night .hph,.night .ytl + .hph{color:#fff;font-style:normal;font:400 15px/1.4 var(--f-text);letter-spacing:.01em;text-shadow:0 1px 14px rgba(30,60,95,.45)}
+.yq{color:#fff;text-shadow:0 1px 16px rgba(30,60,95,.45)}
+.mhero p{color:#fff;text-shadow:0 1px 12px rgba(30,60,95,.4)}
 </style>
 </head>
 <body>
