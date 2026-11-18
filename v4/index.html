@@ -1083,16 +1083,8 @@ body{background:var(--sea)}
 /* v77: с успеха на прогноз: прогноз медленно проявляется поверх ещё приближающейся картинки, без мигания */
 .screen.soft{opacity:0;transform:none;transition:opacity .8s cubic-bezier(.4,0,.2,1)}
 .screen.soft.in{opacity:1}
-/* v78: кнопка звука; волна на слайде «маршрут» выше */
-.snd{width:38px;height:38px;flex-shrink:0;display:grid;place-items:center;border-radius:50%;border:1px solid rgba(248,241,231,.55);background:rgba(248,241,231,.16);color:#fff;-webkit-backdrop-filter:blur(8px);backdrop-filter:blur(8px);transition:background .3s,border-color .3s}
-.snd svg{width:19px;height:19px}
-.snd.on{background:rgba(255,255,255,.3);border-color:#fff}
-.snd.on svg path:nth-child(n+2){animation:sndw 1.8s ease-in-out infinite}
-.snd.on svg path:nth-child(3){animation-delay:.3s}
-@keyframes sndw{0%,100%{opacity:1}50%{opacity:.35}}
-.mtop .snd{margin-top:2px}
-.lang > .snd{position:absolute;z-index:4;top:calc(var(--safe-t) + 14px);right:16px}
-.slide[data-k="2"] .ill{padding-bottom:clamp(44px,9vh,84px)}
+/* v79: волна на слайде «маршрут» посередине между шапкой и заголовком (звук убран) */
+.slide[data-k="2"] .ill{padding:40px 0 clamp(30px,6.5vh,58px)}
 </style>
 </head>
 <body>
@@ -1385,7 +1377,7 @@ intro: () => `
 
 lang: () => `
   <div class="lbg"><img src="assets/lang-bg2.webp" alt="" draggable="false"></div><div class="ifogs lfog"><div class="fog fB"><div class="tile"></div></div><div class="fog fA"><div class="tile"></div></div><div class="fog fC"><div class="tile"></div></div></div>
-  ${sndBtn()}<div class="lwrap">
+  <div class="lwrap">
     <div class="eyebrow">Прогностика 2027</div>
     <h1 class="lq">Обери мову<span>Выбери язык</span></h1>
     <div class="lchoices">
@@ -1573,7 +1565,7 @@ success: () => {
 main: () => {
   const p = prof(), yOpen = p.access === 'all', tab = yOpen ? S.tab : 'm';
   const brand = p.self ? (tab === 'y' ? 'Прогностика <em>2027</em>' : 'Месячная<br>прогностика <em>2027</em>') : `Прогноз: ${esc(p.name)}`;
-  const top = `${dust(18, 'stars')}<div class="top mtop">${sndBtn()}<h1 class="mttl">${brand}</h1><button class="prof ico" onclick="go('profile')" aria-label="Профиль">${I.user}</button></div>
+  const top = `${dust(18, 'stars')}<div class="top mtop"><span class="tsp"></span><h1 class="mttl">${brand}</h1><button class="prof ico" onclick="go('profile')" aria-label="Профиль">${I.user}</button></div>
     ${yOpen ? `<div class="mtabs" role="tablist"><button role="tab" class="${tab === 'm' ? 'on' : ''}" onclick="setTab('m')">Месяцы</button><button role="tab" class="${tab === 'y' ? 'on' : ''}" onclick="setTab('y')">Год</button></div>` : ''}`;
   if (tab === 'y') return yearView(p, top);
   if (S.month == null) S.month = 0;
@@ -1989,46 +1981,6 @@ function fanInit(el, car){
   el._carTo = k => { pos = k; car.classList.add('snap'); fanLayout(car, k); };
 }
 
-/* v78: фоновый звук по кнопке. Включается только нажатием (так требуют iOS и Telegram), играет на всех экранах.
-   SND_FILE: путь к своей дорожке (mp3/m4a, права на музыку должны быть у вас). Пока файла нет, звучит
-   спокойный фон, собранный прямо в браузере: тон 136 Гц («ом»), квинта и октава, медленное «дыхание». */
-const SND_FILE = null;
-const SND = {on:false, ctx:null, out:null, el:null};
-const SVG_SND = on => `<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"><path d="M4 9.5h3.2L12 5.5v13l-4.8-4H4z"/>${on ? '<path d="M15.5 9a4.2 4.2 0 010 6"/><path d="M18 6.5a7.6 7.6 0 010 11"/>' : '<path d="M16 9.5l5 5M21 9.5l-5 5"/>'}</svg>`;
-const sndBtn = () => `<button class="snd${SND.on ? ' on' : ''}" onclick="toggleSound()" aria-label="${SND.on ? 'Выключить звук' : 'Включить звук'}" aria-pressed="${SND.on}">${SVG_SND(SND.on)}</button>`;
-function sndSync(){ document.querySelectorAll('.snd').forEach(b => { b.classList.toggle('on', SND.on); b.setAttribute('aria-pressed', SND.on); b.setAttribute('aria-label', SND.on ? 'Выключить звук' : 'Включить звук'); b.innerHTML = SVG_SND(SND.on); }); }
-function toggleSound(){ hap('light'); SND.on ? sndStop() : sndStart(); sndSync(); }
-function sndStart(){
-  SND.on = true;
-  if (SND_FILE){
-    if (!SND.el){ SND.el = new Audio(SND_FILE); SND.el.loop = true; SND.el.volume = 0; }
-    SND.el.play().catch(() => {}); let v = SND.el.volume; const up = setInterval(() => { v = Math.min(.6, v + .03); SND.el.volume = v; if (v >= .6 || !SND.on) clearInterval(up); }, 80);
-    return;
-  }
-  const AC = window.AudioContext || window.webkitAudioContext; if (!AC) return;
-  if (!SND.ctx){
-    const c = SND.ctx = new AC(), out = SND.out = c.createGain(); out.gain.value = 0;
-    const lp = c.createBiquadFilter(); lp.type = 'lowpass'; lp.frequency.value = 900; lp.Q.value = .4;
-    const verb = c.createConvolver(), len = c.sampleRate * 3.2, ir = c.createBuffer(2, len, c.sampleRate);
-    for (let ch = 0; ch < 2; ch++){ const d = ir.getChannelData(ch); for (let i = 0; i < len; i++) d[i] = (Math.random() * 2 - 1) * Math.pow(1 - i / len, 2.6); }
-    verb.buffer = ir; const wet = c.createGain(); wet.gain.value = .5;
-    lp.connect(out); lp.connect(verb); verb.connect(wet); wet.connect(out); out.connect(c.destination);
-    const f0 = 136.1; /* тон «ом» */
-    [[f0 / 2, .34, 'sine', 0], [f0, .3, 'sine', -3], [f0, .14, 'triangle', 4], [f0 * 1.5, .1, 'sine', 2], [f0 * 2, .07, 'sine', -2], [f0 * 3, .025, 'sine', 1]].forEach(([f, g, t, det], k) => {
-      const o = c.createOscillator(), a = c.createGain(), lfo = c.createOscillator(), lg = c.createGain();
-      o.type = t; o.frequency.value = f; o.detune.value = det; a.gain.value = g;
-      lfo.frequency.value = .05 + k * .023; lg.gain.value = g * .45; lfo.connect(lg); lg.connect(a.gain); /* каждый голос «дышит» в своём темпе */
-      o.connect(a); a.connect(lp); o.start(); lfo.start(); });
-    document.addEventListener('visibilitychange', () => { if (!SND.ctx) return; document.hidden ? SND.ctx.suspend() : SND.on && SND.ctx.resume(); });
-  }
-  SND.ctx.resume(); const g = SND.out.gain, t = SND.ctx.currentTime; g.cancelScheduledValues(t); g.setValueAtTime(g.value, t); g.linearRampToValueAtTime(.32, t + 2.5);
-}
-function sndStop(){
-  SND.on = false;
-  if (SND.el){ const a = SND.el; let v = a.volume; const dn = setInterval(() => { v = Math.max(0, v - .05); a.volume = v; if (v <= 0){ a.pause(); clearInterval(dn); } }, 60); return; }
-  if (!SND.ctx) return; const g = SND.out.gain, t = SND.ctx.currentTime; g.cancelScheduledValues(t); g.setValueAtTime(g.value, t); g.linearRampToValueAtTime(0, t + 1.2);
-  setTimeout(() => { if (!SND.on) SND.ctx.suspend(); }, 1300);
-}
 function pickLang(l){ S.lang = l; applyLang(); S.onbI = 0; S.onbFrom = null; go('onb', true, 'fade'); }
 function setGender(g){ S.draft.gender = g; rerender(); setTimeout(() => S.cur === 'gender' && go('dob'), 120); }
 function confirmData(){
@@ -2331,7 +2283,7 @@ const UK = {
   'Личный прогноз':'Особистий прогноз', 'Любовь, отношения, эмоции, брак, дети, семья':'Кохання, стосунки, емоції, шлюб, діти, сім’я', 'Общий':'Загальний', 'Личный':'Особистий',
   'Твои месяцы начинаются от дня рождения. Например, январь у тебя будет длиться':'Твої місяці починаються від дня народження. Наприклад, січень у тебе триватиме',
   'Месяцы считаются от дня рождения: январь будет длиться':'Місяці рахуються від дня народження: січень триватиме',
-  'Оплата':'Оплата', 'Включить звук':'Увімкнути звук', 'Выключить звук':'Вимкнути звук', 'Оплата по промокоду: 12 месяцев и годовая прогностика':'Оплата за промокодом: 12 місяців і річна прогностика', 'Уже входит в промокод':'Уже входить у промокод', 'По промокоду':'За промокодом', '12 месяцев и годовая прогностика':'12 місяців і річна прогностика', 'Всё вместе: 12 месяцев и год':'Усе разом: 12 місяців і рік', '+ прогноз на год в подарок':'+ прогноз на рік у подарунок',
+  'Оплата':'Оплата', 'Оплата по промокоду: 12 месяцев и годовая прогностика':'Оплата за промокодом: 12 місяців і річна прогностика', 'Уже входит в промокод':'Уже входить у промокод', 'По промокоду':'За промокодом', '12 месяцев и годовая прогностика':'12 місяців і річна прогностика', 'Всё вместе: 12 месяцев и год':'Усе разом: 12 місяців і рік', '+ прогноз на год в подарок':'+ прогноз на рік у подарунок',
   'Сейчас откроется страница оплаты monobank. Можно оплатить картой любого банка, Apple Pay или Google Pay. После оплаты ты вернёшься сюда, и прогноз откроется.':'Зараз відкриється сторінка оплати monobank. Можна оплатити карткою будь-якого банку, Apple Pay або Google Pay. Після оплати ти повернешся сюди, і прогноз відкриється.',
   'Годовую прогностику можно купить после покупки 12 месяцев. Или возьми всё вместе, так выгоднее на 150 грн.':'Річну прогностику можна купити після покупки 12 місяців. Або візьми все разом, так вигідніше на 150 грн.',
   'Только месяцы':'Тільки місяці', 'Введи промокод':'Введи промокод', 'Промокод можно получить у Вероники в Instagram.':'Промокод можна отримати у Вероніки в Instagram.',
