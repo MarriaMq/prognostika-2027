@@ -1031,6 +1031,11 @@ body{background:var(--sea)}
 .mind.reading::after{opacity:1}
 .rprog{display:none}
 @media (max-width:350px){ .mhero p{font-size:13px} }
+
+/* v66: профиль без полосы прокрутки, «Что такое прогностика» ближе к списку */
+.noscrollbar{scrollbar-width:none}
+.noscrollbar::-webkit-scrollbar{display:none}
+.profile .linkb{margin-top:14px}
 </style>
 </head>
 <body>
@@ -1531,6 +1536,7 @@ main: () => {
 profile: () => {
   const me = S.profiles[0];
   const ok = `<span class="pill ok">Куплено</span>`;
+  const payNow = fn => `<button class="pill buy" onclick="event.stopPropagation();S.forIdx=0;${fn}">Купить</button>`; /* v66: своё покупаем сразу, без экрана тарифов */
   const buy = k => `<button class="pill buy" onclick="event.stopPropagation();openTariffs(${k})">Купить</button>`;
   /* API: фото и имя из Telegram (initDataUnsafe.user.photo_url) */
   const photo = tg && tg.initDataUnsafe && tg.initDataUnsafe.user && tg.initDataUnsafe.user.photo_url;
@@ -1539,25 +1545,24 @@ profile: () => {
   <header class="bar">${backBtn}
     <div class="lsw" role="group" aria-label="Язык"><button class="${S.lang === 'uk' ? 'on' : ''}" onclick="setLang('uk')">UA</button><button class="${S.lang === 'ru' ? 'on' : ''}" onclick="setLang('ru')">RU</button></div>
   </header>
-  <div class="scroll" style="padding-bottom:16px">
+  <div class="scroll noscrollbar" style="padding-bottom:16px">
     <div class="me">
       <div class="ava">${photo ? `<img src="${esc(photo)}" alt="">` : esc(me.name.charAt(0).toUpperCase())}</div>
       <div><div class="nm">${esc(me.name)}</div><div class="sub">${dobLong(me)}<br>${me.gender === 'f' ? 'Женщина' : 'Мужчина'}</div></div>
     </div>
     <div class="group"><span class="eyebrow">Мои прогнозы</span><div class="list">
-      <div class="item"><span>Твои 12 месяцев 2027</span>${me.access === 'none' ? buy(0) : ok}</div>
-      <div class="item"><span>Годовая прогностика</span>${me.access === 'all' ? ok : buy(0)}</div>
+      <div class="item"><span>Твои 12 месяцев 2027</span>${me.access === 'none' ? payNow("paySheet('months')") : ok}</div>
+      <div class="item"><span>Годовая прогностика</span>${me.access === 'all' ? ok : payNow(me.access === 'months' ? "paySheet('year')" : 'yearLockSheet()')}</div>
     </div></div>
-    <div class="group"><span class="eyebrow">Чей прогноз смотреть</span><div class="list">
+    ${others.length ? `<div class="group"><span class="eyebrow">Чей прогноз смотреть</span><div class="list">
       <button class="item" onclick="switchTo(0)"><span class="who"><span class="dot ${S.active === 0 ? 'on' : ''}">${S.active === 0 ? I.check : ''}</span>Мой прогноз</span></button>
       ${others.map(([p, k]) => `<div class="item" role="button" tabindex="0" onclick="switchTo(${k})"><span class="who"><span class="dot ${k === S.active ? 'on' : ''}">${k === S.active ? I.check : ''}</span>${esc(p.name)}</span>${p.access === 'none' ? buy(k) : ok}</div>`).join('')}
-    </div></div>
+    </div></div>` : ''}
     <div class="group"><div class="list">
       <button class="item act" onclick="addPerson()">${I.heart}<span class="it"><span>Купить прогноз для близкого</span><span class="d">Прогноз откроется здесь, в твоём приложении. Близкому ничего не придёт, читать его будешь ты.</span></span></button>
       <button class="item act ink" onclick="support()">${I.chat}Написать в поддержку</button>
     </div></div>
     <button class="linkb" onclick="openOnbFromProfile()">Что такое прогностика</button>
-    <button class="proto" onclick="gearSheet()">Режим прототипа</button>
   </div>`;
 },
 };
