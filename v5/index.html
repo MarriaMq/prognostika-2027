@@ -1268,6 +1268,27 @@ body,#app{background:var(--nv)}
 /* v94: недогруженное фото не показываем */
 img.wait{transition:opacity .5s ease}
 img.wait:not(.ok){visibility:hidden}
+
+/* ===== v95: кнопки языка выезжают по очереди: сначала українська, потом русский ===== */
+.lang .lchoices > .rise{animation:langbtn 1s cubic-bezier(.22,.8,.24,1) both}
+.lang .lchoices > .rise:nth-child(1){animation-delay:.3s}
+.lang .lchoices > .rise:nth-child(2){animation-delay:.75s}
+@keyframes langbtn{from{opacity:0;transform:translateY(24px)}to{opacity:1;transform:none}}
+
+/* ===== v95: онбординг. Фото — карточка сверху целиком, без затемнения; текст ниже на синем.
+   Карточка занимает всё место над текстом, фото в ней отдалено (видно больше картинки) и листается вместе со слайдом ===== */
+.screen.onb{background:#223958}
+.onb .slide .ill{display:flex !important;align-items:stretch;justify-content:stretch;padding:4px 0 22px !important;transform:none !important;min-height:180px !important}
+.oimg{position:relative;flex:1;border-radius:22px;overflow:hidden;background:#2C4468;box-shadow:0 18px 40px rgba(14,24,40,.35);border:1px solid rgba(226,208,176,.18)}
+.oimg img{position:absolute;inset:0;width:100%;height:100%;object-fit:cover;display:block}
+.oimg.o3 img{object-position:50% 22%}
+.oimg.o2 img{object-position:50% 30%}
+.oimg.o1 img{object-position:50% 8%}
+.oimg.o4 img{object-position:62% 46%}
+.onb .otx h2{font-size:clamp(32px,9.4vw,38px);text-shadow:none}
+.onb .otx p{margin-top:12px}
+@media (max-height:760px){ .onb .otx h2{font-size:29px} .onb .slide .ill{padding-bottom:14px !important} }
+.onb .rockbg,.onb .sfog{display:none !important}
 </style>
 </head>
 <body>
@@ -1584,29 +1605,28 @@ onb: () => {
   const P = [[20,120],[50,92],[82,104],[112,70],[146,84],[176,52],[206,66],[236,36],[262,58],[288,26],[312,42],[336,14]];
   const route = `<svg class="route" viewBox="0 0 356 140" aria-hidden="true"><path d="M${P.map(p => p.join(' ')).join(' L')}"/>${P.map(([x, y], k) => `<circle cx="${x}" cy="${y}" r="${k === 0 || k === 11 ? 4 : 2.6}" style="--k:${k}"/><text x="${x}" y="${y + 18}" text-anchor="middle" style="--k:${k}">${MONTHS[k].slice(0,3)}</text>`).join('')}</svg>`;
   return `
-  <div class="obgs" aria-hidden="true">${[3,2,1,4].map(n => `<img class="b${n}" src="assets/onb${n}.webp" alt="" draggable="false">`).join('')}</div><div class="oscrim"></div>
   <div class="top"><span class="brand">Прогностика 2027</span><button class="skip" onclick="finishOnb()">Пропустить</button></div>
   <div class="ovp"><div class="pager">
     <div class="slide" data-k="0">
-      <div class="ill"></div>
+      <div class="ill"><div class="oimg o3"><img src="assets/onb3.webp" alt="" draggable="false"></div></div>
       <div class="otx"><h2>Знай заранее, <em>когда действовать</em>, а когда переждать</h2>
         <p>Прогностика по дате рождения показывает, что ждёт тебя каждый месяц 2027 года: в деньгах, отношениях и здоровье.</p></div>
     </div>
     <div class="slide" data-k="1">
-      <div class="ill"></div>
+      <div class="ill"><div class="oimg o2"><img src="assets/onb2.webp" alt="" draggable="false"></div></div>
       <div class="otx"><h2>Что внутри <em>каждого месяца</em></h2>
         <div class="chips"><span>Работа и деньги</span><span>Отношения</span><span>Здоровье</span><span>Баланс</span><span>Сложные периоды</span></div>
         <p class="fine">Без прикрас: и возможности, и риски. Чтобы знать, где подстелить себе соломку.</p></div>
     </div>
     <div class="slide" data-k="2">
-      <div class="ill"></div>
+      <div class="ill"><div class="oimg o1"><img src="assets/onb1.webp" alt="" draggable="false"></div></div>
       <div class="otx"><h2>Твой год <em>как один маршрут</em></h2>
         <p>Каждый месяц продолжает предыдущий. Читай по порядку, и год сложится в одну картину. Нужны только имя и дата рождения.</p>
         <div class="author"><span class="av ph"></span><span><span class="t">Вероника Леончикова-Штепа</span><span class="d">Автор прогностики, нумеролог, 10 лет практики</span></span></div>
         <div class="stat">Больше 2000 человек прочитали свой прогноз на 2026 год</div></div>
     </div>
     <div class="slide" data-k="3">
-      <div class="ill"></div>
+      <div class="ill"><div class="oimg o4"><img src="assets/onb4.webp" alt="" draggable="false"></div></div>
       <div class="otx"><h2>Прогноз остаётся <em>с тобой навсегда</em></h2>
         <p>Платишь один раз, без подписки и списаний. Открывай любой месяц, когда захочешь, и перечитывай перед важными решениями.</p></div>
     </div>
