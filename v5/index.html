@@ -1336,6 +1336,12 @@ img.wait:not(.ok){visibility:hidden}
 .onb .vcard .stat,.onb .slide[data-k="2"] .vcard .stat{margin-top:12px;padding-top:11px;border-top:1px solid rgba(226,208,176,.22);font-size:16px}
 @media (max-height:760px){ .onb .vcard{margin-top:10px;padding:10px 12px} .onb .vcard .author .av.ph{width:44px;height:44px} .onb .vcard .stat{margin-top:8px;padding-top:8px;font-size:14.5px} }
 @media (max-height:700px){ .obgs .b1 img{top:-19%} }
+
+/* v99: машина выше — текст на тёмной воде; параллакс при листании онбординга */
+.obgs .b1 img{top:-7%}
+.obgs .bg{overflow:hidden;opacity:1}
+.obgs .bg img{will-change:transform}
+@media (max-height:700px){ .obgs .b1 img{top:-19%} }
 </style>
 </head>
 <body>
@@ -2103,7 +2109,14 @@ function onbInit(el){
     if (ogl) ogl.style.transform = `translateX(${-pos * 10}%)`;
     if (obg) obg.style.opacity = Math.max(0, 1 - Math.abs(pos) * 1.15).toFixed(3);
     /* v92: фоны слайдов плавно сменяют друг друга вслед за пальцем */
-    el.querySelectorAll('.obgs .bg').forEach((im, k) => { const d = k - pos; im.style.opacity = Math.max(0, 1 - Math.abs(d)).toFixed(3); im.style.transform = `scale(${(1.06 - .06 * Math.max(0, 1 - Math.abs(d))).toFixed(4)}) translateX(${(-d * 4).toFixed(2)}%)`; });
+    /* v99: параллакс. Окно фона едет вместе со слайдом, а картинка внутри — медленнее (40% пути) и чуть приближена у краёв,
+       поэтому фото уезжает «вглубь», а текст поверх — быстрее */
+    el.querySelectorAll('.obgs .bg').forEach((bg, k) => { const d = k - pos, im = bg.firstElementChild, a = Math.min(1, Math.abs(d));
+      const tr = anim ? 'transform .55s var(--spring)' : 'none';
+      bg.style.transition = tr; im.style.transition = tr;
+      bg.style.opacity = Math.abs(d) < 1.5 ? 1 : 0;
+      bg.style.transform = `translateX(${(d * 100).toFixed(2)}%)`;
+      im.style.transform = `translateX(${(-d * 60).toFixed(2)}%) scale(${(1 + .08 * a).toFixed(4)})`; });
     const sf = el.querySelector('.sfog'); if (sf){ sf.style.transition = anim ? 'transform .55s var(--spring)' : 'none'; } if (sf) sf.style.transform = `translateX(${(-pos * 4.2).toFixed(2)}%)`;
     dots.forEach((d, k) => d.classList.toggle('on', k === S.onbI));
     el.classList.toggle('last', S.onbI === 3);
