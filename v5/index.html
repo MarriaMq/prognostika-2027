@@ -1170,6 +1170,19 @@ body,#app{background:var(--nv)}
 .sheet .seg{border-color:rgba(201,164,106,.3)}
 .sheet .seg button.on{background:var(--creamc);color:var(--ink-nv)}
 .ov{background:rgba(3,8,30,.55)}
+
+/* v82: успех — открытая дверь к морю вместо козы. Картинка закрывает весь экран (cover),
+   море в проёме шевелится, по воде мигают блики, по «Перейти к прогнозу» шагаем в дверь к парусу */
+.okbg{background:#0B3F4D;container-type:size}
+.okimg{left:50%;top:50%;bottom:auto;width:max(100%, calc(100cqh * 702 / 1280));aspect-ratio:702/1280;translate:-50% -50%;transform-origin:50% 51%}
+.okimg img{-webkit-mask-image:none;mask-image:none}
+.oksea{left:calc(146 / 702 * 100%);top:calc(664 / 1280 * 100%);width:calc(366 / 702 * 100%);height:calc(374 / 1280 * 100%)}
+.oksun{display:none}
+.okglow{left:50%;top:51%;width:34%;background:radial-gradient(closest-side,rgba(240,250,255,.45),rgba(200,230,245,.14) 45%,rgba(200,230,245,0))}
+.okbg::after{background:linear-gradient(180deg,rgba(6,28,40,.72) 0%,rgba(6,28,40,.5) 22%,rgba(6,28,40,.12) 40%,rgba(0,0,0,0) 52%,rgba(0,0,0,0) 74%,rgba(6,20,30,.55) 100%)}
+.okw h1,.okt{text-shadow:0 2px 18px rgba(4,22,34,.6)}
+.success .bottom .btn.okbtn{background:var(--red-grad);border-color:rgba(227,200,146,.75)}
+.okh{background:rgba(11,26,82,.55);border-color:rgba(201,164,106,.3)}
 </style>
 </head>
 <body>
@@ -1636,7 +1649,7 @@ success: () => {
     b: 'Перейти к прогнозу'
   };
   return `
-  <div class="okbg"><div class="okimg"><img src="assets/success-bg.webp" alt="" draggable="false"><canvas class="oksea" aria-hidden="true"></canvas><i class="oksun"></i><i class="okglow"></i><span class="okgl"><b style="left:56%;top:42%;--d:0s"></b><b style="left:61%;top:44%;--d:1.4s"></b><b style="left:58%;top:46.5%;--d:2.6s"></b><b style="left:54%;top:44.5%;--d:0.7s"></b><b style="left:63%;top:43%;--d:2s"></b></span></div></div>
+  <div class="okbg"><div class="okimg"><img src="assets/success-door.webp" alt="" draggable="false"><canvas class="oksea" aria-hidden="true"></canvas><i class="oksun"></i><i class="okglow"></i><span class="okgl"><b style="left:56%;top:42%;--d:0s"></b><b style="left:61%;top:44%;--d:1.4s"></b><b style="left:58%;top:46.5%;--d:2.6s"></b><b style="left:54%;top:44.5%;--d:0.7s"></b><b style="left:63%;top:43%;--d:2s"></b></span></div></div>
   <div class="okw">
     <h1>${T.h}</h1>
     <p class="okk">${T.k}</p>
@@ -2091,7 +2104,7 @@ function toMain(tab){
   if (S.cur === 'success' && !RM && el && !el.dataset.leaving){
     el.dataset.leaving = 1; hap('light');
     const E = 'cubic-bezier(.45,0,.2,1)', D = 950;
-    el.querySelector('.okimg')?.animate([{transform:'scale(1)', transformOrigin:'58% 22%'}, {transform:'scale(1.7)', transformOrigin:'58% 22%'}], {duration:D, easing:E, fill:'forwards'});
+    el.querySelector('.okimg')?.animate([{transform:'scale(1)', transformOrigin:'50% 51%'}, {transform:'scale(1.9)', transformOrigin:'50% 51%'}], {duration:D, easing:E, fill:'forwards'});
     el.querySelector('.okglow')?.animate([{opacity:.8, scale:1}, {opacity:1, scale:3.2}], {duration:D, easing:E, fill:'forwards'});
     el.querySelectorAll('.okw, .bottom').forEach((n, k) => n.animate([{opacity:1, transform:'none'}, {opacity:0, transform:`translateY(${k ? 16 : -12}px)`}], {duration:420, easing:'ease-in', fill:'forwards'}));
     setTimeout(() => toMainNow(tab, 'soft'), D - 480);
@@ -2172,7 +2185,7 @@ function paySheet(plan){
 /* v72: море на экране успешной оплаты. Слой success-sea.webp (кусок фото с морем и прозрачностью)
    рисуется полосками по 2px со сдвигом по синусу, ближе к зрителю волна сильнее.
    Поверх мерцают блики солнечной дорожки. Без зависимостей, ~0.3 мс на кадр. */
-const SEA = {x:0, y:656, w:640, h:804, W:941, H:1670};
+const SEA = {x:146, y:664, w:366, h:374, W:702, H:1280}; /* v82: море в проёме двери */
 let seaImg = null;
 function seaWaves(el){
   const cv = el.querySelector('.oksea'); if (!cv) return;
@@ -2185,8 +2198,8 @@ function seaWaves(el){
     const t0 = document.createElement('canvas'); t0.width = SEA.w; t0.height = SEA.h;
     const tc = t0.getContext('2d'); tc.drawImage(seaImg, 0, 0);
     const px = tc.getImageData(0, 0, SEA.w, SEA.h).data, sp = [];
-    for (let y = 4; y < 300; y += 3) for (let x = 150; x < 470; x += 3){
-      const i = (y * SEA.w + x) * 4; if (px[i + 3] > 200 && px[i] + px[i + 1] > 400 && px[i] > px[i + 2] + 20 && Math.random() < .55) sp.push([x, y, Math.random() * 6.28, 1.4 + Math.random() * 2.2]);
+    for (let y = 20; y < SEA.h - 6; y += 3) for (let x = 6; x < SEA.w - 6; x += 3){
+      const i = (y * SEA.w + x) * 4; if (px[i + 3] > 220 && px[i] + px[i + 1] + px[i + 2] > 430 && Math.random() < .5) sp.push([x, y, Math.random() * 6.28, 1.4 + Math.random() * 2.2]);
     }
     const t1 = performance.now();
     const frame = now => {
@@ -2196,7 +2209,7 @@ function seaWaves(el){
       const fade = Math.min(1, t / 1.6);
       ctx.globalCompositeOperation = 'source-over'; ctx.globalAlpha = 1; ctx.clearRect(0, 0, Wc, Hc);
       for (let y = 0; y < SEA.h; y += 2){
-        const d = y / SEA.h, amp = (1.4 + 5 * d) * fade;
+        const d = y / SEA.h, amp = (1 + 4 * d) * fade;
         const dx = Math.sin(y * .11 - t * 1.7 + Math.sin(y * .021 + t * .6) * 2.2) * amp;
         ctx.drawImage(seaImg, 0, y, SEA.w, 2, dx * k, y * k, Wc, 2 * k + .6);
       }
@@ -2205,7 +2218,7 @@ function seaWaves(el){
       for (const [x, y, ph, f] of sp){
         const a = Math.pow(Math.max(0, Math.sin(t * f + ph)), 6) * fade * .45; /* v74: блики тусклее */
         if (a < .04) continue;
-        const r = (1 + (y / 300) * 1.4) * k * 1.2;
+        const r = (1 + (y / SEA.h) * 1.4) * k * 1.2;
         const g = ctx.createRadialGradient(x * k, y * k, 0, x * k, y * k, r * 2.4);
         g.addColorStop(0, `rgba(255,246,222,${a})`); g.addColorStop(1, 'rgba(255,220,170,0)');
         ctx.fillStyle = g; ctx.fillRect(x * k - r * 2.4, y * k - r * 2.4, r * 4.8, r * 4.8);
@@ -2215,7 +2228,7 @@ function seaWaves(el){
     requestAnimationFrame(frame);
   };
   if (seaImg && seaImg.complete) start();
-  else { seaImg = new Image(); seaImg.onload = start; seaImg.src = 'assets/success-sea.webp'; }
+  else { seaImg = new Image(); seaImg.onload = start; seaImg.src = 'assets/success-door-sea.webp'; }
 }
 function paid(plan){
   const p = S.profiles[S.forIdx];
