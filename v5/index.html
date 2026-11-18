@@ -1431,6 +1431,22 @@ img.wait:not(.ok){visibility:hidden}
 .screen.slide.in,.screen.slide.back.in{opacity:1;transform:none;filter:none}
 .screen.out.sl-l,.screen.out.sl-r{opacity:1 !important;z-index:auto;transform:scale(.97) !important;filter:blur(6px) brightness(.8);transition:transform .75s cubic-bezier(.2,.7,.2,1),filter .6s ease !important}
 .screen.out.sl-r{transform:scale(1.03) !important}
+
+/* ===== v106: тарифы. «Всё вместе» — главный, кремовый; «12 месяцев» — спокойный, без мигания и теней; годовая — светлее стекло ===== */
+.plans .plan.p1{background:linear-gradient(180deg,#F7EEDD,#EADCC2);border:0;box-shadow:0 14px 34px rgba(0,0,0,.32),0 0 0 1px rgba(255,255,255,.5) inset;color:#223958}
+.plans .plan.p1 .n,.plans .plan.p1 .p{color:#223958}
+.plans .plan.p1 .s,.plans .plan.p1 .p small,.plans .plan.p1 .p s{color:rgba(34,57,88,.72)}
+.plans .plan.p1 .p s{text-decoration-color:rgba(34,57,88,.6)}
+.plans .plan.p1 .badge{background:#223958;color:#EADCC2}
+.plans .plan.p2,.plans .plan.p2.hot{animation:none;transform:none;background:rgba(18,32,60,.6);-webkit-backdrop-filter:blur(14px);backdrop-filter:blur(14px);border:1px solid rgba(226,208,176,.4);box-shadow:0 10px 24px rgba(0,0,0,.22)}
+.plans .plan.p2.hot::after{display:none}
+.plans .plan.p2 .badge{background:transparent;border:1px solid rgba(226,208,176,.6);color:var(--beige)}
+.plans .plan.p3{background:rgba(18,32,60,.32);border:1px solid rgba(226,208,176,.28)}
+/* экран прогноза не оттягивается вверх и вниз */
+html,body,#app{overscroll-behavior:none}
+.scroll{overscroll-behavior:none}
+/* баннер «Прогноз на год» — синяя стена с цветущим деревом и морем */
+.ybanner{background:linear-gradient(90deg,rgba(3,6,12,.8),rgba(3,6,12,.25)),url(assets/bg-tariffs.webp) 70% 62%/cover}
 </style>
 </head>
 <body>
@@ -1584,14 +1600,14 @@ function go(name, push = true, how = ''){
   if (push && S.cur) S.hist.push(S.cur);
   S.cur = name;
   const el = document.createElement('section');
-  el.className = 'screen ' + name + (DARK[name] && name !== 'main' ? ' dark' : '') + (how ? ' ' + how : (push ? '' : ' back')) + (how || RM || !app.querySelector('.screen') ? '' : ' slide'); /* первый экран не въезжает */
+  el.className = 'screen ' + name + (DARK[name] && name !== 'main' ? ' dark' : '') + (how ? ' ' + how : (push ? '' : ' back')) + (how || RM || !app.querySelector('.screen') || name !== 'name' ? '' : ' slide'); /* v106: переход «из тумана» только на экран имени */ /* первый экран не въезжает */
   el.innerHTML = (ROCK.includes(name) ? ROCKBG : '') + SCREENS[name]();
   app.appendChild(el);
   const old = [...app.querySelectorAll('.screen')].filter(x => x !== el);
-  old.forEach(o => { if (!o.classList.contains('intro') && how !== 'soft'){ o.classList.add('out'); if (!how && !RM) o.classList.add(push ? 'sl-l' : 'sl-r'); } }); /* v104: обычный переход — листание: новый экран въезжает, старый уезжает в глубину */ /* прошлый экран гаснет сразу, без наложения */
+  old.forEach(o => { if (!o.classList.contains('intro') && how !== 'soft'){ o.classList.add('out'); if (el.classList.contains('slide')) o.classList.add(push ? 'sl-l' : 'sl-r'); } }); /* v104: обычный переход — листание: новый экран въезжает, старый уезжает в глубину */ /* прошлый экран гаснет сразу, без наложения */
   void el.offsetWidth;
   el.classList.add('in');
-  setTimeout(() => old.forEach(o => o.remove()), how === 'fade' || how === 'portal' || how === 'under' || how === 'soft' ? 1400 : (RM ? 320 : 760));
+  setTimeout(() => old.forEach(o => o.remove()), how === 'fade' || how === 'portal' || how === 'under' || how === 'soft' ? 1400 : (el.classList.contains('slide') ? 760 : 320));
   if (ROCK.includes(name)) skyFog(el);
   (AFTER[name] || (() => {}))(el);
   holdImgs(el);
