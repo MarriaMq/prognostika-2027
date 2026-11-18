@@ -1047,6 +1047,13 @@ body{background:var(--sea)}
 .night .hph,.night .ytl + .hph{color:#fff;font-style:normal;font:400 15px/1.4 var(--f-text);letter-spacing:.01em;text-shadow:0 1px 14px rgba(30,60,95,.45)}
 .yq{color:#fff;text-shadow:0 1px 16px rgba(30,60,95,.45)}
 .mhero p{color:#fff;text-shadow:0 1px 12px rgba(30,60,95,.4)}
+
+/* v70: волна уже текста и стоит по центру свободного места, текст и карточка Вероники опускаются вниз */
+.slide[data-k="2"] .ill{flex:1 1 auto;display:grid;place-items:end center;padding:8px 0 clamp(26px,5vh,48px)}
+.slide[data-k="2"] .wave{width:86%;margin:0 auto}
+.slide[data-k="2"] .wplot{height:clamp(96px,16vh,140px)}
+.slide[data-k="2"] .wms span{font-size:11px}
+@media (max-height:700px){ .slide[data-k="2"] .ill{padding:36px 0 16px} .slide[data-k="2"] .wplot{height:78px} .slide[data-k="2"] .wms{margin-top:8px} .slide[data-k="2"] .wms span:not(:first-child):not(:last-child){visibility:hidden} }
 </style>
 </head>
 <body>
