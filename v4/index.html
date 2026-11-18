@@ -1218,6 +1218,12 @@ const dust = (n, cls = '') => `<div class="dust ${cls}">${Array.from({length: n}
 const app = document.getElementById('app');
 document.addEventListener('touchstart', () => {}, {passive: true}); /* чтобы нажатие на iPhone подсвечивалось сразу */
 function go(name, push = true, how = ''){
+  /* v75: экран прогноза открывается только после оплаты. Неоплаченный профиль ведём в тарифы. */
+  if (name === 'main' && S.profiles.length && S.profiles[S.active]?.access === 'none'){
+    const k = S.profiles.findIndex(p => p.access !== 'none');
+    if (k >= 0) S.active = k;
+    else { S.forIdx = S.active; name = 'tariffs'; }
+  }
   if (push && S.cur) S.hist.push(S.cur);
   S.cur = name;
   const el = document.createElement('section');
@@ -1993,7 +1999,7 @@ function toMain(tab){
   }
   toMainNow(tab);
 }
-function toMainNow(tab){ S.active = S.forIdx; S.month = 0; S.tab = tab === 'y' && S.profiles[S.forIdx].access === 'all' ? 'y' : 'm'; S.ytopic = null; S.hist = []; S.cur = null; go('main', false, 'fade'); }
+function toMainNow(tab){ if (S.profiles[S.forIdx].access !== 'none') S.active = S.forIdx; S.month = 0; S.tab = tab === 'y' && S.profiles[S.forIdx].access === 'all' ? 'y' : 'm'; S.ytopic = null; S.hist = []; S.cur = null; go('main', false, 'fade'); }
 function startDemo(){ S.active = S.forIdx; S.month = 0; S.tab = 'm'; S.hist = []; S.cur = null; go('main', false, 'fade'); }
 function swapContent(dir = 1){
   const el = cur(), c = el.querySelector('.content'), sc = el.querySelector('.scroll'), h = el.querySelector('.hph');
@@ -2025,7 +2031,7 @@ function stripTo(el, k, smooth){ const st = el.querySelector('.mstrip'), b = st 
   const x = b.offsetLeft - (st.clientWidth - b.offsetWidth) / 2; st.scrollTo({left: Math.max(0, x), behavior: smooth && !RM ? 'smooth' : 'auto'}); }
 function setTab(t){ if (S.tab === t) return; S.tab = t; rerender(); swapContent(t === 'y' ? 1 : -1); }
 function setTopic(k){ const was = S.ytopic; if (was === k) return; S.ytopic = k; rerender(); swapContent(was && k === 'yW' ? -1 : 1); hap('select'); }
-function switchTo(k){ S.active = k; S.month = 0; S.tab = 'm'; S.ytopic = null; S.hist = []; S.cur = null; go('main', false); }
+function switchTo(k){ if (S.profiles[k].access === 'none'){ openTariffs(k); return; } S.active = k; S.month = 0; S.tab = 'm'; S.ytopic = null; S.hist = []; S.cur = null; go('main', false); }
 function addPerson(){ S.mode = 'other'; S.draft = {name:'', gender:'', d:1, m:0, y:1990}; go('name'); }
 function setLang(l){ if (S.lang === l) return; S.lang = l; applyLang(); rerender(); }
 const SUPPORT_URL = 'https://t.me/tvoya_turbota';
@@ -2335,7 +2341,7 @@ if (Q.has('demo')){
   else if (v === 'tariffs'){ S.hist = ['main']; go('tariffs'); }
   else if (v === 'year'){ S.tab = 'y'; S.ytopic = Q.get('topic') || null; go('main', false); }
   else if (v === 'profile'){ S.hist = ['main']; go('profile'); }
-  else if (v === 'success'){ S.forIdx = 0; S.lastPlan = Q.get('plan') || 'months'; go('success', false); }
+  else if (v === 'success'){ S.forIdx = 0; S.lastPlan = Q.get('plan') || 'months'; S.profiles[0].access = S.lastPlan === 'months' ? 'months' : 'all'; go('success', false); }
   else if (v === 'fail'){ go('fail', false); }
   else go('main', false);
   if (Q.has('expand')) setTimeout(() => { const b = cur().querySelector('.more'); if (b) toggleSec(b); }, 80);
