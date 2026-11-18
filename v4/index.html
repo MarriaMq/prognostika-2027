@@ -1085,6 +1085,8 @@ body{background:var(--sea)}
 .screen.soft.in{opacity:1}
 /* v79: волна на слайде «маршрут» посередине между шапкой и заголовком (звук убран) */
 .slide[data-k="2"] .ill{padding:40px 0 clamp(30px,6.5vh,58px)}
+/* v80: свёрнутый блок обрезается по целому абзацу, без размытия последней строки */
+.msheet .fold .tw::after,.fold .tw::after{display:none}
 </style>
 </head>
 <body>
