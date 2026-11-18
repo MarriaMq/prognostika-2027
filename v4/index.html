@@ -1076,6 +1076,13 @@ body{background:var(--sea)}
 .plans .plan.off .p{text-decoration:line-through;text-decoration-thickness:1px}
 /* v76: карточки года без иконок; «Общий» — вид через арку на долину и солнце; «Личный» без изменений */
 .yc.w{background:linear-gradient(90deg,rgba(35,65,92,.82),rgba(35,65,92,.05) 75%),url(assets/lang-bg.webp) 50% 58%/140% auto}
+/* v77: заголовок языка поверх полёта; совпадает по месту с экраном языка, поэтому подмена незаметна */
+.lpre{position:absolute;inset:0;z-index:5;pointer-events:none}
+.lpre .eyebrow{opacity:var(--a,0);transform:translateY(calc((1 - var(--a,0)) * 8px))}
+.lpre .lq{opacity:var(--b,0);transform:translateY(calc((1 - var(--b,0)) * 10px))}
+/* v77: с успеха на прогноз: прогноз медленно проявляется поверх ещё приближающейся картинки, без мигания */
+.screen.soft{opacity:0;transform:none;transition:opacity .8s cubic-bezier(.4,0,.2,1)}
+.screen.soft.in{opacity:1}
 </style>
 </head>
 <body>
@@ -1233,10 +1240,10 @@ function go(name, push = true, how = ''){
   el.innerHTML = (ROCK.includes(name) ? ROCKBG : '') + SCREENS[name]();
   app.appendChild(el);
   const old = [...app.querySelectorAll('.screen')].filter(x => x !== el);
-  old.forEach(o => { if (!o.classList.contains('intro')) o.classList.add('out'); }); /* прошлый экран гаснет сразу, без наложения */
+  old.forEach(o => { if (!o.classList.contains('intro') && how !== 'soft') o.classList.add('out'); }); /* прошлый экран гаснет сразу, без наложения */
   void el.offsetWidth;
   el.classList.add('in');
-  setTimeout(() => old.forEach(o => o.remove()), how === 'fade' || how === 'portal' || how === 'under' ? 1400 : 320);
+  setTimeout(() => old.forEach(o => o.remove()), how === 'fade' || how === 'portal' || how === 'under' || how === 'soft' ? 1400 : 320);
   if (ROCK.includes(name)) skyFog(el);
   (AFTER[name] || (() => {}))(el);
   stagger(el);
@@ -1737,7 +1744,13 @@ function introInit(el){
     const kx = iw / DW, ky = ih / DH, x0 = Math.max(0, X), y0 = Math.max(0, Y), x1 = Math.min(W, X + DW), y1 = Math.min(H, Y + DH);
     if (x1 <= x0 || y1 <= y0) return;
     ctx.drawImage(im, (x0 - X) * kx, (y0 - Y) * ky, (x1 - x0) * kx, (y1 - y0) * ky, x0, y0, x1 - x0, y1 - y0); };
-  const draw = () => { if (!W) return;
+  /* v77: заголовок экрана языка проявляется ещё в полёте: сначала «Прогностика 2027», потом «Обери мову» */
+  let pre = null;
+  const preText = () => { if (isBack()) return;
+    if (!pre && p > .34){ pre = document.createElement('div'); pre.className = 'lang lpre'; pre.setAttribute('aria-hidden', 'true');
+      pre.innerHTML = '<div class="lwrap"><div class="eyebrow">Прогностика 2027</div><h1 class="lq">Обери мову<span>Выбери язык</span></h1></div>'; el.appendChild(pre); }
+    if (pre){ pre.style.setProperty('--a', smooth(.34, .62, p)); pre.style.setProperty('--b', smooth(.5, .84, p)); } };
+  const draw = () => { if (!W) return; preText();
     const s = Math.exp(Math.log(ZE) * p), u = Math.min(1, (s - 1) / (SC - 1)), m = 1 - Math.pow(1 - u, 1.5);
     const dx = P.x + (C.x - P.x) * m, dy = P.y + (C.y - P.y) * m, tx = dx - s * P.x, ty = dy - s * P.y;
     ctx.setTransform(dpr, 0, 0, dpr, 0, 0);
@@ -1765,7 +1778,7 @@ function introInit(el){
   /* в последнем кадре canvas совпадает с фоном экрана языка: экран языка уже готов под заставкой, заставка просто убирается */
   const finish = () => { if (state === 'end' || !el.isConnected) return; state = 'end';
     if (isBack()){ openReturning(el); return; } /* уже был в боте: язык и знакомство пропускаем, сразу его прогноз */
-    go('lang', false, 'under'); requestAnimationFrame(() => el.remove()); };
+    go('lang', false, 'under'); cur().querySelector('.lq')?.classList.remove('rise'); requestAnimationFrame(() => el.remove()); };
   const skip = () => { if (state !== 'door') return; state = 'skip'; const p0 = p, t1 = performance.now(); /* нажали во время полёта: быстро долетаем */
     const f = now => { const u = Math.min(1, (now - t1) / 450); p = p0 + (1 - p0) * (1 - Math.pow(1 - u, 3)); draw(); if (u < 1) requestAnimationFrame(f); else finish(); };
     requestAnimationFrame(f); };
@@ -1996,12 +2009,12 @@ function toMain(tab){
     el.querySelector('.okimg')?.animate([{transform:'scale(1)', transformOrigin:'58% 22%'}, {transform:'scale(1.7)', transformOrigin:'58% 22%'}], {duration:D, easing:E, fill:'forwards'});
     el.querySelector('.okglow')?.animate([{opacity:.8, scale:1}, {opacity:1, scale:3.2}], {duration:D, easing:E, fill:'forwards'});
     el.querySelectorAll('.okw, .bottom').forEach((n, k) => n.animate([{opacity:1, transform:'none'}, {opacity:0, transform:`translateY(${k ? 16 : -12}px)`}], {duration:420, easing:'ease-in', fill:'forwards'}));
-    setTimeout(() => toMainNow(tab), D - 260);
+    setTimeout(() => toMainNow(tab, 'soft'), D - 480);
     return;
   }
   toMainNow(tab);
 }
-function toMainNow(tab){ if (S.profiles[S.forIdx].access !== 'none') S.active = S.forIdx; S.month = 0; S.tab = tab === 'y' && S.profiles[S.forIdx].access === 'all' ? 'y' : 'm'; S.ytopic = null; S.hist = []; S.cur = null; go('main', false, 'fade'); }
+function toMainNow(tab, how = 'fade'){ if (S.profiles[S.forIdx].access !== 'none') S.active = S.forIdx; S.month = 0; S.tab = tab === 'y' && S.profiles[S.forIdx].access === 'all' ? 'y' : 'm'; S.ytopic = null; S.hist = []; S.cur = null; go('main', false, how); }
 function startDemo(){ S.active = S.forIdx; S.month = 0; S.tab = 'm'; S.hist = []; S.cur = null; go('main', false, 'fade'); }
 function swapContent(dir = 1){
   const el = cur(), c = el.querySelector('.content'), sc = el.querySelector('.scroll'), h = el.querySelector('.hph');
@@ -2332,7 +2345,7 @@ if (Q.has('demo')){
   const v = Q.get('demo');
   S.month = +(Q.get('month') || 0);
   const D = () => { S.mode = 'self'; S.draft = {name:'Мария', gender: Q.get('g') || 'f', d:25, m:7, y:1992}; S.hist = ['onb']; };
-  if (v === 'intro') go('intro', false);
+  if (v === 'intro'){ S.profiles = []; go('intro', false); } /* первый вход: профилей ещё нет */
   else if (v === 'back'){ S.profiles[0].access = Q.get('access') || 'months'; bootIntro(); } /* вход уже оплатившего: ?demo=back&access=months|all */
   else if (v === 'lang') go('lang', false);
   else if (v === 'onb'){ S.onbI = +(Q.get('slide') || 0); go('onb', false); }
