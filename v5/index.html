@@ -1373,6 +1373,20 @@ img.wait:not(.ok){visibility:hidden}
 .success .okh{margin:0 0 14px;max-width:none;text-align:left;padding:12px 16px;border-radius:18px;background:rgba(8,14,28,.45);border:1px solid rgba(226,208,176,.25);color:rgba(244,233,214,.88)}
 .okbg::after{background:linear-gradient(180deg,rgba(3,6,12,.25) 0%,rgba(3,6,12,0) 14%,rgba(3,6,12,0) 44%,rgba(3,6,12,.5) 58%,rgba(3,6,12,.85) 78%,rgba(3,6,12,.92) 100%)}
 @media (max-height:700px){ .success .okw h1{font-size:34px} .success .okt{font-size:15px} }
+
+/* ===== v102: стать і підтвердження на наших фото; тарифи читабельніші; на імені картинка не заходить під поле навіть з клавіатурою ===== */
+.screen.gender .rockbg,.screen.confirm .rockbg{left:0;right:0;top:0;bottom:0;height:auto;opacity:1;filter:none;-webkit-mask-image:none;mask-image:none;background-color:#223958;background-repeat:no-repeat}
+.screen.gender .rockbg{background-image:linear-gradient(180deg,rgba(3,6,12,.55) 0%,rgba(3,6,12,.2) 30%,rgba(3,6,12,0) 50%,rgba(3,6,12,.55) 100%),url(assets/onb4.webp);background-size:cover,cover;background-position:center,62% 50%}
+.screen.confirm .rockbg{background-image:linear-gradient(180deg,rgba(3,6,12,.55) 0%,rgba(3,6,12,.2) 30%,rgba(3,6,12,0) 50%,rgba(3,6,12,.6) 100%),url(assets/onb2.webp);background-size:cover,cover;background-position:center,60% 50%}
+.screen.gender .sfog,.screen.confirm .sfog{display:none !important}
+/* тарифи: темніше зверху під заголовком, річна — на темному склі */
+.screen.tariffs .rockbg{background-image:linear-gradient(180deg,rgba(3,6,12,.72) 0%,rgba(3,6,12,.45) 20%,rgba(3,6,12,.15) 40%,rgba(3,6,12,.15) 64%,rgba(3,6,12,.65) 100%),url(assets/bg-tariffs.webp)}
+.screen.tariffs .h1,.screen.tariffs .lead,.screen.tariffs .eyebrow,.screen.tariffs h1{text-shadow:0 2px 18px rgba(0,0,0,.6)}
+.plans .plan.p3{background:rgba(8,14,28,.55);-webkit-backdrop-filter:blur(14px);backdrop-filter:blur(14px);border:1px solid rgba(226,208,176,.4)}
+.plans .plan.p3 .n,.plans .plan.p3 .p{color:var(--cream)}
+.plans .plan.p3 .s,.plans .plan.p3 .lkn{color:rgba(244,233,214,.85)}
+/* імʼя: розмір фото рахуємо від повної висоти екрана, тож коли відкривається клавіатура, картинка не зсувається; світла скеля пішла за край */
+.screen.name .rockbg{background-size:cover,auto max(100%,var(--h0,100lvh));background-position:center,86% 0}
 </style>
 </head>
 <body>
@@ -1599,6 +1613,10 @@ function fitFolds(el){
     tw.dataset.ch = h; tw.style.transition = 'none'; tw.style.maxHeight = h + 'px'; void tw.offsetHeight; tw.style.transition = '';
   });
 }
+/* v102: найбільша висота екрана, яку ми бачили. Коли відкривається клавіатура, висота падає, а фон не перераховуємо */
+let H0 = 0; const setH0 = () => { const h = Math.max(window.innerHeight, (window.visualViewport && visualViewport.height) || 0); if (h > H0){ H0 = h; document.documentElement.style.setProperty('--h0', H0 + 'px'); } };
+setH0();
+window.addEventListener('resize', setH0);
 window.addEventListener('resize', () => { const el = cur(); if (!el) return; fitFolds(el); if ((S.cur === 'intro' || S.cur === 'onb') && el._layout) el._layout(); });
 function toggleSec(btn){
   const f = btn.closest('.fold'); if (!f || f.classList.contains('short')) return;
