@@ -1460,6 +1460,11 @@ html,body,#app{overscroll-behavior:none}
 @keyframes allshine{0%{left:-50%}35%,100%{left:130%}}
 .plans .plan.p1:active{animation:none;transform:scale(.985)}
 @media (prefers-reduced-motion:reduce){ .plans .plan.p1,.plans .plan.p1::after{animation:none} }
+
+/* ===== v108: «Знай заранее» — фигура в белом среди синей травы и красных кустов; «Как тебя зовут» — человек под большим деревом ===== */
+.obgs .b5 img{object-position:50% 50%}
+.obgs .b5::after{background:linear-gradient(180deg,rgba(0,0,0,0) 46%,rgba(3,6,12,.45) 62%,rgba(3,6,12,.82) 100%)}
+.screen.name .rockbg{background-image:linear-gradient(180deg,rgba(3,6,12,.35) 0%,rgba(3,6,12,0) 30%,rgba(3,6,12,0) 64%,rgba(3,6,12,.5) 100%),url(assets/bg-name2.webp);background-size:cover,auto max(100%,var(--h0,100lvh));background-position:center,12% 0}
 </style>
 </head>
 <body>
@@ -1635,7 +1640,7 @@ function holdImgs(el){ el.querySelectorAll('img').forEach(im => { if (im.complet
   im.classList.add('wait'); const ok = () => im.classList.add('ok');
   im.addEventListener('load', () => (im.decode ? im.decode().catch(() => {}) : Promise.resolve()).then(ok), {once: true}); im.addEventListener('error', ok, {once: true}); }); }
 /* все фоны грузим заранее, пока идёт заставка */
-const PRELOAD = ['lang-arch', 'onb3', 'onb2', 'onb1', 'onb4', 'bg-name', 'bg-dob', 'bg-tariffs', 'success-door', 'success-door-sea', 'veronika'];
+const PRELOAD = ['lang-arch', 'onb5', 'bg-name2', 'onb3', 'onb2', 'onb1', 'onb4', 'bg-name', 'bg-dob', 'bg-tariffs', 'success-door', 'success-door-sea', 'veronika'];
 function preloadAll(){ PRELOAD.forEach(n => { const im = new Image(); im.src = `assets/${n}.webp`; }); }
 const ROCKBG = '<div class="rockbg"></div><div class="ifogs sfog"><div class="fog fB"><div class="tile"></div></div><div class="fog fA"><div class="tile"></div></div><div class="fog fC"><div class="tile"></div></div></div>';
 const ROCK = ['onb','name','gender','dob','confirm','tariffs','profile','fail'];
@@ -1780,7 +1785,7 @@ onb: () => {
   const P = [[20,120],[50,92],[82,104],[112,70],[146,84],[176,52],[206,66],[236,36],[262,58],[288,26],[312,42],[336,14]];
   const route = `<svg class="route" viewBox="0 0 356 140" aria-hidden="true"><path d="M${P.map(p => p.join(' ')).join(' L')}"/>${P.map(([x, y], k) => `<circle cx="${x}" cy="${y}" r="${k === 0 || k === 11 ? 4 : 2.6}" style="--k:${k}"/><text x="${x}" y="${y + 18}" text-anchor="middle" style="--k:${k}">${MONTHS[k].slice(0,3)}</text>`).join('')}</svg>`;
   return `
-  <div class="obgs" aria-hidden="true">${[3,2,1,4].map(n => `<div class="bg b${n}"><img src="assets/onb${n}.webp" alt="" draggable="false"></div>`).join('')}</div>
+  <div class="obgs" aria-hidden="true">${[5,2,1,4].map(n => `<div class="bg b${n}"><img src="assets/onb${n}.webp" alt="" draggable="false"></div>`).join('')}</div>
   <div class="top"><span class="brand">Прогностика 2027</span><button class="skip" onclick="finishOnb()">Пропустить</button></div>
   <div class="ovp"><div class="pager">
     <div class="slide" data-k="0">
