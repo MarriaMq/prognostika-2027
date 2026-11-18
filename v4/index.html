@@ -1065,6 +1065,15 @@ body{background:var(--sea)}
 .oksea{position:absolute;left:0;top:calc(656 / 1670 * 100%);width:calc(640 / 941 * 100%);height:calc(804 / 1670 * 100%);pointer-events:none}
 .okglow{width:42%;background:radial-gradient(closest-side,rgba(255,246,226,.75),rgba(255,214,170,.24) 45%,rgba(255,214,170,0))}
 .okgl{display:none}
+/* v73: промокод: одна покупка «Всё вместе» за 850, остальные тарифы погашены */
+.promo-on{display:flex;align-items:center;gap:10px;margin:14px var(--g) 0;padding:12px 16px;border-radius:16px;background:rgba(255,255,255,.16);border:1px solid rgba(255,255,255,.55);-webkit-backdrop-filter:blur(10px);backdrop-filter:blur(10px);font:400 14px/1.4 var(--f-text);color:#fff}
+.promo-on svg{width:20px;height:20px;flex-shrink:0;padding:3px;border-radius:50%;background:#3E9B6A;color:#fff}
+.promo-on b{font-weight:600;letter-spacing:.06em}
+.promo-on.in-sheet{margin:-4px 0 14px;background:rgba(62,155,106,.1);border-color:rgba(62,155,106,.35);color:var(--ink2);-webkit-backdrop-filter:none;backdrop-filter:none}
+.plans .plan.pr .p s{font-size:17px;opacity:.7;margin-right:4px}
+.plans .plan.off{opacity:.45;pointer-events:none;background:transparent;border:1px solid rgba(245,235,221,.4);box-shadow:none;color:#fff}
+.plans .plan.off .n{color:#fff}.plans .plan.off .s,.plans .plan.off .p,.plans .plan.off .p small{color:rgba(255,255,255,.85)}
+.plans .plan.off .p{text-decoration:line-through;text-decoration-thickness:1px}
 </style>
 </head>
 <body>
@@ -1180,7 +1189,7 @@ let YEAR_TEXT = {
   ]};
 
 /* ---------- Состояние. API: профили и доступы хранит сервер ---------- */
-const S = { lang:'ru', profiles:[], active:0, draft:null, mode:'self', tab:'m', month:null, ytopic:null, promo:false, forIdx:0, hist:[], cur:null, onbI:0, wantDemo:false, onbFrom:null, lastPlan:'months' };
+const S = { lang:'ru', profiles:[], active:0, draft:null, mode:'self', tab:'m', month:null, ytopic:null, promo:false, promoCode:'', forIdx:0, hist:[], cur:null, onbI:0, wantDemo:false, onbFrom:null, lastPlan:'months' };
 const prof = () => S.profiles[S.active];
 const gOf = () => (S.draft && ['name','gender','dob','confirm'].includes(S.cur) ? S.draft.gender : null) || (prof() ? prof().gender : 'f') || 'f';
 const gx = (f, m) => gOf() === 'm' ? m : f;
@@ -1479,14 +1488,17 @@ tariffs: () => {
       ${other ? `<p class="lead" style="margin-top:10px">Прогноз будет здесь, в твоём профиле: «Чей прогноз смотреть». ${esc(p.name)} ничего не получит, читать его будешь ты.</p>` : ''}
       ${mDone || other ? (mDone || !other ? '' : `<div class="urg">${I.clock}<span>Январь в этом прогнозе начинается ${fmt(s0)}.</span></div>`) : `<h2 class="ptitle">Выбери <em>формат доступа</em></h2>`}
     </div>
-    <div class="plans">
-      ${mDone ? '' : `<button class="plan p1" onclick="paySheet('all')"><span><span class="badge">Выгоднее всего</span><span class="n">Всё вместе</span><span class="s">12 месяцев и годовая прогностика. Экономия 150 грн</span></span>${uah(1100)}</button>`}
-      ${mDone ? done('12 месяцев 2027') : `<button class="plan p2${other ? '' : ' hot'}" onclick="paySheet('months')"><span>${other ? '' : '<span class="badge">Популярный выбор</span>'}<span class="n">${other ? '12 месяцев 2027' : 'Твои 12 месяцев 2027'}</span><span class="s">71 грн за месяц</span></span>${uah(850)}</button>`}
-      ${all ? done('Годовая прогностика') : mDone
+    ${S.promo && !mDone ? `<div class="promo-on">${I.check}<span>Промокод <b>${esc(S.promoCode)}</b> успешно применён</span></div>` : ''}
+    <div class="plans${S.promo && !mDone ? ' promo-mode' : ''}">
+      ${S.promo && !mDone ? `<button class="plan p1 pr" onclick="paySheet('promo')"><span><span class="badge">По промокоду</span><span class="n">Всё вместе</span><span class="s">12 месяцев и годовая прогностика</span></span><span class="p"><s>1100</s>850<small>грн</small></span></button>
+      <div class="plan off" aria-disabled="true"><span><span class="n">${other ? '12 месяцев 2027' : 'Твои 12 месяцев 2027'}</span><span class="s">Уже входит в промокод</span></span>${uah(850)}</div>
+      <div class="plan off" aria-disabled="true"><span><span class="n">Годовая прогностика</span><span class="s">Уже входит в промокод</span></span>${uah(400)}</div>` : ''}
+      ${mDone || S.promo ? '' : `<button class="plan p1" onclick="paySheet('all')"><span><span class="badge">Выгоднее всего</span><span class="n">Всё вместе</span><span class="s">12 месяцев и годовая прогностика. Экономия 150 грн</span></span>${uah(1100)}</button>`}
+      ${S.promo && !mDone ? '' : mDone ? done('12 месяцев 2027') : `<button class="plan p2${other ? '' : ' hot'}" onclick="paySheet('months')"><span>${other ? '' : '<span class="badge">Популярный выбор</span>'}<span class="n">${other ? '12 месяцев 2027' : 'Твои 12 месяцев 2027'}</span><span class="s">71 грн за месяц</span></span>${uah(850)}</button>`}
+      ${S.promo && !mDone ? '' : all ? done('Годовая прогностика') : mDone
         ? `<button class="plan p1" onclick="paySheet('year')"><span><span class="n">Годовая прогностика</span><span class="s">Главные повороты года: общий и личный прогноз</span></span>${uah(400)}</button>`
         : `<button class="plan p3" onclick="yearLockSheet()"><span><span class="n">Годовая прогностика</span><span class="s">Главные повороты года: общий и личный прогноз</span><span class="lkn">${I.lock}После покупки 12 месяцев</span></span>${uah(400)}</button>`}
     </div>
-    ${S.promo && !mDone ? `<p class="promo-ok">Промокод принят. Прогноз на год в подарок.</p>` : ''}
     <div class="extra">
       ${!mDone && !S.promo ? `<button class="promo-btn" onclick="promoSheet()">${I.ticket}<span>Есть промокод</span></button>` : ''}
     </div>
@@ -1504,9 +1516,9 @@ fail: () => `
 
 success: () => {
   const p = S.profiles[S.forIdx], uk = S.lang === 'uk';
-  const L = S.lastPlan, gift = L === 'months' && S.promo, both = L === 'all' || gift;
+  const L = S.lastPlan, pr = L === 'promo', both = L === 'all' || pr;
   const T = uk ? {
-    h: 'Оплата успішна', k: 'Доступ відкрито',
+    h: 'Оплата успішна', k: pr ? 'Оплачено за промокодом' : 'Доступ відкрито',
     t: !p.self ? `Прогноз для ${esc(p.name)} уже чекає. Знайти його можна в профілі.`
       : L === 'year' ? 'Річна прогностика вже чекає на тебе. Загальний і особистий прогноз.'
       : both ? 'Усі прогнози вже чекають на тебе.'
@@ -1514,7 +1526,7 @@ success: () => {
     hint: 'Прогноз завжди буде в цьому боті. Він у тебе назавжди.',
     b: 'Перейти до прогнозу'
   } : {
-    h: 'Оплата успешна', k: 'Доступ открыт',
+    h: 'Оплата успешна', k: pr ? 'Оплачено по промокоду' : 'Доступ открыт',
     t: !p.self ? `Прогноз для ${esc(p.name)} уже ждёт. Найти его можно в профиле.`
       : L === 'year' ? 'Годовая прогностика уже ждёт тебя. Общий и личный прогноз.'
       : both ? 'Все прогнозы уже ждут тебя.'
@@ -2023,14 +2035,15 @@ function sheet(title, html){
 }
 function closeSheet(now){ app.querySelectorAll('.ov,.sheet').forEach(x => { if (now) return x.remove(); x.classList.remove('in'); setTimeout(() => x.remove(), 380); }); }
 function paySheet(plan){
+  if (S.promo && plan !== 'year' && S.profiles[S.forIdx].access === 'none') plan = 'promo'; /* v73: с промокодом есть только одна покупка */
   S.lastTry = plan;
-  const sum = {months: 850, year: 400, all: 1100}[plan];
-  const name = {months: '12 месяцев 2027', year: 'Годовая прогностика', all: 'Всё вместе: 12 месяцев и год'}[plan];
+  const sum = {months: 850, year: 400, all: 1100, promo: 850}[plan];
+  const name = {months: '12 месяцев 2027', year: 'Годовая прогностика', all: 'Всё вместе: 12 месяцев и год', promo: 'Оплата по промокоду: 12 месяцев и годовая прогностика'}[plan];
   const fp = S.profiles[S.forIdx];
   sheet('Оплата', `
     <p>${name}${fp.self ? '' : '. Для близкого: ' + esc(fp.name)}</p>
     <div class="amount">${sum}<small>грн</small></div>
-    ${plan === 'months' && S.promo ? `<p style="color:var(--ok);margin:-6px 0 12px">+ прогноз на год в подарок</p>` : ''}
+    ${plan === 'promo' ? `<div class="promo-on in-sheet">${I.check}<span>Промокод <b>${esc(S.promoCode)}</b> успешно применён. Вместо 1100 грн</span></div>` : ''}
     <div class="paynote">${I.card}<span>Сейчас откроется страница оплаты monobank. Можно оплатить картой любого банка, Apple Pay или Google Pay. После оплаты ты вернёшься сюда, и прогноз откроется.</span></div>
     <div style="height:20px"></div>
     <button class="btn primary" onclick="paid('${plan}')">Оплатить ${sum} грн</button>`);
@@ -2086,7 +2099,8 @@ function seaWaves(el){
 }
 function paid(plan){
   const p = S.profiles[S.forIdx];
-  p.access = plan === 'months' && !S.promo ? 'months' : 'all';
+  p.access = plan === 'months' ? 'months' : 'all';
+  if (plan === 'promo') S.promo = false; /* API: промокод погашен. Если оплата не прошла, он остаётся (S.promo / S.promoCode) */
   S.lastPlan = plan; closeSheet(); S.hist = []; S.cur = null; go('success', false, 'fade');
 }
 function retryPay(){ S.hist = []; S.cur = null; go('tariffs', false); setTimeout(() => paySheet(S.lastTry || 'months'), 350); }
@@ -2106,7 +2120,7 @@ function promoSheet(){
   const inp = sh.querySelector('#pc'), b = sh.querySelector('#pa'), er = sh.querySelector('#pe');
   inp.addEventListener('input', () => { b.disabled = !inp.value.trim(); er.textContent = ''; });
   /* API: проверка промокода на сервере. В прототипе подходит только TEST2027 (без учёта регистра). */
-  b.onclick = () => { const v = inp.value.trim(); if (!PROMO_TEST.includes(v.toUpperCase())){ er.textContent = 'Такого промокода нет. Проверь, нет ли лишних пробелов.'; hap('error'); return; } S.promo = true; closeSheet(); rerender(); hap('success'); };
+  b.onclick = () => { const v = inp.value.trim(); if (!PROMO_TEST.includes(v.toUpperCase())){ er.textContent = 'Такого промокода нет. Проверь, нет ли лишних пробелов.'; hap('error'); return; } S.promo = true; S.promoCode = v.toUpperCase(); closeSheet(); rerender(); hap('success'); };
 }
 function gearSheet(){
   const p = prof();
@@ -2232,13 +2246,14 @@ const UK = {
   'Личный прогноз':'Особистий прогноз', 'Любовь, отношения, эмоции, брак, дети, семья':'Кохання, стосунки, емоції, шлюб, діти, сім’я', 'Общий':'Загальний', 'Личный':'Особистий',
   'Твои месяцы начинаются от дня рождения. Например, январь у тебя будет длиться':'Твої місяці починаються від дня народження. Наприклад, січень у тебе триватиме',
   'Месяцы считаются от дня рождения: январь будет длиться':'Місяці рахуються від дня народження: січень триватиме',
-  'Оплата':'Оплата', 'Всё вместе: 12 месяцев и год':'Усе разом: 12 місяців і рік', '+ прогноз на год в подарок':'+ прогноз на рік у подарунок',
+  'Оплата':'Оплата', 'Оплата по промокоду: 12 месяцев и годовая прогностика':'Оплата за промокодом: 12 місяців і річна прогностика', 'Уже входит в промокод':'Уже входить у промокод', 'По промокоду':'За промокодом', '12 месяцев и годовая прогностика':'12 місяців і річна прогностика', 'Всё вместе: 12 месяцев и год':'Усе разом: 12 місяців і рік', '+ прогноз на год в подарок':'+ прогноз на рік у подарунок',
   'Сейчас откроется страница оплаты monobank. Можно оплатить картой любого банка, Apple Pay или Google Pay. После оплаты ты вернёшься сюда, и прогноз откроется.':'Зараз відкриється сторінка оплати monobank. Можна оплатити карткою будь-якого банку, Apple Pay або Google Pay. Після оплати ти повернешся сюди, і прогноз відкриється.',
   'Годовую прогностику можно купить после покупки 12 месяцев. Или возьми всё вместе, так выгоднее на 150 грн.':'Річну прогностику можна купити після покупки 12 місяців. Або візьми все разом, так вигідніше на 150 грн.',
   'Только месяцы':'Тільки місяці', 'Введи промокод':'Введи промокод', 'Промокод можно получить у Вероники в Instagram.':'Промокод можна отримати у Вероніки в Instagram.',
   'Промокод':'Промокод', 'Применить':'Застосувати', 'Такого промокода нет. Проверь, нет ли лишних пробелов.':'Такого промокоду немає. Перевір, чи немає зайвих пробілів.',
 };
 const UK_RX = [
+  [/^Промокод$/, 'Промокод'], [/^успешно применён$/, 'успішно застосовано'], [/^успешно применён\. Вместо 1100 грн$/, 'успішно застосовано. Замість 1100 грн'],
   [/^С возвращением, (.+)$/, 'З поверненням, $1'],
   [/^Шаг (\d) из (\d)$/, 'Крок $1 з $2'],
   [/^(.+), выбери свой пол$/, '$1, обери свою стать'],
