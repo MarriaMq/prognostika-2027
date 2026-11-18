@@ -1089,29 +1089,28 @@ body{background:var(--sea)}
 .msheet .fold .tw::after,.fold .tw::after{display:none}
 
 /* ===================== v5: тёмная тема клиентки =====================
-   Глубокий синий #0B1A52, кремовый #F4E9D6, золото #C9A46A, бронза #8C5A23.
+   Глубокий синий #223958, кремовый #F4E9D6, золото #C9A46A, бронза #8C5A23.
    Карточки — чуть светлее фона с тонкой золотистой рамкой, выбранное — кремовое с синим текстом. */
 :root{
-  --nv0:#060E30; --nv:#0B1A52; --nv2:#132463; --gold:#C9A46A; --gold-l:#E3C892; --bronze:#8C5A23; --creamc:#F4E9D6; --ink-nv:#16205A;
+  --nv0:#1B2F4A; --nv:#223958; --nv2:#2C4468; --gold:#C9A46A; --gold-l:#E3C892; --bronze:#8C5A23; --creamc:#F4E9D6; --ink-nv:#223958;
   --cream:#F4E9D6; --milk:#F4E9D6; --dawn:#E3C892;
   --cream-2:rgba(244,233,214,.86); --cream-3:rgba(244,233,214,.62); --hair:rgba(201,164,106,.24);
-  --card:#122260; --ink2:#F4E9D6; --ink3:rgba(244,233,214,.72);
+  --card:#2C4468; --ink2:#F4E9D6; --ink3:rgba(244,233,214,.72);
   --alyi:#C9A46A; --alyi-l:#D9B87E; --scarlet:#F4E9D6;
   --red-grad:linear-gradient(180deg,#A2702F 0%,#8C5A23 100%);
   --line:1px solid rgba(201,164,106,.2);
 }
 body,#app{background:var(--nv)}
-@media (min-width:600px){ body{background:#050B26} body.tg{background:var(--nv)} }
+@media (min-width:600px){ body{background:#182A42} body.tg{background:var(--nv)} }
 .screen,.screen.main{background:
-  radial-gradient(90% 40% at 50% -6%,rgba(201,164,106,.13),rgba(201,164,106,0) 70%),
-  linear-gradient(180deg,#0E1F5E 0%,#0B1A52 40%,#081544 75%,#06103A 100%)}
+  radial-gradient(90% 40% at 50% -6%,rgba(201,164,106,.12),rgba(201,164,106,0) 70%),#223958}
 .h1 em,.otx h2 em,.ybanner .t em,.mttl em,.intro .ttl h1 em{color:var(--gold);font-style:italic}
 .h1,.lq,.otx h2,.failw h1,.success h1,.me .nm,.night .ytl,.closed .t,.mhero h2,.mhero p,.night .hph,.yq,.content > .nextm{text-shadow:none}
 .eyebrow{color:var(--gold)}
 .dust i{background:#F6E7C8;box-shadow:0 0 6px rgba(227,200,146,.7)}
 
 /* карточки: синие с золотистой рамкой */
-.sec,.plan,.ccard,.hintc,.dk-btn,.gbig button,.list,.rev,.tghint,.promo-btn{background:linear-gradient(180deg,rgba(255,255,255,.055),rgba(255,255,255,.025)),var(--card);border:var(--line);box-shadow:0 14px 34px rgba(3,8,30,.35)}
+.sec,.plan,.ccard,.hintc,.dk-btn,.gbig button,.list,.rev,.tghint,.promo-btn{background:linear-gradient(180deg,rgba(255,255,255,.055),rgba(255,255,255,.025)),var(--card);border:var(--line);box-shadow:0 14px 34px rgba(14,24,40,.35)}
 .sec h3{color:var(--gold);font-style:italic}
 .txt{color:rgba(244,233,214,.88)}
 .txt b{color:var(--creamc)}
@@ -1140,10 +1139,10 @@ body,#app{background:var(--nv)}
 .mhero p,.night .hph,.night .ytl + .hph{color:rgba(244,233,214,.7)}
 .content > .nextm{background:transparent;border:1px solid rgba(201,164,106,.45);color:var(--creamc);-webkit-backdrop-filter:none;backdrop-filter:none;box-shadow:none}
 .content > .nextm svg{background:var(--red-grad);color:#FFF6E8}
-.ybanner{border:var(--line);background:linear-gradient(90deg,rgba(11,26,82,.95),rgba(11,26,82,.6)),url(assets/goat-sun.webp) 10% 40%/cover}
+.ybanner{border:var(--line);background:linear-gradient(90deg,rgba(34,57,88,.95),rgba(34,57,88,.6)),url(assets/goat-sun.webp) 10% 40%/cover}
 .yc{border:var(--line)}
-.yc.w{background:linear-gradient(90deg,rgba(11,26,82,.9),rgba(11,26,82,.2) 75%),url(assets/lang-bg.webp) 50% 58%/140% auto}
-.yc.l{background:linear-gradient(90deg,rgba(11,26,82,.9),rgba(11,26,82,.15)),url(assets/goat-sun.webp) 70% 45%/cover}
+.yc.w{background:linear-gradient(90deg,rgba(34,57,88,.9),rgba(34,57,88,.2) 75%),url(assets/lang-bg.webp) 50% 58%/140% auto}
+.yc.l{background:linear-gradient(90deg,rgba(34,57,88,.9),rgba(34,57,88,.15)),url(assets/goat-sun.webp) 70% 45%/cover}
 
 /* сетка месяцев: как карточки 01–05 на лендинге клиентки */
 .mgrid{display:grid;grid-template-columns:repeat(3,1fr);gap:8px;padding:10px 16px 6px}
@@ -1153,7 +1152,7 @@ body,#app{background:var(--nv)}
 .mgrid button:active{transform:scale(.96)}
 .mgrid .mn{font:italic 400 20px/1 var(--f-serif);color:var(--gold);transition:color .35s}
 .mgrid .mm{font:400 13px/1 var(--f-text);color:rgba(244,233,214,.86);transition:color .35s}
-.mgrid button.on{background:var(--creamc);border-color:var(--creamc);box-shadow:0 10px 26px rgba(3,8,30,.35)}
+.mgrid button.on{background:var(--creamc);border-color:var(--creamc);box-shadow:0 10px 26px rgba(14,24,40,.35)}
 .mgrid button.on .mn{color:var(--bronze)}
 .mgrid button.on .mm{color:var(--ink-nv)}
 .mgrid button.lk{opacity:.55}
@@ -1162,14 +1161,14 @@ body,#app{background:var(--nv)}
 @media (max-width:350px){ .mgrid{gap:6px} .mgrid button{height:60px} .mgrid .mm{font-size:12px} }
 
 /* шторки */
-.sheet{background:linear-gradient(180deg,#132463,#0B1A52);color:var(--ink2);border-top:1px solid rgba(201,164,106,.3)}
+.sheet{background:linear-gradient(180deg,#2C4468,#223958);color:var(--ink2);border-top:1px solid rgba(201,164,106,.3)}
 .sh-head .t{color:var(--gold)}
 .sheet .uline{color:var(--creamc);border-bottom-color:rgba(201,164,106,.4)}
 .sheet .uline::placeholder{color:rgba(244,233,214,.4)}
 .sheet .btn.secondary{border-color:rgba(201,164,106,.45);color:var(--creamc)}
 .sheet .seg{border-color:rgba(201,164,106,.3)}
 .sheet .seg button.on{background:var(--creamc);color:var(--ink-nv)}
-.ov{background:rgba(3,8,30,.55)}
+.ov{background:rgba(14,24,40,.55)}
 
 /* v82: успех — открытая дверь к морю вместо козы. Картинка закрывает весь экран (cover),
    море в проёме шевелится, по воде мигают блики, по «Перейти к прогнозу» шагаем в дверь к парусу */
@@ -1182,11 +1181,11 @@ body,#app{background:var(--nv)}
 .okbg::after{background:linear-gradient(180deg,rgba(6,28,40,.72) 0%,rgba(6,28,40,.5) 22%,rgba(6,28,40,.12) 40%,rgba(0,0,0,0) 52%,rgba(0,0,0,0) 74%,rgba(6,20,30,.55) 100%)}
 .okw h1,.okt{text-shadow:0 2px 18px rgba(4,22,34,.6)}
 .success .bottom .btn.okbtn{background:var(--red-grad);border-color:rgba(227,200,146,.75)}
-.okh{background:rgba(11,26,82,.55);border-color:rgba(201,164,106,.3)}
+.okh{background:rgba(34,57,88,.55);border-color:rgba(201,164,106,.3)}
 
 /* v84: заставка — коза у двери в красной скале, камера летит в эту дверь; экран языка — арка к морю */
-.screen.intro{background:#0E2440}
-.screen.lang{background:#13305C}
+.screen.intro{background:#223958}
+.screen.lang{background:#223958}
 
 /* v85: на экране языка заголовок опущен внутрь арки, под каменный свод (свод кончается на ~15% высоты картинки) */
 .lang .lwrap{padding-top:max(calc(var(--safe-t) + 70px), 19vh)}
@@ -1206,12 +1205,12 @@ if (tg && tg.initData) {
   document.body.classList.add('tg');
   tg.ready(); tg.expand();
   if (tg.disableVerticalSwipes) tg.disableVerticalSwipes();
-  if (tg.isVersionAtLeast && tg.isVersionAtLeast('6.1')) tg.setBackgroundColor('#315A7C');
+  if (tg.isVersionAtLeast && tg.isVersionAtLeast('6.1')) tg.setBackgroundColor('#223958');
 }
 const DARK = {intro:'#0B1F45', lang:'#070B1C', onb:'#070B1C', success:'#070B1C', main:'#0B1433'};
 function tgHeader(name){
   if (!tg || !tg.initData || !tg.isVersionAtLeast || !tg.isVersionAtLeast('6.1')) return;
-  try { tg.setHeaderColor(name === 'intro' ? '#718094' : '#5B86AF'); } catch (e) {}
+  try { tg.setHeaderColor('#223958'); } catch (e) {}
 }
 
 const I = {
@@ -1859,7 +1858,7 @@ function introInit(el){
     const s = Math.exp(Math.log(ZE) * p), u = Math.min(1, (s - 1) / (SC - 1)), m = 1 - Math.pow(1 - u, 1.5);
     const dx = P.x + (C.x - P.x) * m, dy = P.y + (C.y - P.y) * m, tx = dx - s * P.x, ty = dy - s * P.y;
     ctx.setTransform(dpr, 0, 0, dpr, 0, 0);
-    ctx.fillStyle = '#0E2440'; ctx.fillRect(0, 0, W, H);
+    ctx.fillStyle = '#223958'; ctx.fillRect(0, 0, W, H);
     if (goat.complete && goat.naturalWidth) blit(goat, GW, GH, tx + s * ox, ty + s * oy, s * w, s * h);
     const l = tx + s * (ox + 795 / GW * w), r = tx + s * (ox + 853 / GW * w), t = ty + s * (oy + 621 / GH * h), b = ty + s * (oy + 886 / GH * h);
     const v = smooth(.22, .72, p); /* сначала проём как на фото, вид из пещеры проявляется по мере приближения */
@@ -2469,7 +2468,7 @@ if (Q.has('demo')){
 } else bootIntro();
 /* Первый кадр — сразу коза с дымкой: ждём, пока фото и туман готовы, и только тогда показываем заставку */
 function bootIntro(){
-  app.style.background = '#0E2440';
+  app.style.background = '#223958';
   const im = new Image(); im.src = 'assets/intro-goat.webp';
   const ready = Promise.race([(im.decode ? im.decode() : new Promise(r => im.onload = r)).catch(() => {}), new Promise(r => setTimeout(r, 2500))]);
   ready.then(() => { if (!FOG_TEX) FOG_TEX = FOGS.map(f => fogTexture(f[1])); go('intro', false); setTimeout(() => app.style.background = '', 900); });
