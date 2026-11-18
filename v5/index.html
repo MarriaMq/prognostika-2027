@@ -1197,6 +1197,13 @@ body,#app{background:var(--nv)}
 .intro .ifogs{display:none}
 .screen.lang .lfog{opacity:.14}
 .screen.intro{background:#14456E}
+
+/* v91: заголовок заставки ниже и размером как «Выбери язык»; стоит там же, где потом будет заголовок экрана языка */
+.intro .ttl{top:calc(max(calc(var(--safe-t) + 70px), 19vh) - 8px)}
+.intro .ttl .eyebrow{margin-bottom:0}
+.intro .ttl h1{font-size:42px;line-height:1.08;margin-top:22px}
+.intro .ttl h1 em{font-size:1em;line-height:1.08;margin-top:0}
+@media (max-width:359px){ .intro .ttl h1{font-size:36px} }
 </style>
 </head>
 <body>
