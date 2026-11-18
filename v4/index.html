@@ -10,6 +10,7 @@
 <link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:ital,wght@0,300;0,400;0,500;0,600;1,400;1,500&family=Inter:wght@300;400;500&display=swap" rel="stylesheet">
 <link rel="preload" as="image" href="assets/goat-sun.webp">
 <link rel="preload" as="image" href="assets/sky-bg.webp">
+<link rel="preload" as="image" href="assets/month-bg.webp">
 <script src="https://telegram.org/js/telegram-web-app.js"></script>
 <style>
 /* Прогностика 2027, v3: атмосферная тёмная тема.
@@ -1036,6 +1037,9 @@ body{background:var(--sea)}
 .noscrollbar{scrollbar-width:none}
 .noscrollbar::-webkit-scrollbar{display:none}
 .profile .linkb{margin-top:14px}
+
+/* v67: фон экрана прогноза — море с солнцем у горизонта. Звёзды в шапке остаются */
+.screen.main{background:#5C86B0 url(assets/month-bg.webp) center top/cover no-repeat}
 </style>
 </head>
 <body>
