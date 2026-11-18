@@ -1054,6 +1054,13 @@ body{background:var(--sea)}
 .slide[data-k="2"] .wplot{height:clamp(96px,16vh,140px)}
 .slide[data-k="2"] .wms span{font-size:11px}
 @media (max-height:700px){ .slide[data-k="2"] .ill{padding:36px 0 16px} .slide[data-k="2"] .wplot{height:78px} .slide[data-k="2"] .wms{margin-top:8px} .slide[data-k="2"] .wms span:not(:first-child):not(:last-child){visibility:hidden} }
+/* v71: без демо; годовая в тонкой рамке; кнопки в шторке без тени */
+.plans .plan.p3{border:1px solid rgba(245,235,221,.6);background:transparent}
+.plans .plan.p3 .p{font-size:30px;gap:5px;color:rgba(255,255,255,.9)}
+.plan .lkn{display:flex;align-items:center;gap:6px;margin-top:10px;font:400 12px/1.3 var(--f-text);color:rgba(255,255,255,.85)}
+.plan .lkn svg{width:13px;height:13px;flex-shrink:0}
+.sheet .btn.primary{box-shadow:inset 0 1px 0 rgba(255,255,255,.2)}
+.sh-body{padding-bottom:16px}
 </style>
 </head>
 <body>
@@ -1190,7 +1197,7 @@ function monthRange(p, i){
 }
 const newYearDate = p => new Date(2027, p.m, Math.min(p.d, dim(2027, p.m)));
 const demoMonths = () => [0, 1]; /* «2 ближайших месяца»: январь и февраль 2027 */
-const canSee = (p, i) => p.access !== 'none' || (p.self && demoMonths().includes(i));
+const canSee = (p, i) => p.access !== 'none'; /* v71: бесплатного демо нет */
 const rnd = (a, b) => a + Math.random() * (b - a);
 const dust = (n, cls = '') => `<div class="dust ${cls}">${Array.from({length: n}, () => `<i style="left:${rnd(0,100).toFixed(1)}%;top:${rnd(cls ? 0 : 30, 100).toFixed(1)}%;--s:${rnd(1.5,3.4).toFixed(1)}px;--d:${rnd(5,11).toFixed(1)}s;--dl:-${rnd(0,10).toFixed(1)}s;--x:${rnd(-30,30).toFixed(0)}px"></i>`).join('')}</div>`;
 
@@ -1392,7 +1399,7 @@ onb: () => {
   <div class="bottom">
     <div class="dots">${[0,1,2,3].map(k => `<i class="${k === S.onbI ? 'on' : ''}"></i>`).join('')}</div>
     <div class="b-next" style="flex-direction:column"><button class="btn line" onclick="onbNext()">Дальше ${I.arrow}</button></div>
-    <div class="b-last" style="flex-direction:column;gap:6px"><button class="btn primary" onclick="finishOnb()">${S.onbFrom ? 'Понятно' : 'Открыть свой 2027'}</button>${S.onbFrom ? '' : `<button class="btn text" onclick="S.wantDemo=true;finishOnb()">Посмотреть бесплатный прогноз</button>`}</div>
+    <div class="b-last" style="flex-direction:column;gap:6px"><button class="btn primary" onclick="finishOnb()">${S.onbFrom ? 'Понятно' : 'Открыть свой 2027'}</button></div>
   </div>`;
 },
 
@@ -1473,11 +1480,10 @@ tariffs: () => {
       ${mDone ? done('12 месяцев 2027') : `<button class="plan p2${other ? '' : ' hot'}" onclick="paySheet('months')"><span>${other ? '' : '<span class="badge">Популярный выбор</span>'}<span class="n">${other ? '12 месяцев 2027' : 'Твои 12 месяцев 2027'}</span><span class="s">71 грн за месяц</span></span>${uah(850)}</button>`}
       ${all ? done('Годовая прогностика') : mDone
         ? `<button class="plan p1" onclick="paySheet('year')"><span><span class="n">Годовая прогностика</span><span class="s">Главные повороты года: общий и личный прогноз</span></span>${uah(400)}</button>`
-        : `<button class="plan p3" onclick="yearLockSheet()"><span><span class="n">Годовая прогностика</span><span class="s">Главные повороты года: общий и личный прогноз</span></span><span class="p"><span class="lk">${I.lock}</span>400<small>грн</small></span></button>`}
+        : `<button class="plan p3" onclick="yearLockSheet()"><span><span class="n">Годовая прогностика</span><span class="s">Главные повороты года: общий и личный прогноз</span><span class="lkn">${I.lock}После покупки 12 месяцев</span></span>${uah(400)}</button>`}
     </div>
     ${S.promo && !mDone ? `<p class="promo-ok">Промокод принят. Прогноз на год в подарок.</p>` : ''}
     <div class="extra">
-      ${!mDone && !other ? `<button class="btn secondary" onclick="startDemo()">Сначала посмотреть бесплатно</button>` : ''}
       ${!mDone && !S.promo ? `<button class="promo-btn" onclick="promoSheet()">${I.ticket}<span>Есть промокод</span></button>` : ''}
     </div>
   </div>
@@ -1535,7 +1541,7 @@ main: () => {
   let body;
   if (full) body = MONTH_TEXT.map(foldBlock).join('');
   else if (vis) body = MONTH_TEXT.map(b => b.w ? foldBlock(b) : shut(b)).join('');
-  else body = `<div class="closed"><div class="t">Этот месяц откроется после оплаты</div><p class="d">${p.self ? 'Бесплатно открыта работа и деньги на январь и февраль.' : `Прогноз для ${esc(p.name)} откроется после оплаты.`}</p></div>`;
+  else body = `<div class="closed"><div class="t">Этот месяц откроется после оплаты</div><p class="d">${p.self ? 'Выбери формат доступа, и прогноз откроется сразу.' : `Прогноз для ${esc(p.name)} откроется после оплаты.`}</p></div>`;
   /* v62: крупное название месяца и весь текст месяца на одном светлом листе */
   body = `<div class="mhero"><h2>${MONTHS[i]}</h2><p>${p.self ? 'Твой прогноз' : 'Прогноз'} действует с ${fmt(s)} по ${fmt(e)}</p></div><div class="msheet">${body}</div>`;
   if (i < 11 && canSee(p, i + 1) && (full || vis)) body += `<button class="nextm" onclick="setMonth(${i + 1})"><span>Дальше: ${MPREP[i + 1]}</span>${I.arrow}</button>`;
@@ -1543,7 +1549,6 @@ main: () => {
   const cta = full ? '' : `<div class="bottom"><button class="btn primary split" onclick="openTariffs(${S.active})"><span>${p.self ? 'Открыть все 12 месяцев' : 'Открыть прогноз'}</span><span>${p.self ? '850 грн' : ''}</span></button></div>`;
   return `
   <div class="night">${top}
-    ${p.self && !full ? `<div class="dpill">${I.gift}Бесплатно: работа на 2 ближайших месяца</div>` : ''}
     <div class="mstrip" role="tablist" aria-label="Месяц"><span class="mind" aria-hidden="true"><i></i></span>${MS().map((m, k) => `<button role="tab" data-k="${k}" class="${k === i ? 'on' : ''}${canSee(p, k) ? '' : ' lk'}" onclick="setMonth(${k})">${m}${canSee(p, k) ? '' : I.lock}</button>`).join('')}</div>
   </div>
   <div class="scroll"><div class="content">${body}</div></div>
@@ -2038,6 +2043,8 @@ function yearLockSheet(){ sheet('Годовая прогностика', `<p>Г�
     <button class="btn primary split" onclick="closeSheet();setTimeout(()=>paySheet('all'),120)"><span>Всё вместе</span><span>1100 грн</span></button>
     <button class="btn secondary split" onclick="closeSheet();setTimeout(()=>paySheet('months'),120)"><span>Только месяцы</span><span>850 грн</span></button>
   </div>`); }
+/* v71: тестовый промокод прототипа. Настоящие коды проверяет бэкенд. */
+const PROMO_TEST = ['TEST2027'];
 function promoSheet(){
   const sh = sheet('Введи промокод', `
     <p>Промокод можно получить у Вероники в Instagram.</p>
@@ -2046,8 +2053,8 @@ function promoSheet(){
     <button class="btn primary" id="pa" disabled style="margin-top:8px">Применить</button>`);
   const inp = sh.querySelector('#pc'), b = sh.querySelector('#pa'), er = sh.querySelector('#pe');
   inp.addEventListener('input', () => { b.disabled = !inp.value.trim(); er.textContent = ''; });
-  /* API: проверка промокода на сервере. В прототипе подходит любой код от 4 символов. */
-  b.onclick = () => { const v = inp.value.trim(); if (v.length < 4){ er.textContent = 'Такого промокода нет. Проверь, нет ли лишних пробелов.'; hap('error'); return; } S.promo = true; closeSheet(); rerender(); hap('success'); };
+  /* API: проверка промокода на сервере. В прототипе подходит только TEST2027 (без учёта регистра). */
+  b.onclick = () => { const v = inp.value.trim(); if (!PROMO_TEST.includes(v.toUpperCase())){ er.textContent = 'Такого промокода нет. Проверь, нет ли лишних пробелов.'; hap('error'); return; } S.promo = true; closeSheet(); rerender(); hap('success'); };
 }
 function gearSheet(){
   const p = prof();
@@ -2162,7 +2169,7 @@ const UK = {
   'Есть промокод':'Є промокод', 'Не сейчас':'Не зараз', 'Перейти к прогнозу':'Перейти до прогнозу',
   'Оплата не прошла':'Оплата не пройшла', 'Деньги не списаны. Попробуй ещё раз.':'Гроші не списано. Спробуй ще раз.', 'Повторить':'Повторити', 'Написать в поддержку':'Написати в підтримку',
   'Месячная':'Місячна', 'Месяцы':'Місяці', 'Откроется после оплаты':'Відкриється після оплати', 'Этот месяц откроется после оплаты':'Цей місяць відкриється після оплати',
-  'Бесплатно открыта работа и деньги на январь и февраль.':'Безкоштовно відкрито роботу і гроші на січень і лютий.',
+  'Выбери формат доступа, и прогноз откроется сразу.':'Обери формат доступу, і прогноз відкриється одразу.', 'После покупки 12 месяцев':'Після покупки 12 місяців',
   'Прогноз на год':'Прогноз на рік', 'Главные повороты':'Головні повороти', '2027 года':'2027 року', ': общий и личный прогноз':': загальний і особистий прогноз',
   'Открыть год за 400 грн':'Відкрити рік за 400 грн', 'Открыть все 12 месяцев':'Відкрити всі 12 місяців', 'Открыть прогноз':'Відкрити прогноз',
   'Бесплатно: работа на 2 ближайших месяца':'Безкоштовно: робота на 2 найближчі місяці',
