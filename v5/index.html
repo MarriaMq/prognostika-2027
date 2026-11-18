@@ -1342,6 +1342,16 @@ img.wait:not(.ok){visibility:hidden}
 .obgs .bg{overflow:hidden;opacity:1}
 .obgs .bg img{will-change:transform}
 @media (max-height:700px){ .obgs .b1 img{top:-19%} }
+
+/* ===== v100: свои фоны на тарифах, имени и дате рождения. Синяя стена с дверью, синие лестницы, ночь с красным деревом.
+   Сверху и снизу лёгкое тёмное затемнение, чтобы читались заголовок и кнопка. Туман на этих экранах убран ===== */
+.screen.tariffs .rockbg,.screen.name .rockbg,.screen.dob .rockbg{left:0;right:0;top:0;bottom:0;height:auto;opacity:1;filter:none;-webkit-mask-image:none;mask-image:none;background-color:#223958;background-repeat:no-repeat}
+.screen.tariffs .rockbg{background-image:linear-gradient(180deg,rgba(3,6,12,.35) 0%,rgba(3,6,12,0) 24%,rgba(3,6,12,0) 66%,rgba(3,6,12,.6) 100%),url(assets/bg-tariffs.webp);background-size:cover,cover;background-position:center,82% 50%}
+.screen.name .rockbg{background-image:linear-gradient(180deg,rgba(3,6,12,.35) 0%,rgba(3,6,12,0) 26%,rgba(3,6,12,0) 64%,rgba(3,6,12,.55) 100%),url(assets/bg-name.webp);background-size:cover,cover;background-position:center,40% 50%}
+.screen.dob .rockbg{background-image:linear-gradient(180deg,rgba(3,6,12,.2) 0%,rgba(3,6,12,0) 22%,rgba(3,6,12,0) 64%,rgba(3,6,12,.55) 100%),url(assets/bg-dob.webp);background-size:cover,cover;background-position:center,58% 50%}
+.screen.tariffs .sfog,.screen.name .sfog,.screen.dob .sfog{display:none !important}
+.screen.dob .wheels{border-radius:22px;background:rgba(8,14,28,.5);-webkit-backdrop-filter:blur(12px);backdrop-filter:blur(12px);box-shadow:0 14px 34px rgba(0,0,0,.3)}
+.screen.dob .wlabs,.screen.dob .wlab{text-shadow:0 1px 8px rgba(0,0,0,.6)}
 </style>
 </head>
 <body>
@@ -1517,7 +1527,7 @@ function holdImgs(el){ el.querySelectorAll('img').forEach(im => { if (im.complet
   im.classList.add('wait'); const ok = () => im.classList.add('ok');
   im.addEventListener('load', () => (im.decode ? im.decode().catch(() => {}) : Promise.resolve()).then(ok), {once: true}); im.addEventListener('error', ok, {once: true}); }); }
 /* все фоны грузим заранее, пока идёт заставка */
-const PRELOAD = ['lang-arch', 'onb3', 'onb2', 'onb1', 'onb4', 'success-door', 'success-door-sea', 'veronika'];
+const PRELOAD = ['lang-arch', 'onb3', 'onb2', 'onb1', 'onb4', 'bg-name', 'bg-dob', 'bg-tariffs', 'success-door', 'success-door-sea', 'veronika'];
 function preloadAll(){ PRELOAD.forEach(n => { const im = new Image(); im.src = `assets/${n}.webp`; }); }
 const ROCKBG = '<div class="rockbg"></div><div class="ifogs sfog"><div class="fog fB"><div class="tile"></div></div><div class="fog fA"><div class="tile"></div></div><div class="fog fC"><div class="tile"></div></div></div>';
 const ROCK = ['onb','name','gender','dob','confirm','tariffs','profile','fail'];
