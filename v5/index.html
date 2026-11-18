@@ -1447,6 +1447,19 @@ html,body,#app{overscroll-behavior:none}
 .scroll{overscroll-behavior:none}
 /* баннер «Прогноз на год» — синяя стена с цветущим деревом и морем */
 .ybanner{background:linear-gradient(90deg,rgba(3,6,12,.8),rgba(3,6,12,.25)),url(assets/bg-tariffs.webp) 70% 62%/cover}
+
+/* ===== v107: «12 месяцев» — бежевое стекло (второй по силе); «Всё вместе» мягко дышит светом и по нему иногда проходит блик ===== */
+.plans .plan.p2,.plans .plan.p2.hot{background:linear-gradient(180deg,rgba(226,208,176,.26),rgba(226,208,176,.14));-webkit-backdrop-filter:blur(14px);backdrop-filter:blur(14px);border:1.5px solid rgba(226,208,176,.75);box-shadow:0 10px 24px rgba(0,0,0,.2)}
+.plans .plan.p2 .n,.plans .plan.p2 .p{color:var(--cream)}
+.plans .plan.p2 .s,.plans .plan.p2 .p small{color:rgba(244,233,214,.85)}
+.plans .plan.p2 .badge{background:var(--beige);border:0;color:#223958}
+.plans .plan.p1{position:relative;overflow:hidden;animation:allglow 3.2s ease-in-out infinite}
+@keyframes allglow{0%,100%{box-shadow:0 14px 34px rgba(0,0,0,.32),0 0 0 0 rgba(234,220,194,0),inset 0 0 0 1px rgba(255,255,255,.5)}
+  50%{box-shadow:0 14px 34px rgba(0,0,0,.32),0 0 26px 4px rgba(234,220,194,.45),inset 0 0 0 1px rgba(255,255,255,.7)}}
+.plans .plan.p1::after{content:"";position:absolute;top:0;bottom:0;left:-50%;width:34%;background:linear-gradient(100deg,transparent,rgba(255,255,255,.55),transparent);transform:skewX(-18deg);animation:allshine 5s ease-in-out 1.2s infinite;pointer-events:none}
+@keyframes allshine{0%{left:-50%}35%,100%{left:130%}}
+.plans .plan.p1:active{animation:none;transform:scale(.985)}
+@media (prefers-reduced-motion:reduce){ .plans .plan.p1,.plans .plan.p1::after{animation:none} }
 </style>
 </head>
 <body>
