@@ -1074,6 +1074,8 @@ body{background:var(--sea)}
 .plans .plan.off{opacity:.45;pointer-events:none;background:transparent;border:1px solid rgba(245,235,221,.4);box-shadow:none;color:#fff}
 .plans .plan.off .n{color:#fff}.plans .plan.off .s,.plans .plan.off .p,.plans .plan.off .p small{color:rgba(255,255,255,.85)}
 .plans .plan.off .p{text-decoration:line-through;text-decoration-thickness:1px}
+/* v76: карточки года без иконок; «Общий» — вид через арку на долину и солнце; «Личный» без изменений */
+.yc.w{background:linear-gradient(90deg,rgba(35,65,92,.82),rgba(35,65,92,.05) 75%),url(assets/lang-bg.webp) 50% 58%/140% auto}
 </style>
 </head>
 <body>
@@ -1617,8 +1619,8 @@ function yearView(p, top){
   const body = !k
     ? `<div class="yq">Что хочешь прочитать?</div>
        <div class="ycards">
-         <button class="yc w" onclick="setTopic('yW')">${I.bag}<span><span class="n">Общий прогноз</span><span class="d">Карьера, бизнес, финансы, самореализация</span></span></button>
-         <button class="yc l" onclick="setTopic('yL')">${I.heart}<span><span class="n">Личный прогноз</span><span class="d">Любовь, отношения, эмоции, брак, дети, семья</span></span></button>
+         <button class="yc w" onclick="setTopic('yW')"><span><span class="n">Общий прогноз</span><span class="d">Карьера, бизнес, финансы, самореализация</span></span></button>
+         <button class="yc l" onclick="setTopic('yL')"><span><span class="n">Личный прогноз</span><span class="d">Любовь, отношения, эмоции, брак, дети, семья</span></span></button>
        </div>`
     : `<div class="yseg">${['yW','yL'].map(x => `<button class="${x === k ? 'on' : ''}" onclick="setTopic('${x}')">${x === 'yW' ? 'Общий' : 'Личный'}</button>`).join('')}</div><div class="msheet">${YEAR_TEXT[k].map(foldBlock).join('')}</div>`;
   return `
