@@ -1061,6 +1061,10 @@ body{background:var(--sea)}
 .plan .lkn svg{width:13px;height:13px;flex-shrink:0}
 .sheet .btn.primary{box-shadow:inset 0 1px 0 rgba(255,255,255,.2)}
 .sh-body{padding-bottom:16px}
+/* v72: море на успехе шевелится, солнце ярче */
+.oksea{position:absolute;left:0;top:calc(656 / 1670 * 100%);width:calc(640 / 941 * 100%);height:calc(804 / 1670 * 100%);pointer-events:none}
+.okglow{width:42%;background:radial-gradient(closest-side,rgba(255,246,226,.75),rgba(255,214,170,.24) 45%,rgba(255,214,170,0))}
+.okgl{display:none}
 </style>
 </head>
 <body>
@@ -1508,7 +1512,7 @@ success: () => {
       : both ? 'Усі прогнози вже чекають на тебе.'
       : 'Усі 12 місяців уже чекають на тебе.',
     hint: 'Прогноз завжди буде в цьому боті. Він у тебе назавжди.',
-    b: both ? 'Обери прогноз' : L === 'year' ? 'Відкрити прогноз на рік' : 'Відкрити прогноз'
+    b: 'Перейти до прогнозу'
   } : {
     h: 'Оплата успешна', k: 'Доступ открыт',
     t: !p.self ? `Прогноз для ${esc(p.name)} уже ждёт. Найти его можно в профиле.`
@@ -1516,10 +1520,10 @@ success: () => {
       : both ? 'Все прогнозы уже ждут тебя.'
       : 'Все 12 месяцев уже ждут тебя.',
     hint: 'Прогноз всегда будет в этом боте. Он у тебя навсегда.',
-    b: both ? 'Выбери прогноз' : L === 'year' ? 'Открыть прогноз на год' : 'Открыть прогноз'
+    b: 'Перейти к прогнозу'
   };
   return `
-  <div class="okbg"><div class="okimg"><img src="assets/success-bg.webp" alt="" draggable="false"><i class="oksun"></i><i class="okglow"></i><span class="okgl"><b style="left:56%;top:42%;--d:0s"></b><b style="left:61%;top:44%;--d:1.4s"></b><b style="left:58%;top:46.5%;--d:2.6s"></b><b style="left:54%;top:44.5%;--d:0.7s"></b><b style="left:63%;top:43%;--d:2s"></b></span></div></div>
+  <div class="okbg"><div class="okimg"><img src="assets/success-bg.webp" alt="" draggable="false"><canvas class="oksea" aria-hidden="true"></canvas><i class="oksun"></i><i class="okglow"></i><span class="okgl"><b style="left:56%;top:42%;--d:0s"></b><b style="left:61%;top:44%;--d:1.4s"></b><b style="left:58%;top:46.5%;--d:2.6s"></b><b style="left:54%;top:44.5%;--d:0.7s"></b><b style="left:63%;top:43%;--d:2s"></b></span></div></div>
   <div class="okw">
     <h1>${T.h}</h1>
     <p class="okk">${T.k}</p>
@@ -1641,7 +1645,7 @@ const AFTER = {
       if (S.tab === 'm' && Math.abs(dx) > 60 && Math.abs(dx) > Math.abs(dy) * 1.5) setMonth(S.month + (dx < 0 ? 1 : -1));
     });
   },
-  success: () => { hap('success'); },
+  success: el => { hap('success'); seaWaves(el); },
 };
 
 /* Пролёт: три слоя фото (небо и море, скала с дверью, коза) приближаются с разной скоростью к двери */
@@ -2032,6 +2036,54 @@ function paySheet(plan){
     <button class="btn primary" onclick="paid('${plan}')">Оплатить ${sum} грн</button>`);
 }
 /* API: здесь программист вызывает monoPay и ждёт вебхук об успешной оплате. При ошибке: go('fail') */
+/* v72: море на экране успешной оплаты. Слой success-sea.webp (кусок фото с морем и прозрачностью)
+   рисуется полосками по 2px со сдвигом по синусу, ближе к зрителю волна сильнее.
+   Поверх мерцают блики солнечной дорожки. Без зависимостей, ~0.3 мс на кадр. */
+const SEA = {x:0, y:656, w:640, h:804, W:941, H:1670};
+let seaImg = null;
+function seaWaves(el){
+  const cv = el.querySelector('.oksea'); if (!cv) return;
+  if (matchMedia('(prefers-reduced-motion: reduce)').matches) return;
+  const start = () => {
+    const ctx = cv.getContext('2d'), dpr = Math.min(devicePixelRatio || 1, 2);
+    const fit = () => { const r = cv.getBoundingClientRect(); cv.width = Math.round(r.width * dpr); cv.height = Math.round(r.height * dpr); };
+    fit();
+    /* блики: самые светлые точки воды на солнечной дорожке */
+    const t0 = document.createElement('canvas'); t0.width = SEA.w; t0.height = SEA.h;
+    const tc = t0.getContext('2d'); tc.drawImage(seaImg, 0, 0);
+    const px = tc.getImageData(0, 0, SEA.w, SEA.h).data, sp = [];
+    for (let y = 4; y < 300; y += 3) for (let x = 150; x < 470; x += 3){
+      const i = (y * SEA.w + x) * 4; if (px[i + 3] > 200 && px[i] + px[i + 1] > 400 && px[i] > px[i + 2] + 20 && Math.random() < .55) sp.push([x, y, Math.random() * 6.28, 1.4 + Math.random() * 2.2]);
+    }
+    const t1 = performance.now();
+    const frame = now => {
+      if (!cv.isConnected) return;
+      if (cv.width < 2) fit();
+      const t = (now - t1) / 1000, k = cv.width / SEA.w, Wc = cv.width, Hc = cv.height;
+      const fade = Math.min(1, t / 1.6);
+      ctx.globalCompositeOperation = 'source-over'; ctx.globalAlpha = 1; ctx.clearRect(0, 0, Wc, Hc);
+      for (let y = 0; y < SEA.h; y += 2){
+        const d = y / SEA.h, amp = (1.4 + 5 * d) * fade;
+        const dx = Math.sin(y * .11 - t * 1.7 + Math.sin(y * .021 + t * .6) * 2.2) * amp;
+        ctx.drawImage(seaImg, 0, y, SEA.w, 2, dx * k, y * k, Wc, 2 * k + .6);
+      }
+      ctx.globalCompositeOperation = 'destination-in'; ctx.drawImage(seaImg, 0, 0, Wc, Hc);
+      ctx.globalCompositeOperation = 'lighter';
+      for (const [x, y, ph, f] of sp){
+        const a = Math.pow(Math.max(0, Math.sin(t * f + ph)), 6) * fade;
+        if (a < .04) continue;
+        const r = (1.2 + (y / 300) * 1.8) * k * 1.3;
+        const g = ctx.createRadialGradient(x * k, y * k, 0, x * k, y * k, r * 2.4);
+        g.addColorStop(0, `rgba(255,246,222,${a})`); g.addColorStop(1, 'rgba(255,220,170,0)');
+        ctx.fillStyle = g; ctx.fillRect(x * k - r * 2.4, y * k - r * 2.4, r * 4.8, r * 4.8);
+      }
+      requestAnimationFrame(frame);
+    };
+    requestAnimationFrame(frame);
+  };
+  if (seaImg && seaImg.complete) start();
+  else { seaImg = new Image(); seaImg.onload = start; seaImg.src = 'assets/success-sea.webp'; }
+}
 function paid(plan){
   const p = S.profiles[S.forIdx];
   p.access = plan === 'months' && !S.promo ? 'months' : 'all';
