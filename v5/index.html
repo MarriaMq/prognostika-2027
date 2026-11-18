@@ -9,8 +9,6 @@
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:ital,wght@0,300;0,400;0,500;0,600;1,400;1,500&family=Inter:wght@300;400;500&display=swap" rel="stylesheet">
 <link rel="preload" as="image" href="assets/intro-goat.webp"><link rel="preload" as="image" href="assets/lang-arch.webp">
-<link rel="preload" as="image" href="assets/sky-bg.webp">
-<link rel="preload" as="image" href="assets/month-bg.webp">
 <script src="https://telegram.org/js/telegram-web-app.js"></script>
 <style>
 /* Прогностика 2027, v3: атмосферная тёмная тема.
@@ -1266,6 +1264,10 @@ body,#app{background:var(--nv)}
 .onb .author .d{color:rgba(244,233,214,.72)}
 .onb .stat{margin-top:12px;font:italic 400 17px/1.35 var(--f-serif);color:var(--beige);text-shadow:none}
 @media (max-height:760px){ .onb .slide[data-k="2"] .otx p{font-size:14px;line-height:1.45;margin-top:10px} .onb .author{margin-top:12px;padding-top:12px} .onb .author .av.ph{width:44px;height:44px} .onb .stat{font-size:15px;margin-top:8px} }
+
+/* v94: недогруженное фото не показываем */
+img.wait{transition:opacity .5s ease}
+img.wait:not(.ok){visibility:hidden}
 </style>
 </head>
 <body>
@@ -1429,11 +1431,20 @@ function go(name, push = true, how = ''){
   setTimeout(() => old.forEach(o => o.remove()), how === 'fade' || how === 'portal' || how === 'under' || how === 'soft' ? 1400 : 320);
   if (ROCK.includes(name)) skyFog(el);
   (AFTER[name] || (() => {}))(el);
+  holdImgs(el);
   stagger(el);
   initRead(el);
   syncTgBack();
   tgHeader(name);
 }
+/* v94: картинка показывается только целиком. Пока фото догружается (медленная сеть), его не видно,
+   а не половина картинки на синем фоне; как только загрузилось — плавно появляется */
+function holdImgs(el){ el.querySelectorAll('img').forEach(im => { if (im.complete && im.naturalWidth) return;
+  im.classList.add('wait'); const ok = () => im.classList.add('ok');
+  im.addEventListener('load', () => (im.decode ? im.decode().catch(() => {}) : Promise.resolve()).then(ok), {once: true}); im.addEventListener('error', ok, {once: true}); }); }
+/* все фоны грузим заранее, пока идёт заставка */
+const PRELOAD = ['lang-arch', 'onb3', 'onb2', 'onb1', 'onb4', 'success-door', 'success-door-sea', 'veronika'];
+function preloadAll(){ PRELOAD.forEach(n => { const im = new Image(); im.src = `assets/${n}.webp`; }); }
 const ROCKBG = '<div class="rockbg"></div><div class="ifogs sfog"><div class="fog fB"><div class="tile"></div></div><div class="fog fA"><div class="tile"></div></div><div class="fog fC"><div class="tile"></div></div></div>';
 const ROCK = ['onb','name','gender','dob','confirm','tariffs','profile','fail'];
 const cur = () => app.querySelector('.screen:last-of-type');
@@ -1516,7 +1527,7 @@ const MIMG = k => `assets/m/${pad(k + 1)}.webp`;
 const carCard = (p, k) => { const [s] = monthRange(p, k), open = canSee(p, k);
   return `<div class="cc${open ? '' : ' lk'}" data-k="${k}"><div class="ci" style="background-image:url(${MIMG(k)})"></div>
     <span class="cm">${MONTHS[k]}</span><span class="cd">с ${fmt(s)}</span>${open ? '' : `<span class="clk">${I.lock}</span>`}</div>`; };
-MONTHS.forEach((_, k) => { const im = new Image(); im.src = MIMG(k); }); /* грузим заранее, чтобы карты не мигали */
+/* v94: картинки старой карусели месяцев больше не грузим — они не используются, а на мобильной сети мешали фонам */ /* грузим заранее, чтобы карты не мигали */
 
 /* Кольцо месяцев (SVG 1000×1000, центр в солнце).
    Каждая карта: внешний слой — форма-трапеция, повёрнутая на свой угол (clipPath);
@@ -1957,8 +1968,10 @@ function introInit(el){
   const QP = new URLSearchParams(location.search).get('p'); /* для скриншотов: ?demo=intro&hold&p=0.6 */
   if (QP != null){ p = +QP; el.classList.add('fly'); }
   const dec = im => im.decode ? im.decode().catch(() => {}) : new Promise(r => { im.onload = im.onerror = r; });
-  dec(goat).then(() => { layout(); setTimeout(() => el.classList.add('push'), 30);
-    if (!new URLSearchParams(location.search).has('hold')) setTimeout(fly, START); });
+  /* v94: летим только когда готовы обе картинки: коза и экран языка (не дольше 6 с ожидания) */
+  const both = Promise.all([dec(goat), Promise.race([dec(view), new Promise(r => setTimeout(r, 6000))])]);
+  dec(goat).then(() => { layout(); setTimeout(() => el.classList.add('push'), 30); preloadAll(); });
+  both.then(() => { if (!new URLSearchParams(location.search).has('hold')) setTimeout(fly, START); });
   dec(view).then(() => { const k = document.createElement('canvas').getContext('2d'); k.drawImage(view, 0, 0, 2, 2); k.drawImage(goat, 0, 0, 2, 2); draw(); }); /* заранее готовим картинку, чтобы на середине полёта не было паузы */
 }
 
