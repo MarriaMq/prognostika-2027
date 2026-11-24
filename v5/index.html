@@ -1491,6 +1491,24 @@ html,body,#app{overscroll-behavior:none}
 .yper button.on{background:var(--creamc);color:var(--ink-nv);border-color:transparent}
 .yper button.on .y{font-style:italic}
 .yper button.on .d{opacity:.8}
+
+/* v112: шапка года — периоды без дат, даты строкой ниже; «Твой год» не крупнее шапки */
+.night .ytl{font-size:28px}
+.mttl.y{font-size:30px !important}
+.ystep .ytl{font-size:34px !important}
+.night .ydt{margin-top:10px;max-width:none;white-space:nowrap;font-size:13.5px;letter-spacing:0}
+.night .ypill{position:relative;z-index:2;display:flex;width:100%;max-width:280px;margin:14px auto 0;padding:3px;border-radius:20px;background:rgba(244,233,214,.08);border:var(--line)}
+.ypill button{flex:1;height:34px;border-radius:17px;font:400 18px/1 var(--f-serif);color:rgba(244,233,214,.8);transition:background .3s,color .3s}
+.ypill button.on{background:var(--creamc);color:var(--ink-nv);font-style:italic}
+.night .ystep{position:relative;z-index:2;display:flex;align-items:center;justify-content:center;gap:14px;margin-top:16px}
+.ystep .ytl{margin:0 !important;font-size:38px;white-space:nowrap}
+.ystep .ico{width:40px;height:40px;border-radius:50%;border:1px solid rgba(244,233,214,.3);color:var(--creamc);display:grid;place-items:center;transition:opacity .3s}
+.ystep .ico svg{width:18px;height:18px}
+.ystep .ico:disabled{opacity:.25}
+.night .ytabs{position:relative;z-index:2;display:flex;justify-content:center;gap:26px;margin-top:18px}
+.ytabs button{position:relative;padding:4px 0 10px;font:400 26px/1 var(--f-serif);color:rgba(244,233,214,.45);transition:color .3s}
+.ytabs button.on{color:#fff}
+.ytabs button.on::after{content:"";position:absolute;left:0;right:0;bottom:0;height:1px;background:var(--creamc)}
 </style>
 </head>
 <body>
@@ -2048,7 +2066,7 @@ success: () => {
 main: () => {
   const p = prof(), yOpen = p.access === 'all', tab = yOpen ? S.tab : 'm';
   const brand = p.self ? (tab === 'y' ? 'Прогностика <em>2027</em>' : 'Прогностика<br>на каждый месяц <em>2027</em>') : `Прогноз: ${esc(p.name)}`;
-  const top = `${dust(18, 'stars')}<div class="top mtop"><span class="tsp"></span><h1 class="mttl">${brand}</h1><button class="prof ico" onclick="go('profile')" aria-label="Профиль">${I.user}</button></div>
+  const top = `${dust(18, 'stars')}<div class="top mtop"><span class="tsp"></span><h1 class="mttl${tab === 'y' ? ' y' : ''}">${brand}</h1><button class="prof ico" onclick="go('profile')" aria-label="Профиль">${I.user}</button></div>
     ${yOpen ? `<div class="mtabs" role="tablist"><button role="tab" class="${tab === 'm' ? 'on' : ''}" onclick="setTab('m')">Месяцы</button><button role="tab" class="${tab === 'y' ? 'on' : ''}" onclick="setTab('y')">Год</button></div>` : ''}`;
   if (tab === 'y') return yearView(p, top);
   if (S.month == null) S.month = 0;
@@ -2116,13 +2134,28 @@ function yearView(p, top){
     : `<div class="yseg">${['yW','yL'].map(x => `<button class="${x === k ? 'on' : ''}" onclick="setTopic('${x}')">${x === 'yW' ? 'Общий' : 'Личный'}</button>`).join('')}</div><div class="msheet">${TXT[k].map(foldBlock).join('')}</div>`;
   return `
   <div class="night">${top}
-    <h1 class="ytl">${p.self ? 'Твой год' : `Год ${esc(p.name)}`}</h1>
-    ${P.length > 1
-      ? `<div class="yper">${P.map((x, i) => `<button class="${i === S.yper ? 'on' : ''}" onclick="setPer(${i})"><span class="y">${x.s.getFullYear()} – ${x.e.getFullYear()}</span><span class="d">${fmtS(x.s)} – ${fmtS(x.e)}</span></button>`).join('')}</div>`
-      : `<p class="hph">Действует с ${fmt(per.s, true)} по ${fmt(per.e, true)}</p>`}
+    ${yHead(p, P, per)}
   </div>
   <div class="scroll"><div class="content">${body}</div></div>
   <div class="mcta"></div>`;
+}
+
+/* v112: шапка года. Кнопки периодов без дат, даты отдельной строкой ниже.
+   Три варианта для выбора: ?yv=a (по умолчанию) — «Твой год» + таблетки; b — сам период заголовком со стрелками; c — периоды текстовыми вкладками */
+const YV = new URLSearchParams(location.search).get('yv') || 'a';
+const yLbl = x => `${x.s.getFullYear()} – ${x.e.getFullYear()}`;
+function yHead(p, P, per){
+  const dates = `<p class="hph ydt">Прогноз действует с ${fmt(per.s, true)} по ${fmt(per.e, true)}</p>`;
+  const ttl = `<h1 class="ytl">${p.self ? 'Твой год' : `Год ${esc(p.name)}`}</h1>`;
+  if (P.length < 2) return ttl + dates;
+  const i = S.yper;
+  if (YV === 'b' && p.self) return `<div class="ystep">
+      <button class="ico" ${i === 0 ? 'disabled' : ''} onclick="setPer(0)" aria-label="Предыдущий период">${I.back}</button>
+      <h1 class="ytl">${yLbl(per)}</h1>
+      <button class="ico" ${i === P.length - 1 ? 'disabled' : ''} onclick="setPer(${P.length - 1})" aria-label="Следующий период">${I.right}</button>
+    </div>${dates}`;
+  if (YV === 'c' && p.self) return `<div class="ytabs">${P.map((x, k) => `<button class="${k === i ? 'on' : ''}" onclick="setPer(${k})">${yLbl(x)}</button>`).join('')}</div>${dates}`;
+  return `${ttl}<div class="ypill">${P.map((x, k) => `<button class="${k === i ? 'on' : ''}" onclick="setPer(${k})">${yLbl(x)}</button>`).join('')}</div>${dates}`;
 }
 
 function dobHint(){
@@ -2805,6 +2838,7 @@ const UK_RX = [
   [/^Твой прогноз действует с (\S+) по (\S+)$/, 'Твій прогноз діє з $1 по $2'],
   [/^Прогноз действует с (\S+) по (\S+)$/, 'Прогноз діє з $1 по $2'],
   [/^Действует с (\S+) по (\S+)$/, 'Діє з $1 по $2'],
+  [/^Прогноз действует с (\S+) по (\S+)$/, 'Прогноз діє з $1 по $2'],
   [/^с (\S+) по (\S+)$/, 'з $1 по $2'],
   [/^с (\S+)$/, 'з $1'],
   [/^Дальше: (.+)$/, 'Далі: $1'],
