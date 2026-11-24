@@ -1513,10 +1513,6 @@ html,body,#app{overscroll-behavior:none}
 /* v116: строка с именем автора над шапкой */
 .auth{position:relative;z-index:3;display:flex;align-items:center;justify-content:center;gap:7px;margin:6px 0 6px;color:rgba(226,208,176,.72);white-space:nowrap}
 .auth.a{font:500 10px/1 var(--f-text);letter-spacing:.34em;text-transform:uppercase;padding-left:.34em}
-.auth.b{font:400 13px/1 var(--f-text);letter-spacing:.01em;color:rgba(244,233,214,.6)}
-.auth.b em{font:italic 400 16px/1 var(--f-serif);color:#E2D0B0;margin-left:4px}
-.auth.c{font:400 12.5px/1 var(--f-text);color:rgba(244,233,214,.72)}
-.auth.c .av{width:22px;height:22px;border-radius:50%;background:url(assets/veronika.webp) center/cover;box-shadow:0 0 0 1px rgba(226,208,176,.6)}
 </style>
 </head>
 <body>
@@ -2562,13 +2558,8 @@ function pinCheck(sc){
 }
 document.addEventListener('scroll', e => { const t = e.target; if (t && t.classList && t.classList.contains('scroll')) pinCheck(t); }, true);
 
-/* v116: имя автора самой верхней строкой на главном экране (месяцы и год). Варианты: ?au=a (по умолчанию) | b | c */
-const AU = new URLSearchParams(location.search).get('au') || 'a';
-function authLine(){
-  if (AU === 'b') return `<div class="auth b">Авторская прогностика <em>Вероники Леончиковой</em></div>`;
-  if (AU === 'c') return `<div class="auth c"><span class="av"></span><span>Вероника Леончикова · нумеролог</span></div>`;
-  return `<div class="auth a">Вероника Леончикова</div>`;
-}
+/* v116–v117: имя автора самой верхней строкой на главном экране (месяцы и год), капсом и разреженно */
+const authLine = () => `<div class="auth a">Вероника Леончикова</div>`;
 
 function setMonth(k, fromFan){
   if (k < 0 || k > 11 || k === S.month) return;
@@ -2782,7 +2773,6 @@ const YEAR_TEXT_UK = {
   ]};
 
 const UK = {
-  'Авторская прогностика':'Авторська прогностика', 'Вероники Леончиковой':'Вероніки Леончікової', 'Вероника Леончикова · нумеролог':'Вероніка Леончікова · нумеролог',
   'каждого месяца?':'кожного місяця?', 'Работа и финансы':'Робота та фінанси',
   'Что тебя ждёт, на чём сосредоточиться и к чему подготовиться.':'Що на тебе чекає, на чому зосередитися та до чого підготуватися.',
   'Твой год. Твой сценарий.':'Твій рік. Твій шлях.', 'Твой путь.':'Твої можливості.',
