@@ -1633,7 +1633,7 @@ const dobLong = p => `${p.d} ${MGEN[p.m]} ${p.y}`;
 function monthRange(p, i){
   const s = new Date(2027, i, Math.min(p.d, dim(2027, i)));
   const ny = i === 11 ? 2028 : 2027, nm = (i+1) % 12;
-  const e = new Date(ny, nm, Math.min(p.d, dim(ny, nm))); e.setDate(e.getDate() - 1);
+  const e = new Date(ny, nm, Math.min(p.d, dim(ny, nm))); /* v114: конец = следующий день рождения месяца (25.01 – 25.02), так понятнее */
   return [s, e];
 }
 /* v111: годовой прогноз на ПРЕДЫДУЩИЙ личный год (день рождения 2026 → день рождения 2027).
@@ -1697,7 +1697,7 @@ const YEAR_PREV_UK = {
    ДР 2026 → ДР 2027 и ДР 2027 → ДР 2028. У родившихся 1 января период один. */
 function yPeriods(p){
   const st = y => new Date(y, p.m, Math.min(p.d, dim(y, p.m)));
-  const en = y => { const d = st(y); d.setDate(d.getDate() - 1); return d; };
+  const en = y => st(y); /* v114: конец = день рождения (25.08.26 – 25.08.27) */
   if (p.m === 0 && p.d === 1) return [{s: st(2027), e: en(2028), prev: false}];
   return [{s: st(2026), e: en(2027), prev: true}, {s: st(2027), e: en(2028), prev: false}];
 }
@@ -2137,7 +2137,7 @@ function yearView(p, top){
    У родившихся 1 января период один: «Твой год» и даты, без стрелок. */
 const yLbl = x => `${x.s.getFullYear()} – ${x.e.getFullYear()}`;
 function yHead(p, P, per){
-  const dates = `<p class="hph ydt">Прогноз действует с ${fmt(per.s, true)} по ${fmt(per.e, true)}</p>`;
+  const dates = `<p class="hph ydt">Прогноз действует с ${fmtS(per.s)} по ${fmtS(per.e)}</p>`;
   if (P.length < 2) return `<h1 class="ytl">${p.self ? 'Твой год' : `Год ${esc(p.name)}`}</h1>${dates}`;
   const i = S.yper;
   return `<div class="ystep">
