@@ -1513,6 +1513,12 @@ html,body,#app{overscroll-behavior:none}
 /* v116: строка с именем автора над шапкой */
 .auth{position:relative;z-index:3;display:flex;align-items:center;justify-content:center;gap:7px;margin:6px 0 6px;color:rgba(226,208,176,.72);white-space:nowrap}
 .auth.a{font:500 10px/1 var(--f-text);letter-spacing:.34em;text-transform:uppercase;padding-left:.34em}
+
+/* v118: купленные прогнозы в профиле — нажимаемые строки со стрелкой */
+.item.go{width:100%;text-align:left;cursor:pointer}
+.item.go .gor{display:inline-flex;align-items:center;gap:6px;flex-shrink:0}
+.item.go .gor svg{width:16px;height:16px;color:rgba(226,208,176,.6)}
+.item.go:active{background:rgba(244,233,214,.06)}
 </style>
 </head>
 <body>
@@ -2111,8 +2117,8 @@ profile: () => {
       <div><div class="nm">${esc(me.name)}</div><div class="sub">${dobLong(me)}<br>${me.gender === 'f' ? 'Женщина' : 'Мужчина'}</div></div>
     </div>
     <div class="group"><span class="eyebrow">Мои прогнозы</span><div class="list">
-      <div class="item"><span>Твои 12 месяцев 2027</span>${me.access === 'none' ? payNow("paySheet('months')") : ok}</div>
-      <div class="item"><span>Годовая прогностика</span>${me.access === 'all' ? ok : payNow(me.access === 'months' ? "paySheet('year')" : 'yearLockSheet()')}</div>
+      ${me.access === 'none' ? `<div class="item"><span>Твои 12 месяцев 2027</span>${payNow("paySheet('months')")}</div>` : `<button class="item go" onclick="openMine('m')"><span>Твои 12 месяцев 2027</span><span class="gor">${ok}${I.right}</span></button>`}
+      ${me.access === 'all' ? `<button class="item go" onclick="openMine('y')"><span>Годовая прогностика</span><span class="gor">${ok}${I.right}</span></button>` : `<div class="item"><span>Годовая прогностика</span>${payNow(me.access === 'months' ? "paySheet('year')" : 'yearLockSheet()')}</div>`}
     </div></div>
     ${others.length ? `<div class="group"><span class="eyebrow">Чей прогноз смотреть</span><div class="list">
       <button class="item" onclick="switchTo(0)"><span class="who"><span class="dot ${S.active === 0 ? 'on' : ''}">${S.active === 0 ? I.check : ''}</span>Мой прогноз</span></button>
@@ -2560,6 +2566,9 @@ document.addEventListener('scroll', e => { const t = e.target; if (t && t.classL
 
 /* v116–v117: имя автора самой верхней строкой на главном экране (месяцы и год), капсом и разреженно */
 const authLine = () => `<div class="auth a">Вероника Леончикова</div>`;
+
+/* v118: в профиле купленный прогноз открывается по нажатию: месяцы → вкладка «Месяцы», годовая → вкладка «Год» */
+function openMine(tab){ hap('select'); S.forIdx = 0; toMainNow(tab, 'fade'); }
 
 function setMonth(k, fromFan){
   if (k < 0 || k > 11 || k === S.month) return;
