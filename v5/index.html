@@ -1502,6 +1502,13 @@ html,body,#app{overscroll-behavior:none}
 .ystep .ico{width:40px;height:40px;border-radius:50%;border:1px solid rgba(244,233,214,.3);color:var(--creamc);display:grid;place-items:center;transition:opacity .3s}
 .ystep .ico svg{width:18px;height:18px}
 .ystep .ico:disabled{opacity:.25}
+
+/* v115: закреплённая плашка месяца при прокрутке */
+.mpinw{position:relative;height:0;z-index:6;flex-shrink:0}
+.mpin{position:absolute;left:0;right:0;top:0;height:40px;display:flex;align-items:center;justify-content:center;gap:10px;padding:0 16px;background:rgba(28,48,76,.94);-webkit-backdrop-filter:blur(14px);backdrop-filter:blur(14px);border-bottom:1px solid rgba(226,208,176,.22);box-shadow:0 8px 20px rgba(8,16,30,.25);opacity:0;transform:translateY(-8px);pointer-events:none;transition:opacity .25s,transform .25s}
+.mpin.on{opacity:1;transform:none}
+.mpin .t{font:italic 400 19px/1 var(--f-serif);color:#E2D0B0}
+.mpin .d{font:400 13px/1 var(--f-text);color:rgba(244,233,214,.7);letter-spacing:.02em}
 </style>
 </head>
 <body>
@@ -2077,6 +2084,7 @@ main: () => {
   return `
   <div class="night">${top}
   </div>
+  <div class="mpinw" aria-hidden="true"><div class="mpin"><span class="t">${MONTHS[i]} 2027</span><span class="d">${fmt(s)} – ${fmt(e)}</span></div></div>
   <div class="scroll">${tab === 'm' ? `<div class="mgrid" role="tablist" aria-label="Месяц">${MONTHS.map((m, k) => `<button role="tab" data-k="${k}" style="--k:${k}" class="${k === i ? 'on' : ''}${canSee(p, k) ? '' : ' lk'}" onclick="setMonth(${k})"><span class="mn">${pad(k + 1)}</span><span class="mm">${m}</span>${canSee(p, k) ? '' : I.lock}</button>`).join('')}</div>` : ''}<div class="content">${body}</div></div>
   <div class="mcta">${cta}</div>`;
 },
@@ -2537,16 +2545,25 @@ function swapContent(dir = 1){
   if (c) c.animate([{opacity:0, transform:`translateX(${dir * 60}px)`}, {opacity:1, transform:'none'}], {duration:620, easing:sp});
 }
 /* Смена месяца: веер остаётся на месте, меняются фраза, текст и кнопка внизу */
+/* v115: тонкая закреплённая плашка месяца. Появляется, когда крупное название месяца ушло вверх,
+   чтобы на любом скриншоте было видно, к какому месяцу и датам относится текст */
+function pinCheck(sc){
+  const scr = sc.closest('.screen'), pin = scr && scr.querySelector('.mpin'), h = scr && scr.querySelector('.mhero');
+  if (!pin || !h) return;
+  pin.classList.toggle('on', h.getBoundingClientRect().bottom < sc.getBoundingClientRect().top + 6);
+}
+document.addEventListener('scroll', e => { const t = e.target; if (t && t.classList && t.classList.contains('scroll')) pinCheck(t); }, true);
+
 function setMonth(k, fromFan){
   if (k < 0 || k > 11 || k === S.month) return;
   const dir = k > S.month ? 1 : -1, el = cur();
   S.month = k;
   const tmp = document.createElement('div'); tmp.innerHTML = SCREENS.main();
-  ['.hph', '.content', '.mcta'].forEach(s => { const a = el.querySelector(s), b = tmp.querySelector(s); if (a && b) a.replaceWith(b); });
+  ['.hph', '.content', '.mcta', '.mpinw'].forEach(s => { const a = el.querySelector(s), b = tmp.querySelector(s); if (a && b) a.replaceWith(b); });
   if (!fromFan && el._carTo) el._carTo(k); else { const car = el.querySelector('.car'); if (car) fanLayout(car, k); }
   el.querySelectorAll('.mgrid button').forEach(b => b.classList.toggle('on', +b.dataset.k === k)); /* v5: сетка месяцев */
   swapContent(dir); hap('select');
-  setTimeout(() => initRead(el), 0);
+  setTimeout(() => { initRead(el); const sc = el.querySelector('.scroll'); if (sc) pinCheck(sc); }, 0);
 }
 /* лента месяцев: выбранный месяц выезжает ближе к середине */
 /* v65: выбранный месяц подсвечивает одна плашка, она плавно переезжает к новому месяцу. Внутри неё тонкая линия: сколько месяца уже прочитано */
