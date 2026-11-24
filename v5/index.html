@@ -1472,6 +1472,16 @@ html,body,#app{overscroll-behavior:none}
 .onb .slide[data-k="0"] .otx p + p{margin-top:8px}
 .obgs .b5 img{top:-16%;height:116%}
 @media (max-height:760px){ .onb .slide[data-k="0"] .otx h2{font-size:27px} .onb .slide[data-k="0"] .otx p{font-size:14px} .obgs .b5 img{top:-33%;height:133%} }
+
+/* v110: новые тексты слайдов 2–4 */
+.onb .slide[data-k="2"] .otx h2,.onb .slide[data-k="3"] .otx h2{font-size:clamp(30px,8.6vw,34px);line-height:1.08}
+.onb .slide[data-k="2"] .otx p{font-size:15px;line-height:1.45}
+.onb .otx .lead{font-size:15px;line-height:1.45;margin-top:12px}
+.onb .otx .olist{list-style:none;margin:10px 0 0;padding:0;display:grid;gap:8px}
+.onb .otx .olist li{position:relative;padding-left:18px;font-size:15px;line-height:1.45;color:rgba(255,255,255,.86);text-shadow:0 1px 14px rgba(0,0,0,.5)}
+.onb .otx .olist li::before{content:"";position:absolute;left:2px;top:.62em;width:6px;height:6px;border-radius:50%;background:#E2D0B0}
+.onb .otx .once{margin-top:12px;font:italic 500 17px/1.3 var(--f-serif);color:#E2D0B0}
+@media (max-height:760px){ .onb .slide[data-k="2"] .otx h2,.onb .slide[data-k="3"] .otx h2{font-size:27px} .onb .otx .lead,.onb .otx .olist li,.onb .slide[data-k="2"] .otx p{font-size:14px} .onb .otx .olist{gap:5px} .onb .otx .once{margin-top:8px;font-size:15px} }
 </style>
 </head>
 <body>
@@ -1803,21 +1813,23 @@ onb: () => {
     </div>
     <div class="slide" data-k="1">
       <div class="ill"></div>
-      <div class="otx"><h2>Что внутри <em>каждого месяца</em></h2>
-        <div class="chips"><span>Работа и деньги</span><span>Отношения</span><span>Здоровье</span><span>Баланс</span><span>Сложные периоды</span></div>
-        <p class="fine">Без прикрас: и возможности, и риски. Чтобы знать, где подстелить себе соломку.</p></div>
+      <div class="otx"><h2>Что внутри <em>каждого месяца?</em></h2>
+        <div class="chips"><span>Работа и финансы</span><span>Отношения</span><span>Здоровье</span><span>Сложные периоды</span></div>
+        <p class="fine">Что тебя ждёт, на чём сосредоточиться и к чему подготовиться.</p></div>
     </div>
     <div class="slide" data-k="2">
       <div class="ill"></div>
-      <div class="otx"><h2>Твой год <em>как один маршрут</em></h2>
-        <p>Каждый месяц продолжает предыдущий. Читай по порядку, и год сложится в одну картину. Нужны только имя и дата рождения.</p>
-        <div class="vcard"><div class="author"><span class="av ph"></span><span><span class="t">Вероника Леончикова-Штепа</span><span class="d">Автор прогностики, нумеролог, 10 лет практики</span></span></div>
-        <div class="stat">Больше 2000 человек прочитали свой прогноз на 2026 год</div></div></div>
+      <div class="otx"><h2>Твой год. Твой сценарий. <em>Твой путь.</em></h2>
+        <p>Прогностика составляется индивидуально по твоей дате рождения и раскрывает особенности каждого периода 2027 года.</p>
+        <div class="vcard"><div class="author"><span class="av ph"></span><span><span class="t">Вероника Леончикова</span><span class="d">Автор прогностики, нумеролог.</span></span></div>
+        <div class="stat">Более 5000 человек уже воспользовались моей прогностикой на 2026 год.</div></div></div>
     </div>
     <div class="slide" data-k="3">
       <div class="ill"></div>
-      <div class="otx"><h2>Прогноз остаётся <em>с тобой навсегда</em></h2>
-        <p>Платишь один раз, без подписки и списаний. Открывай любой месяц, когда захочешь, и перечитывай перед важными решениями.</p></div>
+      <div class="otx"><h2>Больше, чем <em>просто прогноз</em></h2>
+        <p class="lead">Твоя персональная стратегия на 2027 год:</p>
+        <ul class="olist"><li>12 подробных расшифровок на каждый месяц и общий соляр на год.</li><li>Возможные события, эмоциональные состояния, внутренние процессы и рекомендации на каждый период.</li></ul>
+        <p class="once">Разовая оплата.</p></div>
     </div>
   </div></div>
   <div class="bottom">
@@ -1958,7 +1970,7 @@ success: () => {
 
 main: () => {
   const p = prof(), yOpen = p.access === 'all', tab = yOpen ? S.tab : 'm';
-  const brand = p.self ? (tab === 'y' ? 'Прогностика <em>2027</em>' : 'Месячная<br>прогностика <em>2027</em>') : `Прогноз: ${esc(p.name)}`;
+  const brand = p.self ? (tab === 'y' ? 'Прогностика <em>2027</em>' : 'Прогностика<br>на каждый месяц <em>2027</em>') : `Прогноз: ${esc(p.name)}`;
   const top = `${dust(18, 'stars')}<div class="top mtop"><span class="tsp"></span><h1 class="mttl">${brand}</h1><button class="prof ico" onclick="go('profile')" aria-label="Профиль">${I.user}</button></div>
     ${yOpen ? `<div class="mtabs" role="tablist"><button role="tab" class="${tab === 'm' ? 'on' : ''}" onclick="setTab('m')">Месяцы</button><button role="tab" class="${tab === 'y' ? 'on' : ''}" onclick="setTab('y')">Год</button></div>` : ''}`;
   if (tab === 'y') return yearView(p, top);
@@ -2636,6 +2648,16 @@ const YEAR_TEXT_UK = {
   ]};
 
 const UK = {
+  'каждого месяца?':'кожного місяця?', 'Работа и финансы':'Робота та фінанси',
+  'Что тебя ждёт, на чём сосредоточиться и к чему подготовиться.':'Що на тебе чекає, на чому зосередитися та до чого підготуватися.',
+  'Твой год. Твой сценарий.':'Твій рік. Твій шлях.', 'Твой путь.':'Твої можливості.',
+  'Прогностика составляется индивидуально по твоей дате рождения и раскрывает особенности каждого периода 2027 года.':'Прогностика складається індивідуально за твоєю датою народження та розкриває особливості кожного періоду 2027 року.',
+  'Вероника Леончикова':'Вероніка Леончікова', 'Автор прогностики, нумеролог.':'Авторка прогностики, нумеролог.',
+  'Более 5000 человек уже воспользовались моей прогностикой на 2026 год.':'Понад 5000 людей вже скористалися моєю прогностикою на 2026 рік.',
+  'Больше, чем':'Більше, ніж', 'просто прогноз':'просто прогноз', 'Твоя персональная стратегия на 2027 год:':'Твоя персональна стратегія на 2027 рік:',
+  '12 подробных расшифровок на каждый месяц и общий соляр на год.':'12 детальних щомісячних розшифровок та загальний соляр на рік.',
+  'Возможные события, эмоциональные состояния, внутренние процессы и рекомендации на каждый период.':'Можливі події, емоційні стани, внутрішні процеси та рекомендації на кожен період.',
+  'Разовая оплата.':'Одноразова оплата.', 'на каждый месяц':'на кожен місяць',
   'Свернуть':'Згорнути', 'Читать далее':'Читати далі', 'Закрыть':'Закрити', 'Профиль':'Профіль', 'Язык':'Мова', 'Месяц':'Місяць',
   'Белая коза на красной скале у моря':'Біла коза на червоній скелі біля моря', 'Год впереди':'Рік попереду',
   'Пропустить':'Пропустити', 'Дальше':'Далі', 'Понятно':'Зрозуміло', 'Открыть свой 2027':'Відкрити свій 2027', 'Посмотреть бесплатный прогноз':'Переглянути безкоштовний прогноз',
