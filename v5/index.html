@@ -1482,6 +1482,15 @@ html,body,#app{overscroll-behavior:none}
 .onb .otx .olist li::before{content:"";position:absolute;left:2px;top:.62em;width:6px;height:6px;border-radius:50%;background:#E2D0B0}
 .onb .otx .once{margin-top:12px;font:italic 500 17px/1.3 var(--f-serif);color:#E2D0B0}
 @media (max-height:760px){ .onb .slide[data-k="2"] .otx h2,.onb .slide[data-k="3"] .otx h2{font-size:27px} .onb .otx .lead,.onb .otx .olist li,.onb .slide[data-k="2"] .otx p{font-size:14px} .onb .otx .olist{gap:5px} .onb .otx .once{margin-top:8px;font-size:15px} }
+
+/* v111: два периода личного года (ДР 2026 → 2027 и ДР 2027 → 2028) */
+.night .yper{position:relative;z-index:2;display:flex;gap:8px;width:100%;max-width:340px;margin:14px auto 0}
+.yper button{flex:1;min-width:0;padding:11px 6px 10px;border-radius:16px;border:1px solid rgba(244,233,214,.22);background:rgba(244,233,214,.06);color:rgba(244,233,214,.82);display:flex;flex-direction:column;align-items:center;gap:5px;transition:background .3s,color .3s,border-color .3s}
+.yper .y{font:400 20px/1 var(--f-serif)}
+.yper .d{font:400 12px/1 var(--f-text);letter-spacing:.02em;opacity:.72;white-space:nowrap}
+.yper button.on{background:var(--creamc);color:var(--ink-nv);border-color:transparent}
+.yper button.on .y{font-style:italic}
+.yper button.on .d{opacity:.8}
 </style>
 </head>
 <body>
@@ -1616,6 +1625,74 @@ function monthRange(p, i){
   const e = new Date(ny, nm, Math.min(p.d, dim(ny, nm))); e.setDate(e.getDate() - 1);
   return [s, e];
 }
+/* v111: годовой прогноз на ПРЕДЫДУЩИЙ личный год (день рождения 2026 → день рождения 2027).
+   Демо-тексты, чтобы было видно, что периоды разные. API: подставить настоящий текст по формуле. */
+let YEAR_PREV = {
+  yW:[
+    {t:'Общий фон', h:`<p>Год завершения и перезагрузки. Многое из того, что начиналось раньше, подходит к итогу.</p>
+<p>Это время подвести черту и освободить место для нового.</p>`},
+    {t:'Карьера и бизнес', h:`<p>Хороший период, чтобы <b>довести до конца начатые проекты</b> и закрыть долги по задачам.</p>
+<p>Резкие перемены лучше отложить на конец периода: к тому моменту станет понятно, куда двигаться.</p>`},
+    {t:'Финансы', h:`<p>Доход стабильный, но без больших скачков. Деньги приходят за то, что уже сделано.</p>
+<p>Хорошее время <b>навести порядок в расходах</b> и отказаться от лишних трат.</p>`},
+    {t:'Самореализация', h:`<p>Период помогает понять, <b>что действительно важно.</b> Старые цели могут потерять смысл, и это нормально.</p>
+<p>Не торопись брать новое, пока не отпустишь старое.</p>`},
+    {t:'Сложный период', h:`<p>К середине периода может накопиться усталость. Если не давать себе отдыха, растёт раздражение.</p>
+<p>Главная ошибка периода: <b>держаться за то, что уже отжило.</b></p>`},
+    {t:'Что делать', h:`<ul><li>Заверши то, что давно висит.</li><li>Разбери дела и пространство: отдай, продай, выброси лишнее.</li><li>Запиши, чего хочешь от следующего года.</li></ul>`},
+  ],
+  yL:[
+    {t:'Общий фон', h:`<p>Период честности в отношениях. Становится видно, какие связи поддерживают, а какие забирают силы.</p>
+<p>Возможны <b>важные разговоры летом.</b></p>`},
+    {t:'Любовь и отношения', h:`<p>В паре хорошее время прояснить ожидания и договориться о будущем.</p>
+<p>Если ты один или одна, это время отпустить прошлые истории, чтобы освободить место новым.</p>`},
+    {t:'Эмоциональное состояние', h:`<p>Эмоции глубже, чем обычно. Может хотеться тишины и меньше людей вокруг.</p>
+<p><b>Отдых и сон</b> в этот период важнее, чем кажется.</p>`},
+    {t:'Брак, дети и семья', h:`<p>Хорошее время для семейных традиций и помощи родителям.</p>
+<p>Решения о переезде и крупных покупках лучше принимать <b>ближе к концу периода.</b></p>`},
+    {t:'Сложный период', h:`<p>Старые обиды могут проявиться через мелкие ссоры.</p>
+<p>Главная ошибка периода: <b>молчать о том, что болит.</b></p>`},
+    {t:'Что делать', h:`<ul><li>Отпусти то, что не получается удержать.</li><li>Проводи время с теми, с кем спокойно.</li><li>Говори о своих чувствах, даже если неловко.</li></ul>`},
+  ]};
+const YEAR_PREV_UK = {
+  yW:[
+    {t:'Загальний фон', h:`<p>Рік завершення і перезавантаження. Багато з того, що починалося раніше, підходить до підсумку.</p>
+<p>Це час підвести риску і звільнити місце для нового.</p>`},
+    {t:'Кар’єра і бізнес', h:`<p>Добрий період, щоб <b>довести до кінця розпочаті проєкти</b> і закрити борги по задачах.</p>
+<p>Різкі зміни краще відкласти на кінець періоду: на той момент стане зрозуміло, куди рухатися.</p>`},
+    {t:'Фінанси', h:`<p>Дохід стабільний, але без великих стрибків. Гроші приходять за те, що вже зроблено.</p>
+<p>Добрий час <b>навести лад у витратах</b> і відмовитися від зайвого.</p>`},
+    {t:'Самореалізація', h:`<p>Період допомагає зрозуміти, <b>що справді важливо.</b> Старі цілі можуть втратити сенс, і це нормально.</p>
+<p>Не поспішай брати нове, доки не відпустиш старе.</p>`},
+    {t:'Складний період', h:`<p>До середини періоду може накопичитися втома. Якщо не давати собі відпочинку, зростає роздратування.</p>
+<p>Головна помилка періоду: <b>триматися за те, що вже віджило.</b></p>`},
+    {t:'Що робити', h:`<ul><li>Заверши те, що давно висить.</li><li>Розбери справи і простір: віддай, продай, викинь зайве.</li><li>Запиши, чого хочеш від наступного року.</li></ul>`},
+  ],
+  yL:[
+    {t:'Загальний фон', h:`<p>Період чесності у стосунках. Стає видно, які зв’язки підтримують, а які забирають сили.</p>
+<p>Можливі <b>важливі розмови влітку.</b></p>`},
+    {t:'Кохання і стосунки', h:`<p>У парі добрий час прояснити очікування і домовитися про майбутнє.</p>
+<p>Якщо ти сам або сама, це час відпустити минулі історії, щоб звільнити місце новим.</p>`},
+    {t:'Емоційний стан', h:`<p>Емоції глибші, ніж зазвичай. Може хотітися тиші й менше людей довкола.</p>
+<p><b>Відпочинок і сон</b> у цей період важливіші, ніж здається.</p>`},
+    {t:'Шлюб, діти й сім’я', h:`<p>Добрий час для сімейних традицій і допомоги батькам.</p>
+<p>Рішення про переїзд і великі покупки краще ухвалювати <b>ближче до кінця періоду.</b></p>`},
+    {t:'Складний період', h:`<p>Старі образи можуть проявитися через дрібні сварки.</p>
+<p>Головна помилка періоду: <b>мовчати про те, що болить.</b></p>`},
+    {t:'Що робити', h:`<ul><li>Відпусти те, що не вдається втримати.</li><li>Проводь час із тими, з ким спокійно.</li><li>Говори про свої почуття, навіть якщо ніяково.</li></ul>`},
+  ]};
+
+/* v111: личный год начинается в день рождения, поэтому 2027 накрывают два периода:
+   ДР 2026 → ДР 2027 и ДР 2027 → ДР 2028. У родившихся 1 января период один. */
+function yPeriods(p){
+  const st = y => new Date(y, p.m, Math.min(p.d, dim(y, p.m)));
+  const en = y => { const d = st(y); d.setDate(d.getDate() - 1); return d; };
+  if (p.m === 0 && p.d === 1) return [{s: st(2027), e: en(2028), prev: false}];
+  return [{s: st(2026), e: en(2027), prev: true}, {s: st(2027), e: en(2028), prev: false}];
+}
+function yPer(p){ const P = yPeriods(p); if (S.yper == null || S.yper >= P.length) S.yper = P.length > 1 && new Date() >= P[1].s ? 1 : 0; return P[S.yper]; }
+function setPer(i){ const was = S.yper; if (was === i) return; S.yper = i; rerender(); swapContent(i < was ? -1 : 1); hap('select'); }
+const fmtS = d => pad(d.getDate()) + '.' + pad(d.getMonth()+1) + '.' + String(d.getFullYear()).slice(2);
 const newYearDate = p => new Date(2027, p.m, Math.min(p.d, dim(2027, p.m)));
 const demoMonths = () => [0, 1]; /* «2 ближайших месяца»: январь и февраль 2027 */
 const canSee = (p, i) => p.access !== 'none'; /* v71: бесплатного демо нет */
@@ -2028,7 +2105,7 @@ profile: () => {
 };
 
 function yearView(p, top){
-  const ye = new Date(2028, p.m, Math.min(p.d, dim(2028, p.m))); ye.setDate(ye.getDate() - 1);
+  const P = yPeriods(p), per = P[(yPer(p), S.yper)], TXT = per.prev ? YEAR_PREV : YEAR_TEXT;
   const k = S.ytopic;
   const body = !k
     ? `<div class="yq">Что хочешь прочитать?</div>
@@ -2036,11 +2113,13 @@ function yearView(p, top){
          <button class="yc w" onclick="setTopic('yW')"><span><span class="n">Общий прогноз</span><span class="d">Карьера, бизнес, финансы, самореализация</span></span></button>
          <button class="yc l" onclick="setTopic('yL')"><span><span class="n">Личный прогноз</span><span class="d">Любовь, отношения, эмоции, брак, дети, семья</span></span></button>
        </div>`
-    : `<div class="yseg">${['yW','yL'].map(x => `<button class="${x === k ? 'on' : ''}" onclick="setTopic('${x}')">${x === 'yW' ? 'Общий' : 'Личный'}</button>`).join('')}</div><div class="msheet">${YEAR_TEXT[k].map(foldBlock).join('')}</div>`;
+    : `<div class="yseg">${['yW','yL'].map(x => `<button class="${x === k ? 'on' : ''}" onclick="setTopic('${x}')">${x === 'yW' ? 'Общий' : 'Личный'}</button>`).join('')}</div><div class="msheet">${TXT[k].map(foldBlock).join('')}</div>`;
   return `
   <div class="night">${top}
     <h1 class="ytl">${p.self ? 'Твой год' : `Год ${esc(p.name)}`}</h1>
-    <p class="hph">Действует с ${fmt(newYearDate(p), true)} по ${fmt(ye, true)}</p>
+    ${P.length > 1
+      ? `<div class="yper">${P.map((x, i) => `<button class="${i === S.yper ? 'on' : ''}" onclick="setPer(${i})"><span class="y">${x.s.getFullYear()} – ${x.e.getFullYear()}</span><span class="d">${fmtS(x.s)} – ${fmtS(x.e)}</span></button>`).join('')}</div>`
+      : `<p class="hph">Действует с ${fmt(per.s, true)} по ${fmt(per.e, true)}</p>`}
   </div>
   <div class="scroll"><div class="content">${body}</div></div>
   <div class="mcta"></div>`;
@@ -2406,7 +2485,7 @@ function openTariffs(k){ S.forIdx = k; go('tariffs'); }
 function isBack(){ return S.profiles.length > 0; }
 function nowMonth(){ const d = new Date(); return d.getFullYear() === 2027 ? d.getMonth() : 0; } /* до 2027 года открываем январь */
 function openReturning(intro){
-  S.active = 0; S.forIdx = 0; S.tab = 'm'; S.ytopic = null; S.hist = []; S.cur = null;
+  S.active = 0; S.forIdx = 0; S.tab = 'm'; S.ytopic = null; S.yper = null; S.hist = []; S.cur = null;
   S.month = Q.has('month') ? +Q.get('month') : nowMonth();
   go('main', false, 'fade');
   intro.classList.add('gone'); setTimeout(() => intro.remove(), 700); /* заставка тает поверх прогноза */
@@ -2425,7 +2504,7 @@ function toMain(tab){
   }
   toMainNow(tab);
 }
-function toMainNow(tab, how = 'fade'){ if (S.profiles[S.forIdx].access !== 'none') S.active = S.forIdx; S.month = 0; S.tab = tab === 'y' && S.profiles[S.forIdx].access === 'all' ? 'y' : 'm'; S.ytopic = null; S.hist = []; S.cur = null; go('main', false, how); }
+function toMainNow(tab, how = 'fade'){ if (S.profiles[S.forIdx].access !== 'none') S.active = S.forIdx; S.month = 0; S.tab = tab === 'y' && S.profiles[S.forIdx].access === 'all' ? 'y' : 'm'; S.ytopic = null; S.yper = null; S.hist = []; S.cur = null; go('main', false, how); }
 function startDemo(){ S.active = S.forIdx; S.month = 0; S.tab = 'm'; S.hist = []; S.cur = null; go('main', false, 'fade'); }
 function swapContent(dir = 1){
   const el = cur(), c = el.querySelector('.content'), sc = el.querySelector('.scroll'), h = el.querySelector('.hph');
@@ -2457,7 +2536,7 @@ function stripTo(el, k, smooth){ const st = el.querySelector('.mstrip'), b = st 
   const x = b.offsetLeft - (st.clientWidth - b.offsetWidth) / 2; st.scrollTo({left: Math.max(0, x), behavior: smooth && !RM ? 'smooth' : 'auto'}); }
 function setTab(t){ if (S.tab === t) return; S.tab = t; rerender(); swapContent(t === 'y' ? 1 : -1); }
 function setTopic(k){ const was = S.ytopic; if (was === k) return; S.ytopic = k; rerender(); swapContent(was && k === 'yW' ? -1 : 1); hap('select'); }
-function switchTo(k){ if (S.profiles[k].access === 'none'){ openTariffs(k); return; } S.active = k; S.month = 0; S.tab = 'm'; S.ytopic = null; S.hist = []; S.cur = null; go('main', false); }
+function switchTo(k){ if (S.profiles[k].access === 'none'){ openTariffs(k); return; } S.active = k; S.month = 0; S.tab = 'm'; S.ytopic = null; S.yper = null; S.hist = []; S.cur = null; go('main', false); }
 function addPerson(){ S.mode = 'other'; S.draft = {name:'', gender:'', d:1, m:0, y:1990}; go('name'); }
 function setLang(l){ if (S.lang === l) return; S.lang = l; applyLang(); rerender(); }
 const SUPPORT_URL = 'https://t.me/tvoya_turbota';
@@ -2589,7 +2668,7 @@ function restart(){ closeSheet(true); S.mode = 'self'; S.profiles = []; S.promo 
    Месяцы и тексты прогнозов переключаются целиком в applyLang().
    API: тексты прогнозов на украинском программист берёт с сервера так же, как русские.
    ============================================================ */
-const MONTHS_RU = MONTHS.slice(), MGEN_RU = MGEN.slice(), MPREP_RU = MPREP.slice(), MONTH_TEXT_RU = MONTH_TEXT, YEAR_TEXT_RU = YEAR_TEXT;
+const MONTHS_RU = MONTHS.slice(), MGEN_RU = MGEN.slice(), MPREP_RU = MPREP.slice(), MONTH_TEXT_RU = MONTH_TEXT, YEAR_TEXT_RU = YEAR_TEXT, YEAR_PREV_RU = YEAR_PREV;
 const MONTHS_UK = ['Січень','Лютий','Березень','Квітень','Травень','Червень','Липень','Серпень','Вересень','Жовтень','Листопад','Грудень'];
 const MGEN_UK = ['січня','лютого','березня','квітня','травня','червня','липня','серпня','вересня','жовтня','листопада','грудня'];
 const MPREP_UK = MONTHS_UK.map(m => m.toLowerCase());
@@ -2754,7 +2833,7 @@ const MS = () => MSHORT[S.lang === 'uk' ? 'uk' : 'ru'];
 function applyLang(){
   const uk = S.lang === 'uk';
   MONTHS = uk ? MONTHS_UK : MONTHS_RU; MGEN = uk ? MGEN_UK : MGEN_RU; MPREP = uk ? MPREP_UK : MPREP_RU;
-  MONTH_TEXT = uk ? MONTH_TEXT_UK : MONTH_TEXT_RU; YEAR_TEXT = uk ? YEAR_TEXT_UK : YEAR_TEXT_RU;
+  MONTH_TEXT = uk ? MONTH_TEXT_UK : MONTH_TEXT_RU; YEAR_TEXT = uk ? YEAR_TEXT_UK : YEAR_TEXT_RU; YEAR_PREV = uk ? YEAR_PREV_UK : YEAR_PREV_RU;
   document.documentElement.lang = uk ? 'uk' : 'ru';
 }
 
@@ -2777,7 +2856,7 @@ if (Q.has('demo')){
   else if (v === 'dob'){ D(); go('dob'); }
   else if (v === 'confirm'){ D(); go('confirm'); }
   else if (v === 'tariffs'){ S.hist = ['main']; go('tariffs'); }
-  else if (v === 'year'){ S.tab = 'y'; S.ytopic = Q.get('topic') || null; go('main', false); }
+  else if (v === 'year'){ S.tab = 'y'; S.ytopic = Q.get('topic') || null; if (Q.get('per')) S.yper = +Q.get('per'); go('main', false); }
   else if (v === 'profile'){ S.hist = ['main']; go('profile'); }
   else if (v === 'success'){ S.forIdx = 0; S.lastPlan = Q.get('plan') || 'months'; S.profiles[0].access = S.lastPlan === 'months' ? 'months' : 'all'; go('success', false); }
   else if (v === 'fail'){ go('fail', false); }
