@@ -132,6 +132,7 @@ function eventRow(x) {
 function appendEvents(ss, evs) {
   const sh = ss.getSheetByName(SH_EV);
   const rows = evs.map(eventRow);
+  ensureRows(sh, rows.length);
   sh.getRange(sh.getLastRow() + 1, 1, rows.length, EV_COLS.length).setValues(rows);
 }
 
@@ -151,8 +152,11 @@ function upsertUsers(ss, evs) {
     if (i >= 0) sh.getRange(i + 2, 1, 1, US_COLS.length).setValues([row]);
     else fresh.push(row);
   });
+  if (fresh.length) ensureRows(sh, fresh.length);
   if (fresh.length) sh.getRange(sh.getLastRow() + 1, 1, fresh.length, US_COLS.length).setValues(fresh);
 }
+/* лист сам растёт, когда строки заканчиваются */
+function ensureRows(sh, n) { const free = sh.getMaxRows() - sh.getLastRow(); if (free < n) sh.insertRowsAfter(sh.getMaxRows(), Math.max(n - free, 5000)); }
 function emptyUser(id) { const r = US_COLS.map(() => ''); r[U['TG ID']] = String(id); return r; }
 const num = v => Number(v) || 0;
 const asDate = v => v instanceof Date ? v : (v ? new Date(v) : null);
