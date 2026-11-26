@@ -1557,6 +1557,37 @@ function tgHeader(name){
   try { tg.setHeaderColor('#223958'); } catch (e) {}
 }
 
+/* v123: аналитика. Каждое действие человека → track('событие', {поля}).
+   События копятся и пачкой уходят на сервер (TRACK_URL), сервер проверяет initData и пишет их в Google-таблицу.
+   Вне Telegram (прототип на GitHub Pages) ничего не отправляется. С ?debug события видны в консоли.
+   Список событий и полей: analytics/README.md. API: домен TRACK_URL дописать в CSP connect-src. */
+const TRACK_URL = '/api/track';
+const TDBG = /[?&]debug\b/.test(location.search), TLOG = [], TQ = [];
+let tTimer = 0, tShown = Date.now();
+function track(ev, props = {}){
+  const e = Object.assign({ev, ts: Date.now()}, props);
+  TLOG.push(e); if (TLOG.length > 300) TLOG.shift();
+  if (TDBG) console.log('[track]', ev, props);
+  if (!(tg && tg.initData)) return;
+  TQ.push(e);
+  if (TQ.length >= 20) tFlush(); else if (!tTimer) tTimer = setTimeout(tFlush, 4000);
+}
+function tFlush(){
+  clearTimeout(tTimer); tTimer = 0;
+  if (!TQ.length || !(tg && tg.initData)) return;
+  const body = JSON.stringify({initData: tg.initData, events: TQ.splice(0, 50)});
+  try { fetch(TRACK_URL, {method: 'POST', headers: {'Content-Type': 'application/json'}, body, keepalive: true}).catch(() => {}); } catch (e) {}
+  if (TQ.length) tTimer = setTimeout(tFlush, 300);
+}
+document.addEventListener('visibilitychange', () => {
+  if (document.hidden){ track('app_hide', {sec: Math.round((Date.now() - tShown) / 1000), screen: S.cur || ''}); tFlush(); }
+  else tShown = Date.now();
+});
+const tFor = () => S.profiles[S.forIdx] && !S.profiles[S.forIdx].self ? 'other' : 'self';
+const tPer = s => `${s.getFullYear()}–${s.getFullYear() + 1}`;
+/* экраны, показ которых сам по себе событие */
+const TSCREEN = {name: 'reg_name', gender: 'reg_gender', dob: 'reg_dob', confirm: 'reg_confirm', tariffs: 'tariffs_view', fail: 'pay_fail_view', profile: 'profile_open'};
+
 const I = {
   inf: '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" aria-hidden="true"><path d="M12 12c-2-2.7-3.6-4-5.3-4a4 4 0 0 0 0 8c1.7 0 3.3-1.3 5.3-4zm0 0c2 2.7 3.6 4 5.3 4a4 4 0 0 0 0-8c-1.7 0-3.3 1.3-5.3 4z"/></svg>',
   back:'<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M15 5l-7 7 7 7"/></svg>',
@@ -1690,7 +1721,7 @@ function yPeriods(p){
   return [{s: st(2026), e: en(2027), prev: true}, {s: st(2027), e: en(2028), prev: false}];
 }
 function yPer(p){ const P = yPeriods(p); if (S.yper == null || S.yper >= P.length) S.yper = P.length > 1 && new Date() >= P[1].s ? 1 : 0; return P[S.yper]; }
-function setPer(i){ const was = S.yper; if (was === i) return; S.yper = i; rerender(); swapContent(i < was ? -1 : 1); hap('select'); }
+function setPer(i){ const was = S.yper; if (was === i) return; S.yper = i; { const P = yPeriods(prof()); if (P[i]) track('year_period', {period: tPer(P[i].s)}); } rerender(); swapContent(i < was ? -1 : 1); hap('select'); }
 const fmtS = d => pad(d.getDate()) + '.' + pad(d.getMonth()+1) + '.' + String(d.getFullYear()).slice(2);
 const newYearDate = p => new Date(2027, p.m, Math.min(p.d, dim(2027, p.m)));
 const demoMonths = () => [0, 1]; /* «2 ближайших месяца»: январь и февраль 2027 */
@@ -1709,7 +1740,12 @@ function go(name, push = true, how = ''){
     else { S.forIdx = S.active; name = 'tariffs'; }
   }
   if (push && S.cur) S.hist.push(S.cur);
+  const tFrom = S.cur;
   S.cur = name;
+  if (TSCREEN[name] && (push || name === 'tariffs' || name === 'fail')) /* «Назад» на шаг регистрации не считаем повторно */
+    track(TSCREEN[name], name === 'tariffs' ? {for: tFor(), access: (S.profiles[S.forIdx] || {}).access || 'none'} : name.startsWith('reg') || ['name', 'gender', 'dob', 'confirm'].includes(name) ? {for: S.mode === 'other' ? 'other' : 'self'} : {});
+  if (name === 'success') track('pay_success_view', {tariff: S.lastPlan});
+  if (name === 'main' && tFrom !== 'main'){ const p = S.profiles[S.active]; if (p && p.access !== 'none') track('forecast_open', {tab: S.tab === 'y' ? 'year' : 'months', month: (S.month || 0) + 1, for: p.self ? 'self' : 'other'}); }
   const el = document.createElement('section');
   el.className = 'screen ' + name + (DARK[name] && name !== 'main' ? ' dark' : '') + (how ? ' ' + how : (push ? '' : ' back')) + (how || RM || !app.querySelector('.screen') || name !== 'name' ? '' : ' slide'); /* v106: переход «из тумана» только на экран имени */ /* первый экран не въезжает */
   el.innerHTML = (ROCK.includes(name) ? ROCKBG : '') + SCREENS[name]();
@@ -1797,6 +1833,8 @@ function toggleSec(btn){
   tw.style.maxHeight = (opening ? tw.scrollHeight : +tw.dataset.ch) + 'px';
   more.textContent = opening ? 'Свернуть' : 'Читать далее';
   if (opening){
+    { const h = f.querySelector('h3'), y = S.cur === 'main' && S.tab === 'y'; /* v123: какой раздел раскрыли */
+      track('section_open', {section: h ? h.textContent.trim().slice(0, 60) : '', from: y ? 'year' : 'month', topic: y ? (S.ytopic === 'yL' ? 'personal' : 'general') : undefined, month: y ? undefined : (S.month || 0) + 1}); }
     setTimeout(() => { if (f.classList.contains('open')) tw.style.maxHeight = 'none'; }, 560);
     if (!RM){ const lim = +tw.dataset.ch - 4; let n = 0;
       [...tw.querySelectorAll('.txt > p, .txt li')].forEach(x => { if (x.offsetTop > lim) x.animate([{opacity:0, transform:'translateY(18px)'}, {opacity:1, transform:'none'}], {duration:560, delay: 60 + (n++) * 70, easing:'cubic-bezier(.2,1.12,.32,1)', fill:'backwards'}); }); }
@@ -2424,13 +2462,14 @@ function onbInit(el){
 }
 function onbNext(){ const el = cur(); if (el && el._onbGo) el._onbGo(S.onbI + 1); }
 function finishOnb(){
+  if (!S.onbFrom) track('onb_done', {skipped: S.onbI < 3, slide: S.onbI + 1});
   if (S.onbFrom){ S.onbFrom = null; S.cur = null; go('profile', false); S.hist = ['main']; return; }
   S.mode = 'self';
   const tn = tg && tg.initDataUnsafe && tg.initDataUnsafe.user && tg.initDataUnsafe.user.first_name; /* API: имя из Telegram */
   S.draft = {name: tn || '', gender:'', d:1, m:0, y:1990};
   S.hist = ['onb']; S.cur = null; go('name', true); /* «Назад» с экрана имени возвращает на онбординг */
 }
-function openOnbFromProfile(){ S.onbFrom = 'profile'; S.onbI = 0; go('onb', true, 'fade'); }
+function openOnbFromProfile(){ track('onb_reopen'); S.onbFrom = 'profile'; S.onbI = 0; go('onb', true, 'fade'); }
 
 /* Барабаны даты как рулетка: 3D-цилиндр, бросок пальцем, всегда встаёт ровно на значение */
 function wheelsInit(el){
@@ -2529,12 +2568,14 @@ function fanInit(el, car){
   el._carTo = k => { pos = k; car.classList.add('snap'); fanLayout(car, k); };
 }
 
-function pickLang(l){ S.lang = l; applyLang(); S.onbI = 0; S.onbFrom = null; go('onb', true, 'fade'); }
+function pickLang(l){ track('lang_select', {lang: l}); S.lang = l; applyLang(); S.onbI = 0; S.onbFrom = null; go('onb', true, 'fade'); }
 function setGender(g){ S.draft.gender = g; rerender(); setTimeout(() => S.cur === 'gender' && go('dob'), 120); }
 function confirmData(){
   const D = S.draft; D.d = Math.min(D.d, dim(D.y, D.m));
   const p = {name: cap(D.name), gender: D.gender || 'f', d: D.d, m: D.m, y: D.y, access: 'none', self: S.mode === 'self'};
   /* API: сохранить профиль на сервере */
+  { const n = new Date(), age = n.getFullYear() - p.y - (n.getMonth() < p.m || (n.getMonth() === p.m && n.getDate() < p.d) ? 1 : 0);
+    track('reg_done', {for: p.self ? 'self' : 'other', gender: p.gender, age}); } /* v123: дату рождения в аналитику не шлём, только возраст */
   if (p.self){ S.profiles = [p]; S.active = 0; S.forIdx = 0; }
   else if (D.pidx != null && S.profiles[D.pidx]){ S.profiles[D.pidx] = p; S.forIdx = D.pidx; } /* вернулись «Назад» и подтвердили снова */
   else { S.profiles.push(p); S.forIdx = D.pidx = S.profiles.length - 1; }
@@ -2592,6 +2633,7 @@ function openMine(tab){ hap('select'); S.forIdx = 0; toMainNow(tab, 'fade'); }
 
 function setMonth(k, fromFan){
   if (k < 0 || k > 11 || k === S.month) return;
+  { const p = prof(); track('month_open', {month: k + 1, locked: !canSee(p, k), for: p.self ? 'self' : 'other'}); }
   const dir = k > S.month ? 1 : -1, el = cur();
   S.month = k;
   const tmp = document.createElement('div'); tmp.innerHTML = SCREENS.main();
@@ -2609,13 +2651,14 @@ function indTo(el, anim){ const st = el.querySelector('.mstrip'), m = st && st.q
   if (!anim || RM){ void m.offsetWidth; m.style.transition = ''; } }
 function stripTo(el, k, smooth){ const st = el.querySelector('.mstrip'), b = st && st.querySelector(`[data-k="${k}"]`); if (!b) return;
   const x = b.offsetLeft - (st.clientWidth - b.offsetWidth) / 2; st.scrollTo({left: Math.max(0, x), behavior: smooth && !RM ? 'smooth' : 'auto'}); }
-function setTab(t){ if (S.tab === t) return; S.tab = t; rerender(); swapContent(t === 'y' ? 1 : -1); }
-function setTopic(k){ const was = S.ytopic; if (was === k) return; S.ytopic = k; rerender(); swapContent(was && k === 'yW' ? -1 : 1); hap('select'); }
-function switchTo(k){ if (S.profiles[k].access === 'none'){ openTariffs(k); return; } S.active = k; S.month = 0; S.tab = 'm'; S.ytopic = null; S.yper = null; S.hist = []; S.cur = null; go('main', false); }
-function addPerson(){ S.mode = 'other'; S.draft = {name:'', gender:'', d:1, m:0, y:1990}; go('name'); }
-function setLang(l){ if (S.lang === l) return; S.lang = l; applyLang(); rerender(); }
+function setTab(t){ if (S.tab === t) return; S.tab = t; track('tab_switch', {tab: t === 'y' ? 'year' : 'months'}); rerender(); swapContent(t === 'y' ? 1 : -1); }
+function setTopic(k){ const was = S.ytopic; if (was === k) return; S.ytopic = k; { const p = prof(); track('year_topic', {topic: k === 'yL' ? 'personal' : 'general', period: tPer(yPer(p).s), for: p.self ? 'self' : 'other'}); } rerender(); swapContent(was && k === 'yW' ? -1 : 1); hap('select'); }
+function switchTo(k){ if (k !== S.active) track('switch_person', {locked: S.profiles[k].access === 'none'}); if (S.profiles[k].access === 'none'){ openTariffs(k); return; } S.active = k; S.month = 0; S.tab = 'm'; S.ytopic = null; S.yper = null; S.hist = []; S.cur = null; go('main', false); }
+function addPerson(){ track('add_person'); S.mode = 'other'; S.draft = {name:'', gender:'', d:1, m:0, y:1990}; go('name'); }
+function setLang(l){ if (S.lang === l) return; track('lang_change', {lang: l}); S.lang = l; applyLang(); rerender(); }
 const SUPPORT_URL = 'https://t.me/tvoya_turbota';
 function support(){ /* поддержка: Telegram @tvoya_turbota */
+  track('support_click', {from: S.cur || ''});
   if (tg && tg.initData && tg.openTelegramLink) tg.openTelegramLink(SUPPORT_URL); else window.open(SUPPORT_URL, '_blank', 'noopener'); }
 function toast(msg){
   const t = document.createElement('div');
@@ -2638,6 +2681,7 @@ function paySheet(plan){
   if (S.promo && plan !== 'year' && S.profiles[S.forIdx].access === 'none') plan = 'promo'; /* v73: с промокодом есть только одна покупка */
   S.lastTry = plan;
   const sum = {months: 850, year: 400, all: 1100, promo: 850}[plan];
+  track('tariff_click', {tariff: plan, amount: sum, for: tFor()});
   const name = {months: '12 месяцев 2027', year: 'Годовая прогностика', all: 'Всё вместе: 12 месяцев и год', promo: 'Оплата по промокоду: 12 месяцев и годовая прогностика'}[plan];
   const fp = S.profiles[S.forIdx];
   sheet('Оплата', `
@@ -2698,13 +2742,15 @@ function seaWaves(el){
   else { seaImg = new Image(); seaImg.onload = start; seaImg.src = 'assets/success-door-sea.webp'; }
 }
 function paid(plan){
+  /* v123: попытка оплаты. API: здесь же уходим в monoPay; факт оплаты в аналитику пишет сервер (payment_success) */
+  track('pay_click', {tariff: plan, amount: {months: 850, year: 400, all: 1100, promo: 850}[plan], for: tFor()}); tFlush();
   const p = S.profiles[S.forIdx];
   p.access = plan === 'months' ? 'months' : 'all';
   if (plan === 'promo') S.promo = false; /* API: промокод погашен. Если оплата не прошла, он остаётся (S.promo / S.promoCode) */
   S.lastPlan = plan; closeSheet(); S.hist = []; S.cur = null; go('success', false, 'fade');
 }
 function retryPay(){ S.hist = []; S.cur = null; go('tariffs', false); setTimeout(() => paySheet(S.lastTry || 'months'), 350); }
-function yearLockSheet(){ sheet('Годовая прогностика', `<p>Годовую прогностику можно купить после покупки 12 месяцев. Или возьми всё вместе, так выгоднее на 150 грн.</p><div style="height:20px"></div>
+function yearLockSheet(){ track('year_lock_click', {from: S.cur || ''}); sheet('Годовая прогностика', `<p>Годовую прогностику можно купить после покупки 12 месяцев. Или возьми всё вместе, так выгоднее на 150 грн.</p><div style="height:20px"></div>
   <div style="display:flex;flex-direction:column;gap:10px">
     <button class="btn primary split" onclick="closeSheet();setTimeout(()=>paySheet('all'),120)"><span>Всё вместе</span><span>1100 грн</span></button>
     <button class="btn secondary split" onclick="closeSheet();setTimeout(()=>paySheet('months'),120)"><span>Только месяцы</span><span>850 грн</span></button>
@@ -2713,6 +2759,7 @@ function yearLockSheet(){ sheet('Годовая прогностика', `<p>Г�
    API: на проде убрать этот список: всё, что лежит в странице, видно любому. Проверка кода и цены только на сервере. */
 const PROMO_TEST = ['TEST2027'];
 function promoSheet(){
+  track('promo_open');
   const sh = sheet('Введи промокод', `
     <p>Промокод можно получить у Вероники в Instagram.</p>
     <input class="uline" id="pc" placeholder="Промокод" autocomplete="off" style="font-size:22px;margin-top:8px">
@@ -2721,7 +2768,7 @@ function promoSheet(){
   const inp = sh.querySelector('#pc'), b = sh.querySelector('#pa'), er = sh.querySelector('#pe');
   inp.addEventListener('input', () => { b.disabled = !inp.value.trim(); er.textContent = ''; });
   /* API: проверка промокода на сервере. В прототипе подходит только TEST2027 (без учёта регистра). */
-  b.onclick = () => { const v = inp.value.trim(); if (!PROMO_TEST.includes(v.toUpperCase())){ er.textContent = 'Такого промокода нет. Проверь, нет ли лишних пробелов.'; hap('error'); return; } S.promo = true; S.promoCode = v.toUpperCase(); closeSheet(); rerender(); hap('success'); };
+  b.onclick = () => { const v = inp.value.trim(); const ok = PROMO_TEST.includes(v.toUpperCase()); track('promo_apply', {ok}); if (!ok){ er.textContent = 'Такого промокода нет. Проверь, нет ли лишних пробелов.'; hap('error'); return; } S.promo = true; S.promoCode = v.toUpperCase(); closeSheet(); rerender(); hap('success'); };
 }
 function gearSheet(){
   const p = prof();
@@ -2907,6 +2954,8 @@ function applyLang(){
 /* v120: демо-ссылки (?demo=…&access=all) работают только локально и на GitHub Pages прототипа.
    На боевом домене они выключены, иначе любой открыл бы платный прогноз ссылкой.
    API: доступ (access) на проде приходит только с сервера после проверки initData и оплаты. */
+/* v123: первое событие сессии. API: программист кладёт профили в S.profiles до этой строки, тогда returning будет верным */
+setTimeout(() => track('app_open', {start: (tg && tg.initDataUnsafe && tg.initDataUnsafe.start_param) || '', platform: (tg && tg.platform) || 'web', returning: S.profiles.length > 0, lang: S.lang}), 0);
 const DEMO_OK = /^(localhost|127\.0\.0\.1|marriamq\.github\.io)$/.test(location.hostname);
 const Q = new URLSearchParams(DEMO_OK ? location.search : '');
 const qInt = (k, lo, hi, def) => { const v = parseInt(Q.get(k), 10); return Number.isFinite(v) ? Math.min(hi, Math.max(lo, v)) : def; };
