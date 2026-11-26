@@ -3,6 +3,10 @@
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover, maximum-scale=1">
+<!-- v120: политика безопасности. Страница может грузить только свои файлы, Telegram и шрифты Google.
+     API: когда появится бэкенд, допиши его домен в connect-src (например connect-src 'self' https://api.твой-домен). -->
+<meta http-equiv="Content-Security-Policy" content="default-src 'self'; script-src 'self' 'unsafe-inline' https://telegram.org; style-src 'self' 'unsafe-inline' https://fonts.googleapis.com; font-src 'self' https://fonts.gstatic.com; img-src 'self' data: blob: https://t.me https://*.telegram.org https://*.t.me; connect-src 'self'; frame-src 'none'; object-src 'none'; base-uri 'none'; form-action 'none'">
+<meta name="referrer" content="strict-origin-when-cross-origin">
 <title>Прогностика 2027</title>
 <link rel="preload" as="image" href="assets/veronika.webp">
 <link rel="preconnect" href="https://fonts.googleapis.com">
@@ -2310,13 +2314,13 @@ function introInit(el){
   requestAnimationFrame(() => requestAnimationFrame(() => el.classList.add('push'))); /* надпись появляется сразу, не дожидаясь картинки */
   el.addEventListener('click', () => state === 'home' ? fly() : skip());
   layout();
-  const QP = new URLSearchParams(location.search).get('p'); /* для скриншотов: ?demo=intro&hold&p=0.6 */
-  if (QP != null){ p = +QP; el.classList.add('fly'); }
+  const QP = Q.get('p'); /* для скриншотов: ?demo=intro&hold&p=0.6 */
+  if (QP != null){ p = Math.min(1, Math.max(0, +QP || 0)); el.classList.add('fly'); }
   const dec = im => im.decode ? im.decode().catch(() => {}) : new Promise(r => { im.onload = im.onerror = r; });
   /* v94: летим только когда готовы обе картинки: коза и экран языка (не дольше 6 с ожидания) */
   const both = Promise.all([dec(goat), Promise.race([dec(view), new Promise(r => setTimeout(r, 6000))])]);
   dec(goat).then(() => { layout(); setTimeout(() => el.classList.add('push'), 30); preloadAll(); });
-  both.then(() => { if (!new URLSearchParams(location.search).has('hold')) setTimeout(fly, START); });
+  both.then(() => { if (!Q.has('hold')) setTimeout(fly, START); });
   dec(view).then(() => { const k = document.createElement('canvas').getContext('2d'); k.drawImage(view, 0, 0, 2, 2); k.drawImage(goat, 0, 0, 2, 2); draw(); }); /* заранее готовим картинку, чтобы на середине полёта не было паузы */
 }
 
@@ -2529,7 +2533,7 @@ function isBack(){ return S.profiles.length > 0; }
 function nowMonth(){ const d = new Date(); return d.getFullYear() === 2027 ? d.getMonth() : 0; } /* до 2027 года открываем январь */
 function openReturning(intro){
   S.active = 0; S.forIdx = 0; S.tab = 'm'; S.ytopic = null; S.yper = null; S.hist = []; S.cur = null;
-  S.month = Q.has('month') ? +Q.get('month') : nowMonth();
+  S.month = Q.has('month') ? qInt('month', 0, 11, 0) : nowMonth();
   go('main', false, 'fade');
   intro.classList.add('gone'); setTimeout(() => intro.remove(), 700); /* заставка тает поверх прогноза */
 }
@@ -2692,7 +2696,8 @@ function yearLockSheet(){ sheet('Годовая прогностика', `<p>Г�
     <button class="btn primary split" onclick="closeSheet();setTimeout(()=>paySheet('all'),120)"><span>Всё вместе</span><span>1100 грн</span></button>
     <button class="btn secondary split" onclick="closeSheet();setTimeout(()=>paySheet('months'),120)"><span>Только месяцы</span><span>850 грн</span></button>
   </div>`); }
-/* v71: тестовый промокод прототипа. Настоящие коды проверяет бэкенд. */
+/* v71: тестовый промокод прототипа. Настоящие коды проверяет бэкенд.
+   API: на проде убрать этот список: всё, что лежит в странице, видно любому. Проверка кода и цены только на сервере. */
 const PROMO_TEST = ['TEST2027'];
 function promoSheet(){
   const sh = sheet('Введи промокод', `
@@ -2899,29 +2904,36 @@ function applyLang(){
 /* Быстрый вход для просмотра:
    ?demo=intro | back | lang | onb | name | gender | dob | confirm | tariffs | main | year | profile | success | fail
    &access=none|months|all, &people, &slide=0..2, &hold (заставка без перехода), &still (без анимаций) */
-const Q = new URLSearchParams(location.search); if (Q.get('lang') === 'uk'){ S.lang = 'uk'; applyLang(); } /* для скриншотов: &lang=uk */
+/* v120: демо-ссылки (?demo=…&access=all) работают только локально и на GitHub Pages прототипа.
+   На боевом домене они выключены, иначе любой открыл бы платный прогноз ссылкой.
+   API: доступ (access) на проде приходит только с сервера после проверки initData и оплаты. */
+const DEMO_OK = /^(localhost|127\.0\.0\.1|marriamq\.github\.io)$/.test(location.hostname);
+const Q = new URLSearchParams(DEMO_OK ? location.search : '');
+const qInt = (k, lo, hi, def) => { const v = parseInt(Q.get(k), 10); return Number.isFinite(v) ? Math.min(hi, Math.max(lo, v)) : def; };
+const qOne = (k, list, def) => list.includes(Q.get(k)) ? Q.get(k) : def;
+if (Q.get('lang') === 'uk'){ S.lang = 'uk'; applyLang(); } /* для скриншотов: &lang=uk */
 if (Q.has('demo')){
-  S.profiles = [{name:'Мария', gender: Q.get('g') || 'f', d:25, m:7, y:1992, access: Q.get('access') || 'none', self:true}];
+  S.profiles = [{name:'Мария', gender: qOne('g', ['f','m'], 'f'), d:25, m:7, y:1992, access: qOne('access', ['none','months','all'], 'none'), self:true}];
   if (Q.has('people')) S.profiles.push({name:'Андрей', gender:'m', d:3, m:2, y:1990, access:'none', self:false}, {name:'Елена', gender:'f', d:17, m:10, y:1965, access:'all', self:false});
   const v = Q.get('demo');
-  S.month = +(Q.get('month') || 0);
-  const D = () => { S.mode = 'self'; S.draft = {name:'Мария', gender: Q.get('g') || 'f', d:25, m:7, y:1992}; S.hist = ['onb']; };
+  S.month = qInt('month', 0, 11, 0);
+  const D = () => { S.mode = 'self'; S.draft = {name:'Мария', gender: qOne('g', ['f','m'], 'f'), d:25, m:7, y:1992}; S.hist = ['onb']; };
   if (v === 'intro'){ S.profiles = []; go('intro', false); } /* первый вход: профилей ещё нет */
-  else if (v === 'back'){ S.profiles[0].access = Q.get('access') || 'months'; bootIntro(); } /* вход уже оплатившего: ?demo=back&access=months|all */
+  else if (v === 'back'){ S.profiles[0].access = qOne('access', ['months','all'], 'months'); bootIntro(); } /* вход уже оплатившего: ?demo=back&access=months|all */
   else if (v === 'lang') go('lang', false);
-  else if (v === 'onb'){ S.onbI = +(Q.get('slide') || 0); go('onb', false); }
+  else if (v === 'onb'){ S.onbI = qInt('slide', 0, 3, 0); go('onb', false); }
   else if (v === 'name'){ D(); go('name'); }
-  else if (v === 'gender'){ D(); S.draft.gender = Q.get('g') || ''; go('gender'); }
+  else if (v === 'gender'){ D(); S.draft.gender = qOne('g', ['f','m'], ''); go('gender'); }
   else if (v === 'dob'){ D(); go('dob'); }
   else if (v === 'confirm'){ D(); go('confirm'); }
   else if (v === 'tariffs'){ S.hist = ['main']; go('tariffs'); }
-  else if (v === 'year'){ S.tab = 'y'; S.ytopic = Q.get('topic') || null; if (Q.get('per')) S.yper = +Q.get('per'); go('main', false); }
+  else if (v === 'year'){ S.tab = 'y'; S.ytopic = qOne('topic', ['yW','yL'], null); if (Q.has('per')) S.yper = qInt('per', 0, 1, 0); go('main', false); }
   else if (v === 'profile'){ S.hist = ['main']; go('profile'); }
-  else if (v === 'success'){ S.forIdx = 0; S.lastPlan = Q.get('plan') || 'months'; S.profiles[0].access = S.lastPlan === 'months' ? 'months' : 'all'; go('success', false); }
+  else if (v === 'success'){ S.forIdx = 0; S.lastPlan = qOne('plan', ['months','year','all','promo'], 'months'); S.profiles[0].access = S.lastPlan === 'months' ? 'months' : 'all'; go('success', false); }
   else if (v === 'fail'){ go('fail', false); }
   else go('main', false);
   if (Q.has('expand')) setTimeout(() => { const b = cur().querySelector('.more'); if (b) toggleSec(b); }, 80);
-  if (Q.has('scroll')) setTimeout(() => { const sc = cur().querySelector('.scroll'); if (sc) { sc.scrollTop = +Q.get('scroll'); sc.dispatchEvent(new Event('scroll')); } }, 150);
+  if (Q.has('scroll')) setTimeout(() => { const sc = cur().querySelector('.scroll'); if (sc) { sc.scrollTop = qInt('scroll', 0, 100000, 0); sc.dispatchEvent(new Event('scroll')); } }, 150);
 } else bootIntro();
 /* Первый кадр — сразу коза с дымкой: ждём, пока фото и туман готовы, и только тогда показываем заставку */
 function bootIntro(){
