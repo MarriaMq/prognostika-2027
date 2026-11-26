@@ -2117,6 +2117,7 @@ const arcGeneral = (p, year) => toArcana(p.d + (p.m + 1) + digitSum(year));
 const arcPersonal = (p, year) => toArcana(digitSum(p.d) + digitSum(p.m + 1) + digitSum(p.y) + digitSum(year));
 
 const TEXTS = {}; /* кэш: путь → {title, blocks}, 'load' или 'err' */
+let TEXT_SHOWN = ''; /* какой файл сейчас показан на экране */
 const textPath = (kind, lang, g, n) => `texts/year/${kind}/${lang === 'uk' ? 'uk' : 'ru'}/${g === 'm' ? 'male' : 'female'}/${pad(n)}.md`;
 /* Формат файла: «# 5 аркан — Иерофант», затем «## Рубрика» и абзацы через пустую строку, **жирный**. */
 function parseMd(src){
@@ -2138,14 +2139,15 @@ function getText(path){
   fetch(path, {cache: 'no-cache'})
     .then(r => r.ok ? r.text() : Promise.reject(r.status))
     .then(t => { TEXTS[path] = parseMd(t); }, () => { TEXTS[path] = 'err'; })
-    .then(() => { if (S.cur === 'main' && S.tab === 'y' && S.ytopic === 'yW') rerender(); });
+    .then(() => { if (S.cur === 'main' && S.tab === 'y' && S.ytopic === 'yW' && TEXT_SHOWN === path) rerender(); }); /* перерисовываем, только если этот текст сейчас на экране: иначе фоновая загрузка второго периода свернула бы открытые карточки */
   return null;
 }
 function retryText(path){ delete TEXTS[path]; hap('select'); rerender(); }
 function genBody(p, P, per){
   const g = p.gender === 'm' ? 'm' : 'f';
   P.forEach(x => getText(textPath('general', S.lang, g, arcGeneral(p, x.s.getFullYear())))); /* оба периода заранее, чтобы стрелки листали без ожидания */
-  const n = arcGeneral(p, per.s.getFullYear()), path = textPath('general', S.lang, g, n), T = getText(path);
+  const n = arcGeneral(p, per.s.getFullYear()), path = textPath('general', S.lang, g, n);
+  TEXT_SHOWN = path; const T = getText(path);
   if (TEXTS[path] === 'err') return `<div class="yerr"><p>Не удалось загрузить текст</p><button class="btn ghost" onclick="retryText('${path}')">Повторить</button></div>`;
   if (!T) return `<div class="yload" aria-busy="true"><i></i><i></i><i></i></div>`;
   return T.blocks.map(foldBlock).join(''); /* номер аркана людям не показываем, только текст */
