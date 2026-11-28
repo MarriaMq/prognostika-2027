@@ -2956,7 +2956,7 @@ function applyLang(){
    API: доступ (access) на проде приходит только с сервера после проверки initData и оплаты. */
 /* v123: первое событие сессии. API: программист кладёт профили в S.profiles до этой строки, тогда returning будет верным */
 setTimeout(() => track('app_open', {start: (tg && tg.initDataUnsafe && tg.initDataUnsafe.start_param) || '', platform: (tg && tg.platform) || 'web', returning: S.profiles.length > 0, lang: S.lang}), 0);
-const DEMO_OK = /^(localhost|127\.0\.0\.1|marriamq\.github\.io)$/.test(location.hostname);
+const DEMO_OK = /^(localhost|127\.0\.0\.1|marriamq\.github\.io|prognostica2027\.bookmaker\.com\.ua)$/.test(location.hostname); /* v124: поддомен прототипа. API: на боевом сервере убрать его отсюда */
 const Q = new URLSearchParams(DEMO_OK ? location.search : '');
 const qInt = (k, lo, hi, def) => { const v = parseInt(Q.get(k), 10); return Number.isFinite(v) ? Math.min(hi, Math.max(lo, v)) : def; };
 const qOne = (k, list, def) => list.includes(Q.get(k)) ? Q.get(k) : def;
